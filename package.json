@@ -1,5 +1,5 @@
 {
-  "name": "poly2026-fe",
+  "name": "fe-datn",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -21,9 +21,7 @@
     "dayjs": "^1.11.19",
     "lodash": "^4.17.23",
     "react": "^19.2.0",
-    "react-apexcharts": "^2.0.1",
     "react-dom": "^19.2.0",
-    "react-highlight-words": "^0.21.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.13.1"
   },
