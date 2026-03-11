@@ -5,3 +5,4 @@ export const antdTheme: ThemeConfig = {
     colorPrimary: '#1890ff',
   },
 }
+
