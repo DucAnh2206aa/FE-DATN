@@ -63,16 +63,6 @@ const normalizeSummary = (value: Record<string, unknown>): DashboardSummary => {
     totalComments: Number(value.totalComments ?? 0),
   }
 }
-
-const normalizeDailyRevenue = (value: Record<string, unknown>): DashboardDailyRevenueItem => {
-  return {
-    date: String(value.date ?? ''),
-    revenue: Number(value.revenue ?? 0),
-    orders: Number(value.orders ?? 0),
-    deliveredOrders: Number(value.deliveredOrders ?? 0),
-  }
-}
-
 const normalizeTrends = (value: Record<string, unknown>): DashboardTrends => {
   const rawDailyRevenue = Array.isArray(value.dailyRevenue) ? value.dailyRevenue : []
 
@@ -86,6 +76,17 @@ const normalizeTrends = (value: Record<string, unknown>): DashboardTrends => {
       .map((item) => normalizeDailyRevenue(item)),
   }
 }
+
+const normalizeDailyRevenue = (value: Record<string, unknown>): DashboardDailyRevenueItem => {
+  return {
+    date: String(value.date ?? ''),
+    revenue: Number(value.revenue ?? 0),
+    orders: Number(value.orders ?? 0),
+    deliveredOrders: Number(value.deliveredOrders ?? 0),
+  }
+}
+
+
 
 const normalizeBreakdowns = (value: Record<string, unknown>): DashboardBreakdowns => {
   const rawByStatus = Array.isArray(value.byStatus) ? value.byStatus : []
@@ -122,20 +123,6 @@ const normalizeBreakdowns = (value: Record<string, unknown>): DashboardBreakdown
       })),
   }
 }
-
-const normalizeTopProduct = (value: Record<string, unknown>): DashboardTopProductItem => {
-  return {
-    productId: toId(value.productId ?? value.id ?? value._id),
-    name: String(value.name ?? ''),
-    brand: String(value.brand ?? 'Generic'),
-    soldCount: Number(value.soldCount ?? 0),
-    reviewCount: Number(value.reviewCount ?? 0),
-    averageRating: Number(value.averageRating ?? 0),
-    isAvailable: Boolean(value.isAvailable),
-    thumbnailUrl: typeof value.thumbnailUrl === 'string' ? value.thumbnailUrl : null,
-  }
-}
-
 const normalizeDashboardStatistics = (value: Record<string, unknown>): DashboardStatisticsResponse => {
   const summaryRecord = toRecord(value.summary)
   const trendsRecord = toRecord(value.trends)
@@ -157,6 +144,21 @@ const normalizeDashboardStatistics = (value: Record<string, unknown>): Dashboard
       .map((item) => normalizeTopProduct(item)),
   }
 }
+
+const normalizeTopProduct = (value: Record<string, unknown>): DashboardTopProductItem => {
+  return {
+    productId: toId(value.productId ?? value.id ?? value._id),
+    name: String(value.name ?? ''),
+    brand: String(value.brand ?? 'Generic'),
+    soldCount: Number(value.soldCount ?? 0),
+    reviewCount: Number(value.reviewCount ?? 0),
+    averageRating: Number(value.averageRating ?? 0),
+    isAvailable: Boolean(value.isAvailable),
+    thumbnailUrl: typeof value.thumbnailUrl === 'string' ? value.thumbnailUrl : null,
+  }
+}
+
+
 
 export const getAdminDashboardStatistics = async (days = 7): Promise<DashboardStatisticsResponse> => {
   try {
