@@ -50,6 +50,7 @@ const normalizeProductCardItem = (item: Record<string, unknown>): ProductCardIte
     name: String(item.name ?? ''),
     slug: String(item.slug ?? ''),
     categoryId: toId(item.categoryId),
+    brandId: data.brandId ? toId(data.brandId) : undefined,
     brand: typeof item.brand === 'string' ? item.brand : 'Generic',
     description: typeof item.description === 'string' ? item.description : undefined,
     images: toStringArray(item.images),

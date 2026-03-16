@@ -34,22 +34,18 @@ import {
   listAdminProducts,
   listAdminProductVariants,
   listAdminSizes,
-  updateAdminProduct,
   updateAdminProductVariant,
 } from '@/features/admin/api/product-management.api'
 import type {
   AdminProductItem,
   AdminProductVariantItem,
   UpdateAdminProductPayload,
-  UpsertAdminProductVariantPayload,
 } from '@/features/admin/model/product-management.types'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { uploadImage } from '@/shared/api/upload.api'
-import { ROUTE_PATHS } from '@/shared/constants/routes'
-import { RichTextEditor } from '@/shared/ui/RichTextEditor'
+import { buildDashboardProductEditPath, ROUTE_PATHS } from '@/shared/constants/routes'
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
-import { normalizeRichTextValue } from '@/shared/utils/rich-text'
 
 const PAGE_SIZE = 10
 const VARIANT_PAGE_SIZE = 20
@@ -88,14 +84,6 @@ const formatPriceRange = (product: AdminProductItem) => {
 
 type ProductAvailabilityFilter = 'all' | 'available' | 'unavailable'
 
-interface ProductFormValues {
-  name: string
-  categoryId: string
-  brandId?: string
-  description?: string
-  images?: string[]
-  isAvailable: boolean
-}
 
 interface VariantFormValues {
   colorId?: string
@@ -110,7 +98,6 @@ interface VariantFormValues {
 export const ProductManagementPage = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [productForm] = Form.useForm<ProductFormValues>()
   const [variantForm] = Form.useForm<VariantFormValues>()
 
   const [page, setPage] = useState(1)
@@ -120,8 +107,6 @@ export const ProductManagementPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [brandFilter, setBrandFilter] = useState<string>('all')
 
-  const [productModalOpen, setProductModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<AdminProductItem | null>(null)
   const [variantDrawerOpen, setVariantDrawerOpen] = useState(false)
   const [activeProductForVariants, setActiveProductForVariants] = useState<AdminProductItem | null>(
     null
@@ -130,7 +115,6 @@ export const ProductManagementPage = () => {
   const [editingVariant, setEditingVariant] = useState<AdminProductVariantItem | null>(null)
   const [variantPage, setVariantPage] = useState(1)
   const [uploadingCount, setUploadingCount] = useState(0)
-  const productFormImages = normalizeStringArray(Form.useWatch('images', productForm))
   const variantFormImages = normalizeStringArray(Form.useWatch('images', variantForm))
 
   const validateImageFile = (file: File) => {
@@ -165,21 +149,7 @@ export const ProductManagementPage = () => {
     }
   }
 
-  const appendProductFormImage = (url: string) => {
-    productForm.setFieldValue('images', mergeUniqueStringArray(productFormImages, url))
-  }
 
-  const removeProductFormImage = (url: string) => {
-    productForm.setFieldValue(
-      'images',
-      productFormImages.filter((value) => value !== url)
-    )
-  }
-
-  const productFormImageBeforeUpload: UploadProps['beforeUpload'] = (file) => {
-    void uploadProductImageFile(file as File, appendProductFormImage)
-    return Upload.LIST_IGNORE
-  }
 
   const appendVariantFormImage = (url: string) => {
     variantForm.setFieldValue('images', mergeUniqueStringArray(variantFormImages, url))
@@ -267,25 +237,6 @@ export const ProductManagementPage = () => {
     ])
   }
 
-  const updateProductMutation = useMutation({
-    mutationFn: ({
-      productId,
-      payload,
-    }: {
-      productId: string
-      payload: UpdateAdminProductPayload
-    }) => updateAdminProduct(productId, payload),
-    onSuccess: async () => {
-      await invalidateProductData()
-      void message.success('Cập nhật sản phẩm thành công')
-      setProductModalOpen(false)
-      setEditingProduct(null)
-      productForm.resetFields()
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
 
   const deleteProductMutation = useMutation({
     mutationFn: deleteAdminProduct,
@@ -455,7 +406,7 @@ export const ProductManagementPage = () => {
         render: (_, record) => (
           <Space wrap>
             <Button
-              icon={<TagsOutlined />}
+              icon={<TagsOutli  ed />}
               onClick={() => {
                 setActiveProductForVariants(record)
                 setVariantPage(1)
@@ -466,16 +417,7 @@ export const ProductManagementPage = () => {
             <Button
               icon={<EditOutlined />}
               onClick={() => {
-                setEditingProduct(record)
-                productForm.setFieldsValue({
-                  name: record.name,
-                  categoryId: record.categoryId,
-                  brandId: record.brandId,
-                  description: record.description,
-                  images: record.images,
-                  isAvailable: record.isAvailable,
-                })
-                setProductModalOpen(true)
+                navigate(buildDashboardProductEditPath(record.id))
               }}
             ></Button>
 
@@ -498,7 +440,7 @@ export const ProductManagementPage = () => {
         ),
       },
     ],
-    [categoriesById, deleteProductMutation, productForm]
+    [categoriesById, deleteProductMutation, navigate]
   )
 
   const variantColumns: ColumnsType<AdminProductVariantItem> = useMemo(
@@ -624,28 +566,7 @@ export const ProductManagementPage = () => {
     [activeProductForVariants, deleteVariantMutation, variantForm]
   )
 
-  const submitProductForm = (values: ProductFormValues) => {
-    if (!editingProduct) {
-      void message.error('Không tìm thấy sản phẩm để cập nhật')
-      return
-    }
-
-    const normalizedBrandId = values.brandId?.trim()
-
-    const payload: UpdateAdminProductPayload = {
-      name: values.name.trim(),
-      categoryId: values.categoryId,
-      brandId: normalizedBrandId || undefined,
-      description: normalizeRichTextValue(values.description),
-      images: normalizeStringArray(values.images),
-      isAvailable: values.isAvailable,
-    }
-
-    updateProductMutation.mutate({
-      productId: editingProduct.id,
-      payload,
-    })
-  }
+ 
 
   const submitVariantForm = (values: VariantFormValues) => {
     if (!activeProductForVariants) {
@@ -796,59 +717,6 @@ export const ProductManagementPage = () => {
         />
       </Card>
 
-      <Modal
-        title="Cập nhật sản phẩm"
-        open={productModalOpen}
-        onCancel={() => {
-          setProductModalOpen(false)
-          setEditingProduct(null)
-          productForm.resetFields()
-          productForm.setFieldsValue({
-            isAvailable: true,
-          })
-        }}
-        width={840}
-        footer={null}
-        destroyOnHidden
-      >
-        <Form<ProductFormValues>
-          form={productForm}
-          layout="vertical"
-          initialValues={{
-            isAvailable: true,
-          }}
-          onFinish={submitProductForm}
-        >
-
-
-
-          <Form.Item name="images" hidden>
-            <Input placeholder="Danh sách URL ảnh sản phẩm" />
-          </Form.Item>
-
-          <Form.Item name="isAvailable" label="Trạng thái bán" valuePropName="checked">
-            <Switch checkedChildren="Đang bán" unCheckedChildren="Ngừng bán" />
-          </Form.Item>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              onClick={() => {
-                setProductModalOpen(false)
-                setEditingProduct(null)
-                productForm.resetFields()
-                productForm.setFieldsValue({
-                  isAvailable: true,
-                })
-              }}
-            >
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit" loading={updateProductMutation.isPending}>
-              Lưu thay đổi
-            </Button>
-          </div>
-        </Form>
-      </Modal>
 
       <Drawer
         title={`Biến thể - ${activeProductForVariants?.name ?? ''}`}

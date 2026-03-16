@@ -48,6 +48,7 @@ export interface ProductDetailResponse {
   _id?: string
   name: string
   slug: string
+  brandId?: string
   categoryId: string
   brand: string
   description?: string
