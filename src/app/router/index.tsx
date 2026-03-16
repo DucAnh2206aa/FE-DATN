@@ -1,5 +1,5 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom'
 
+import { createBrowserRouter, Navigate } from 'react-router-dom'
 import { AccountLayout } from '@/layouts/AccountLayout'
 import { AuthLayout } from '@/layouts/AuthLayout'
 import { PrivateLayout } from '@/layouts/PrivateLayout'
@@ -23,6 +23,7 @@ import { ProductDetailPage } from '@/pages/product/ProductDetailPage'
 import { ProductsPage } from '@/pages/product/ProductsPage'
 import { ROUTE_PATHS } from '@/shared/constants/routes'
 import { PrivateRoute } from '@/shared/ui/PrivateRoute'
+import { ProductUpdatePage } from '@/pages/dashboard/ProductUpdatePage'
 import { RequireAdmin } from '@/shared/ui/RequireAdmin'
 import { RequireAuth } from '@/shared/ui/RequireAuth'
 
@@ -122,6 +123,14 @@ export const router = createBrowserRouter([
         element: (
           <RequireAdmin>
             <ProductCreatePage />
+          </RequireAdmin>
+        ),
+      },
+      {
+        path: 'products/:productId/edit',
+        element: (
+          <RequireAdmin>
+            <ProductUpdatePage />
           </RequireAdmin>
         ),
       },
