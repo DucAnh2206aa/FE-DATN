@@ -13,6 +13,7 @@ const stripHtmlToPlainText = (value: string) => {
 }
 
 export const normalizeRichTextValue = (value?: string) => {
+<<<<<<< HEAD
   const normalized = value?.trim()
 
   if (!normalized) {
@@ -25,3 +26,17 @@ export const normalizeRichTextValue = (value?: string) => {
 
   return normalized
 }
+=======
+    const normalized = value?.trim()
+
+    if (!normalized) {
+        return undefined
+    }
+
+    if (!stripHtmlToPlainText(normalized)) {
+        return undefined
+    }
+
+    return normalized
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

@@ -37,19 +37,35 @@ const DAYS_OPTIONS = [
 const ORDER_STATUS_LABELS: Record<string, string> = {
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
+<<<<<<< HEAD
   preparing: 'Đang chuẩn bị',
   shipping: 'Đang giao',
   delivered: 'Đã giao',
+=======
+  shipping: 'Đang giao',
+  delivered: 'Đã giao',
+  completed: 'Hoàn thành',
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   cancelled: 'Đã hủy',
   returned: 'Trả hàng',
 }
 
+<<<<<<< HEAD
 const STATUS_COLORS: Record<string, string> = {
   pending: 'default',
   confirmed: 'blue',
   preparing: 'cyan',
   shipping: 'geekblue',
   delivered: 'green',
+=======
+
+const STATUS_COLORS: Record<string, string> = {
+  pending: 'default',
+  confirmed: 'blue',
+  shipping: 'geekblue',
+  delivered: 'green',
+  completed: 'green',
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   cancelled: 'volcano',
   returned: 'orange',
 }
@@ -82,6 +98,16 @@ const topProductColumns: ColumnsType<DashboardTopProductItem> = [
     width: 110,
   },
   {
+<<<<<<< HEAD
+=======
+    title: 'Điểm TB',
+    dataIndex: 'averageRating',
+    key: 'averageRating',
+    width: 110,
+    render: (value: number) => value.toFixed(1),
+  },
+  {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     title: 'Trạng thái',
     key: 'isAvailable',
     width: 130,
@@ -149,6 +175,7 @@ const useRevenueChartOptions = (stats?: DashboardStatisticsResponse) => {
         },
         tooltip: {
           shared: true,
+<<<<<<< HEAD
           intersect: false,
         },
       },
@@ -197,6 +224,8 @@ const useCategoryOrderChartOptions = (stats?: DashboardStatisticsResponse) => {
         tooltip: {
           shared: true,
           intersect: false,
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         },
       },
     }
@@ -217,12 +246,20 @@ export const DashboardPage = () => {
   const summary = stats?.summary
 
   const revenueChart = useRevenueChartOptions(stats)
+<<<<<<< HEAD
   const categoryOrderChart = useCategoryOrderChartOptions(stats)
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   const statusSeries = stats?.breakdowns.byStatus.map((item) => item.count) ?? []
   const statusLabels = stats?.breakdowns.byStatus.map((item) => ORDER_STATUS_LABELS[item.status]) ?? []
   const hasStatusData = statusSeries.some((value) => value > 0)
+<<<<<<< HEAD
   const hasCategoryData = (stats?.breakdowns.byCategory.length ?? 0) > 0
+=======
+
+  
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   return (
     <div className="space-y-6">
@@ -308,7 +345,11 @@ export const DashboardPage = () => {
       </Card>
 
       <Row gutter={[16, 16]}>
+<<<<<<< HEAD
         <Col xs={24} lg={12}>
+=======
+        <Col xs={24}>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Card title="Cơ cấu trạng thái đơn hàng" loading={statisticsQuery.isLoading || statisticsQuery.isFetching}>
             {hasStatusData ? (
               <Chart
@@ -336,6 +377,7 @@ export const DashboardPage = () => {
           </Card>
         </Col>
 
+<<<<<<< HEAD
         <Col xs={24} lg={12}>
           <Card title="Thống kê đơn hàng theo danh mục" loading={statisticsQuery.isLoading || statisticsQuery.isFetching}>
             {hasCategoryData ? (
@@ -384,3 +426,22 @@ export const DashboardPage = () => {
     </div>
   )
 }
+=======
+        
+      </Row>
+
+      <Card title="Top sản phẩm bán chạy" loading={statisticsQuery.isLoading || statisticsQuery.isFetching}>
+        <Table
+          rowKey="productId"
+          columns={topProductColumns}
+          dataSource={stats?.topProducts ?? []}
+          pagination={false}
+          locale={{
+            emptyText: <Empty description="Chưa có dữ liệu sản phẩm bán chạy" />,
+          }}
+        />
+      </Card>
+    </div>
+  )
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

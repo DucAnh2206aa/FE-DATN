@@ -10,7 +10,10 @@ export interface AdminReviewUserProfile {
 export interface AdminReviewProductProfile {
   id: string
   name?: string
+<<<<<<< HEAD
   slug?: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   thumbnailUrl?: string
 }
 
@@ -59,4 +62,8 @@ export interface ModerateAdminReviewPayload {
 
 export interface ReplyAdminReviewPayload {
   replyContent: string
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

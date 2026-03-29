@@ -23,10 +23,16 @@ export const LoginPage = () => {
       dispatch(setUser(data.user))
       dispatch(setAuthStatus('authenticated'))
       setRefreshTokenCookie(data.tokens.refreshToken)
+<<<<<<< HEAD
       void message.success('Đăng nhập thành công')
       const nextPath =
         redirectPath && redirectPath.startsWith('/') ? redirectPath : getDefaultRouteByRole(data.user.role)
       navigate(nextPath, { replace: true })
+=======
+      const nextPath =
+        redirectPath && redirectPath.startsWith('/') ? redirectPath : getDefaultRouteByRole(data.user.role)
+      navigate(nextPath, { replace: true, state: { authSuccess: 'login' } })
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     },
     onError: (error) => {
       void message.error(error.message)

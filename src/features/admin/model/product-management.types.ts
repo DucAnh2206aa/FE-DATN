@@ -9,7 +9,10 @@ export interface PaginatedResponse<T> {
 export interface AdminProductItem {
   id: string
   name: string
+<<<<<<< HEAD
   slug: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   categoryId: string
   brandId?: string
   brand: string
@@ -17,6 +20,11 @@ export interface AdminProductItem {
   attributes?: Record<string, unknown>
   images: string[]
   isAvailable: boolean
+<<<<<<< HEAD
+=======
+  metaTitle?: string
+  metaDescription?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   averageRating: number
   reviewCount: number
   soldCount: number
@@ -53,18 +61,30 @@ export type AdminProductVariantListResponse = PaginatedResponse<AdminProductVari
 export interface AdminCategoryOption {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive?: boolean
 }
 
 export interface AdminBrandOption {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive?: boolean
 }
 
 export interface AdminColorOption {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   hexCode?: string
   isActive?: boolean
 }
@@ -72,6 +92,10 @@ export interface AdminColorOption {
 export interface AdminSizeOption {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive?: boolean
 }
 
@@ -87,7 +111,10 @@ export interface ListAdminProductsParams {
 
 export interface CreateAdminProductPayload {
   name: string
+<<<<<<< HEAD
   slug: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   categoryId: string
   brandId?: string
   brand?: string
@@ -95,6 +122,11 @@ export interface CreateAdminProductPayload {
   attributes?: Record<string, unknown>
   images?: string[]
   isAvailable?: boolean
+<<<<<<< HEAD
+=======
+  metaTitle?: string
+  metaDescription?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 export type UpdateAdminProductPayload = Partial<CreateAdminProductPayload>
@@ -105,7 +137,11 @@ export interface ListAdminProductVariantsParams {
 }
 
 export interface UpsertAdminProductVariantPayload {
+<<<<<<< HEAD
   sku?: string
+=======
+  sku: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   colorId?: string | null
   sizeId?: string | null
   size?: string
@@ -114,4 +150,8 @@ export interface UpsertAdminProductVariantPayload {
   stockQuantity?: number
   isAvailable?: boolean
   images?: string[]
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

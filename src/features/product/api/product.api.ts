@@ -5,6 +5,10 @@ import type {
   ProductCardItem,
   ProductDetailResponse,
   ProductFilterCategory,
+<<<<<<< HEAD
+=======
+  ProductFilterColor,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   ProductFiltersResponse,
   ProductListResponse,
   ProductVariantItem,
@@ -20,6 +24,11 @@ interface ProductListQuery {
   limit?: number
   categoryId?: string
   brand?: string
+<<<<<<< HEAD
+=======
+  colorIds?: string[]
+  priceRanges?: string[]
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   search?: string
   isAvailable?: boolean
 }
@@ -44,11 +53,17 @@ const toStringArray = (value: unknown) => {
 
 const normalizeProductCardItem = (item: Record<string, unknown>): ProductCardItem => {
   return {
+<<<<<<< HEAD
     ...item,
     id: toId(item.id ?? item._id),
     _id: typeof item._id === 'string' ? item._id : undefined,
     name: String(item.name ?? ''),
     slug: String(item.slug ?? ''),
+=======
+    id: toId(item.id ?? item._id),
+    _id: typeof item._id === 'string' ? item._id : undefined,
+    name: String(item.name ?? ''),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     categoryId: toId(item.categoryId),
     brand: typeof item.brand === 'string' ? item.brand : 'Generic',
     description: typeof item.description === 'string' ? item.description : undefined,
@@ -159,6 +174,19 @@ const normalizeFilterCategory = (item: Record<string, unknown>): ProductFilterCa
   return {
     id: toId(item.id ?? item._id),
     name: String(item.name ?? 'Danh mục'),
+<<<<<<< HEAD
+=======
+    slug: String(item.slug ?? ''),
+    image: typeof item.image === 'string' ? item.image : undefined,
+  }
+}
+
+const normalizeFilterColor = (item: Record<string, unknown>): ProductFilterColor => {
+  return {
+    id: toId(item.id ?? item._id),
+    name: String(item.name ?? 'Màu sắc'),
+    hexCode: typeof item.hexCode === 'string' ? item.hexCode : undefined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   }
 }
 
@@ -168,6 +196,10 @@ export const getProductFilters = async (): Promise<ProductFiltersResponse> => {
     const data = extractApiData(response)
     const rawCategories = Array.isArray(data.categories) ? data.categories : []
     const rawBrands = Array.isArray(data.brands) ? data.brands : []
+<<<<<<< HEAD
+=======
+    const rawColors = Array.isArray(data.colors) ? data.colors : []
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
     return {
       categories: rawCategories
@@ -177,6 +209,12 @@ export const getProductFilters = async (): Promise<ProductFiltersResponse> => {
         .filter((item): item is string => typeof item === 'string')
         .map((item) => item.trim())
         .filter(Boolean),
+<<<<<<< HEAD
+=======
+      colors: rawColors
+        .filter((item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object')
+        .map((item) => normalizeFilterColor(item)),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     }
   } catch (error) {
     throw toApiClientError(error)
@@ -223,8 +261,21 @@ export const getNewestProducts = async (limit = 10): Promise<NewestResponse> => 
 
 export const getProducts = async (params: ProductListQuery = {}): Promise<ProductListResponse> => {
   try {
+<<<<<<< HEAD
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/products', {
       params,
+=======
+    const colorIds =
+      params.colorIds && params.colorIds.length > 0 ? params.colorIds.join(',') : undefined
+    const priceRanges =
+      params.priceRanges && params.priceRanges.length > 0 ? params.priceRanges.join(',') : undefined
+    const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/products', {
+      params: {
+        ...params,
+        colorIds,
+        priceRanges,
+      },
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     })
 
     return normalizePaginated(extractApiData(response), normalizeProductCardItem)
@@ -249,11 +300,17 @@ export const getProductDetail = async (productId: string): Promise<ProductDetail
       : []
 
     return {
+<<<<<<< HEAD
       ...data,
       id: toId(data.id ?? data._id),
       _id: typeof data._id === 'string' ? data._id : undefined,
       name: String(data.name ?? ''),
       slug: String(data.slug ?? ''),
+=======
+      id: toId(data.id ?? data._id),
+      _id: typeof data._id === 'string' ? data._id : undefined,
+      name: String(data.name ?? ''),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       categoryId: toId(data.categoryId),
       brand: typeof data.brand === 'string' ? data.brand : 'Generic',
       description: typeof data.description === 'string' ? data.description : undefined,
@@ -263,6 +320,11 @@ export const getProductDetail = async (productId: string): Promise<ProductDetail
           : undefined,
       images: toStringArray(data.images),
       isAvailable: Boolean(data.isAvailable),
+<<<<<<< HEAD
+=======
+      metaTitle: typeof data.metaTitle === 'string' ? data.metaTitle : undefined,
+      metaDescription: typeof data.metaDescription === 'string' ? data.metaDescription : undefined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       averageRating: Number(data.averageRating ?? 0),
       reviewCount: Number(data.reviewCount ?? 0),
       soldCount: Number(data.soldCount ?? 0),

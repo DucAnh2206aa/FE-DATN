@@ -37,7 +37,14 @@ const normalizeCategory = (value: Record<string, unknown>): MasterCategoryItem =
   return {
     id: toId(value.id ?? value._id),
     name: String(value.name ?? ''),
+<<<<<<< HEAD
     description: typeof value.description === 'string' ? value.description : undefined,
+=======
+    slug: String(value.slug ?? ''),
+    description: typeof value.description === 'string' ? value.description : undefined,
+    parentId: value.parentId ? toId(value.parentId) : undefined,
+    image: typeof value.image === 'string' ? value.image : undefined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     isActive: typeof value.isActive === 'boolean' ? value.isActive : true,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
@@ -48,6 +55,10 @@ const normalizeBrand = (value: Record<string, unknown>): MasterBrandItem => {
   return {
     id: toId(value.id ?? value._id),
     name: String(value.name ?? ''),
+<<<<<<< HEAD
+=======
+    slug: String(value.slug ?? ''),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     description: typeof value.description === 'string' ? value.description : undefined,
     logoUrl: typeof value.logoUrl === 'string' ? value.logoUrl : undefined,
     isActive: typeof value.isActive === 'boolean' ? value.isActive : true,
@@ -60,6 +71,10 @@ const normalizeColor = (value: Record<string, unknown>): MasterColorItem => {
   return {
     id: toId(value.id ?? value._id),
     name: String(value.name ?? ''),
+<<<<<<< HEAD
+=======
+    slug: String(value.slug ?? ''),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     hexCode: typeof value.hexCode === 'string' ? value.hexCode : undefined,
     isActive: typeof value.isActive === 'boolean' ? value.isActive : true,
     createdAt: String(value.createdAt ?? ''),
@@ -71,6 +86,10 @@ const normalizeSize = (value: Record<string, unknown>): MasterSizeItem => {
   return {
     id: toId(value.id ?? value._id),
     name: String(value.name ?? ''),
+<<<<<<< HEAD
+=======
+    slug: String(value.slug ?? ''),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     isActive: typeof value.isActive === 'boolean' ? value.isActive : true,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),
@@ -317,4 +336,8 @@ export const listActiveMasterSizes = async () => {
   })
 
   return response.items
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

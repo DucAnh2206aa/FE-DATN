@@ -27,7 +27,12 @@ import { useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useAppSelector } from '@/app/store/hooks'
+<<<<<<< HEAD
 import { upsertCartItem } from '@/features/cart/api/cart.api'
+=======
+import { getMyCart, upsertCartItem } from '@/features/cart/api/cart.api'
+import type { CartResponse } from '@/features/cart/model/cart.types'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import {
   createProductComment,
   getProductComments,
@@ -275,8 +280,12 @@ export const ProductDetailPage = () => {
     })
   }
 
+<<<<<<< HEAD
   const handleAddToCart = () => {
     if (!accessToken) {
+=======
+  const handleAddToCart = async () => {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       void message.warning('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng')
       navigate(ROUTE_PATHS.LOGIN)
       return
@@ -301,10 +310,37 @@ export const ProductDetailPage = () => {
       setPurchaseQuantity(normalizedQuantity)
     }
 
+<<<<<<< HEAD
     addToCartMutation.mutate({
       productId,
       variantId: selectedVariant.id,
       quantity: normalizedQuantity,
+=======
+    const cachedCart = queryClient.getQueryData<CartResponse>(queryKeys.cart.me)
+    const resolvedCart: CartResponse =
+      cachedCart ??
+      (await queryClient.fetchQuery({
+        queryKey: queryKeys.cart.me,
+        queryFn: getMyCart,
+      }))
+
+    const existingQuantity =
+      resolvedCart.items.find((item) => item.variantId === selectedVariant.id)?.quantity ?? 0
+    const nextQuantity = Math.min(
+      existingQuantity + normalizedQuantity,
+      selectedVariant.stockQuantity
+    )
+
+    if (nextQuantity <= existingQuantity) {
+      void message.warning('Số lượng trong giỏ đã đạt tối đa theo tồn kho')
+      return
+    }
+
+    addToCartMutation.mutate({
+      productId,
+      variantId: selectedVariant.id,
+      quantity: nextQuantity,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       selectedAttributes: {
         color: selectedVariant.color,
         size: selectedVariant.size,

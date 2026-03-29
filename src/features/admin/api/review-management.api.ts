@@ -57,7 +57,10 @@ const normalizeProductProfile = (value: unknown): AdminReviewProductProfile | un
   return {
     id: toId(data.id ?? data._id),
     name: typeof data.name === 'string' ? data.name : undefined,
+<<<<<<< HEAD
     slug: typeof data.slug === 'string' ? data.slug : undefined,
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     thumbnailUrl: typeof data.thumbnailUrl === 'string' ? data.thumbnailUrl : undefined,
   }
 }

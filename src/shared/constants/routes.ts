@@ -25,6 +25,10 @@ export const ROUTE_PATHS = {
   DASHBOARD_USERS: '/dashboard/users',
   DASHBOARD_ACCOUNTS: '/dashboard/accounts',
   DASHBOARD_MASTER_DATA: '/dashboard/master-data',
+<<<<<<< HEAD
+=======
+  DASHBOARD_SUPPORT_CHAT: '/dashboard/support-chat',
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   PRODUCT_DETAIL: '/products/:productId',
 } as const
 

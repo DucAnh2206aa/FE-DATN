@@ -8,4 +8,8 @@ export const queryClient = new QueryClient({
       staleTime: 30_000,
     },
   },
+<<<<<<< HEAD
 })
+=======
+})
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

@@ -14,8 +14,18 @@ import { RegisterPage } from '@/pages/auth/RegisterPage'
 import { DashboardCenterPage } from '@/pages/dashboard/DashboardCenterPage'
 import { DashboardPage } from '@/pages/dashboard/DashboardPage'
 import { MasterDataManagementPage } from '@/pages/dashboard/MasterDataManagementPage'
+<<<<<<< HEAD
 import { ProductCreatePage } from '@/pages/dashboard/ProductCreatePage'
 import { ProductManagementPage } from '@/pages/dashboard/ProductManagementPage'
+=======
+import { OrderManagementPage } from '@/pages/dashboard/OrderManagementPage'
+import { ProductCreatePage } from '@/pages/dashboard/ProductCreatePage'
+import { ProductManagementPage } from '@/pages/dashboard/ProductManagementPage'
+import { ReviewManagementPage } from '@/pages/dashboard/ReviewManagementPage'
+import { SupportChatPage } from '@/pages/dashboard/SupportChatPage'
+import { UserRoleManagementPage } from '@/pages/dashboard/UserRoleManagementPage'
+import { VoucherManagementPage } from '@/pages/dashboard/VoucherManagementPage'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { HomePage } from '@/pages/home/HomePage'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { PaymentSuccessPage } from '@/pages/payment/PaymentSuccessPage'
@@ -117,6 +127,31 @@ export const router = createBrowserRouter([
         element: <DashboardPage />,
       },
 
+      {
+<<<<<<< HEAD
+        path: 'products/create',
+        element: (
+          <RequireAdmin>
+            <ProductCreatePage />
+          </RequireAdmin>
+        ),
+=======
+        path: 'orders',
+        element: <OrderManagementPage />,
+      },
+      {
+        path: 'support-chat',
+        element: <SupportChatPage />,
+      },
+      {
+        path: 'reviews',
+        element: <ReviewManagementPage />,
+      },
+      {
+        path: 'comments',
+        element: <CommentManagementPage />,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
+      },
       {
         path: 'products/create',
         element: (

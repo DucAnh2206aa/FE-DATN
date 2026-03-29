@@ -25,8 +25,12 @@ export const RegisterPage = () => {
       dispatch(setUser(data.user))
       dispatch(setAuthStatus('authenticated'))
       setRefreshTokenCookie(data.tokens.refreshToken)
+<<<<<<< HEAD
       void message.success('Đăng ký thành công')
       navigate(getDefaultRouteByRole(data.user.role), { replace: true })
+=======
+      navigate(getDefaultRouteByRole(data.user.role), { replace: true, state: { authSuccess: 'register' } })
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     },
     onError: (error) => {
       void message.error(error.message)

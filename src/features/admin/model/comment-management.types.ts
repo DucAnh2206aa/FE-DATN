@@ -11,7 +11,10 @@ export interface AdminCommentTargetProfile {
   id: string
   targetModel: CommentTargetModel
   name?: string
+<<<<<<< HEAD
   slug?: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   thumbnailUrl?: string
 }
 
@@ -50,4 +53,8 @@ export interface ListAdminCommentsParams {
 
 export interface UpdateCommentVisibilityPayload {
   isHidden: boolean
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

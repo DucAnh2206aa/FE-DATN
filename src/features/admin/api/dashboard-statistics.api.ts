@@ -8,6 +8,10 @@ import type {
   DashboardStatisticsResponse,
   DashboardSummary,
   DashboardTopProductItem,
+<<<<<<< HEAD
+=======
+  DashboardTopVariantItem,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   DashboardTrends,
 } from '../model/dashboard-statistics.types'
 import type { AdminOrderStatus, AdminPaymentMethod } from '../model/order-management.types'
@@ -26,9 +30,15 @@ const toRecord = (value: unknown): Record<string, unknown> | undefined => {
 
 const normalizeOrderStatus = (value: unknown): AdminOrderStatus => {
   return value === 'confirmed' ||
+<<<<<<< HEAD
     value === 'preparing' ||
     value === 'shipping' ||
     value === 'delivered' ||
+=======
+    value === 'shipping' ||
+    value === 'delivered' ||
+    value === 'completed' ||
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     value === 'cancelled' ||
     value === 'returned'
     ? value
@@ -36,7 +46,16 @@ const normalizeOrderStatus = (value: unknown): AdminOrderStatus => {
 }
 
 const normalizePaymentMethod = (value: unknown): AdminPaymentMethod => {
+<<<<<<< HEAD
   return value === 'banking' || value === 'momo' || value === 'vnpay' ? value : 'cod'
+=======
+  return value === 'banking' ||
+    value === 'momo' ||
+    value === 'vnpay' ||
+    value === 'zalopay'
+    ? value
+    : 'cod'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 const normalizeSummary = (value: Record<string, unknown>): DashboardSummary => {
@@ -136,12 +155,36 @@ const normalizeTopProduct = (value: Record<string, unknown>): DashboardTopProduc
   }
 }
 
+<<<<<<< HEAD
+=======
+const normalizeTopVariant = (value: Record<string, unknown>): DashboardTopVariantItem => {
+  return {
+    variantId: toId(value.variantId ?? value.id ?? value._id),
+    productId: toId(value.productId),
+    productName: String(value.productName ?? ''),
+    variantSku: String(value.variantSku ?? ''),
+    variantColor: String(value.variantColor ?? ''),
+    size: String(value.size ?? 'Standard'),
+    soldCount: Number(value.soldCount ?? 0),
+    revenue: Number(value.revenue ?? 0),
+    stockQuantity: Number(value.stockQuantity ?? 0),
+    isAvailable: Boolean(value.isAvailable),
+    thumbnailUrl: typeof value.thumbnailUrl === 'string' ? value.thumbnailUrl : null,
+  }
+}
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 const normalizeDashboardStatistics = (value: Record<string, unknown>): DashboardStatisticsResponse => {
   const summaryRecord = toRecord(value.summary)
   const trendsRecord = toRecord(value.trends)
   const breakdownsRecord = toRecord(value.breakdowns)
   const rawTopProducts = Array.isArray(value.topProducts) ? value.topProducts : []
   const rawBottomProducts = Array.isArray(value.bottomProducts) ? value.bottomProducts : []
+<<<<<<< HEAD
+=======
+  const rawTopVariants = Array.isArray(value.topVariants) ? value.topVariants : []
+  const rawBottomVariants = Array.isArray(value.bottomVariants) ? value.bottomVariants : []
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   return {
     summary: normalizeSummary(summaryRecord ?? {}),
@@ -155,6 +198,17 @@ const normalizeDashboardStatistics = (value: Record<string, unknown>): Dashboard
       .map((item) => toRecord(item))
       .filter((item): item is Record<string, unknown> => Boolean(item))
       .map((item) => normalizeTopProduct(item)),
+<<<<<<< HEAD
+=======
+    topVariants: rawTopVariants
+      .map((item) => toRecord(item))
+      .filter((item): item is Record<string, unknown> => Boolean(item))
+      .map((item) => normalizeTopVariant(item)),
+    bottomVariants: rawBottomVariants
+      .map((item) => toRecord(item))
+      .filter((item): item is Record<string, unknown> => Boolean(item))
+      .map((item) => normalizeTopVariant(item)),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   }
 }
 
@@ -173,4 +227,8 @@ export const getAdminDashboardStatistics = async (days = 7): Promise<DashboardSt
   } catch (error) {
     throw toApiClientError(error)
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

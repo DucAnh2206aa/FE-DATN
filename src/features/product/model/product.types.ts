@@ -9,7 +9,10 @@ export interface ProductCardItem {
   id: string
   _id?: string
   name: string
+<<<<<<< HEAD
   slug: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   categoryId: string
   brand: string
   description?: string
@@ -47,13 +50,21 @@ export interface ProductDetailResponse {
   id: string
   _id?: string
   name: string
+<<<<<<< HEAD
   slug: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   categoryId: string
   brand: string
   description?: string
   attributes?: Record<string, unknown>
   images: string[]
   isAvailable: boolean
+<<<<<<< HEAD
+=======
+  metaTitle?: string
+  metaDescription?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   averageRating: number
   reviewCount: number
   soldCount: number
@@ -108,9 +119,24 @@ export type NewestResponse = ProductCardItem[]
 export interface ProductFilterCategory {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+  image?: string
+}
+
+export interface ProductFilterColor {
+  id: string
+  name: string
+  hexCode?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 export interface ProductFiltersResponse {
   categories: ProductFilterCategory[]
   brands: string[]
+<<<<<<< HEAD
+=======
+  colors: ProductFilterColor[]
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }

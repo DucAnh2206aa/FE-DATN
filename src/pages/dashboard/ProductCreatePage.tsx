@@ -1,8 +1,18 @@
 import {
   ArrowLeftOutlined,
+<<<<<<< HEAD
   DeleteOutlined,
   PlusOutlined,
   UploadOutlined,
+=======
+  BoldOutlined,
+  DeleteOutlined,
+  ItalicOutlined,
+  OrderedListOutlined,
+  PlusOutlined,
+  UploadOutlined,
+  UnorderedListOutlined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UploadProps } from 'antd'
@@ -21,7 +31,13 @@ import {
   Typography,
   Upload,
 } from 'antd'
+<<<<<<< HEAD
 import { useState } from 'react'
+=======
+import type { TextAreaRef } from 'antd/es/input/TextArea'
+import { useRef } from 'react'
+import { useRef, useState } from 'react'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -36,6 +52,7 @@ import type {
   CreateAdminProductPayload,
   UpsertAdminProductVariantPayload,
 } from '@/features/admin/model/product-management.types'
+<<<<<<< HEAD
 import { queryKeys } from '@/shared/api/queryKeys'
 import { uploadImage } from '@/shared/api/upload.api'
 import { ROUTE_PATHS } from '@/shared/constants/routes'
@@ -51,6 +68,14 @@ const createSlugFromName = (value: string) => {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
 }
+=======
+import { uploadImage } from '@/shared/api/upload.api'
+import { queryKeys } from '@/shared/api/queryKeys'
+import { ROUTE_PATHS } from '@/shared/constants/routes'
+
+
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
 const normalizeStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
@@ -88,6 +113,11 @@ interface ProductCreateFormValues {
   description?: string
   images?: string[]
   isAvailable: boolean
+<<<<<<< HEAD
+=======
+  metaTitle?: string
+  metaDescription?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   variants: ProductVariantFormValues[]
 }
 
@@ -111,6 +141,11 @@ export const ProductCreatePage = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm<ProductCreateFormValues>()
   const [uploadingCount, setUploadingCount] = useState(0)
+<<<<<<< HEAD
+=======
+  const descriptionEditorRef = useRef<TextAreaRef>(null)
+  const descriptionValue = Form.useWatch('description', form) ?? ''
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   const productImages = normalizeStringArray(Form.useWatch('images', form))
   const variantValues = Form.useWatch('variants', form) ?? []
 
@@ -156,12 +191,21 @@ export const ProductCreatePage = () => {
     setUploadingCount((value) => value + 1)
 
     try {
+<<<<<<< HEAD
       const uploaded = await uploadImage(file, 'products')
       onSuccess(uploaded.url)
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Upload ảnh thất bại'
       void message.error(errorMessage)
     } finally {
+=======
+        const uploaded = await uploadImage(file, 'products')
+        onSuccess(uploaded.url)
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Upload ảnh thất bại'
+        void message.error(errorMessage)
+    }finally {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       setUploadingCount((value) => Math.max(0, value - 1))
     }
   }
@@ -183,6 +227,7 @@ export const ProductCreatePage = () => {
   }
 
   const appendVariantImage = (variantIndex: number, url: string) => {
+<<<<<<< HEAD
     const currentImages = normalizeStringArray(
       form.getFieldValue(['variants', variantIndex, 'images'])
     )
@@ -196,6 +241,14 @@ export const ProductCreatePage = () => {
     const currentImages = normalizeStringArray(
       form.getFieldValue(['variants', variantIndex, 'images'])
     )
+=======
+    const currentImages = normalizeStringArray(form.getFieldValue(['variants', variantIndex, 'images']))
+    form.setFieldValue(['variants', variantIndex, 'images'], mergeUniqueStringArray(currentImages, url))
+  }
+
+  const removeVariantImage = (variantIndex: number, url: string) => {
+    const currentImages = normalizeStringArray(form.getFieldValue(['variants', variantIndex, 'images']))
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     form.setFieldValue(
       ['variants', variantIndex, 'images'],
       currentImages.filter((value) => value !== url)
@@ -211,6 +264,7 @@ export const ProductCreatePage = () => {
       return Upload.LIST_IGNORE
     }
 
+<<<<<<< HEAD
   const createProductMutation = useMutation({
     mutationFn: async (values: ProductCreateFormValues) => {
       const slug = createSlugFromName(values.name)
@@ -230,6 +284,48 @@ export const ProductCreatePage = () => {
       }
 
       const createdProduct = await createAdminProduct(payload)
+=======
+  const insertDescriptionText = (prefix: string, suffix = '', fallbackText = 'nội dung') => {
+    const textarea = descriptionEditorRef.current?.resizableTextArea?.textArea
+    const current = form.getFieldValue('description') ?? ''
+
+    if (!textarea) {
+      form.setFieldValue('description', `${current}${prefix}${fallbackText}${suffix}`)
+      return
+    }
+
+    const start = textarea.selectionStart ?? current.length
+    const end = textarea.selectionEnd ?? current.length
+    const selectedText = current.slice(start, end) || fallbackText
+    const nextValue = `${current.slice(0, start)}${prefix}${selectedText}${suffix}${current.slice(end)}`
+
+    form.setFieldValue('description', nextValue)
+
+    requestAnimationFrame(() => {
+      textarea.focus()
+      const cursor = start + prefix.length + selectedText.length + suffix.length
+      textarea.setSelectionRange(cursor, cursor)
+    })
+  }
+
+  const createProductMutation = useMutation({
+    mutationFn: async (values: ProductCreateFormValues) => {
+      
+
+      const payload: CreateAdminProductPayload = {
+        name: values.name.trim(),
+        
+        categoryId: values.categoryId,
+        brandId: values.brandId.trim(),
+        description: values.description?.trim() || undefined,
+        images: normalizeStringArray(values.images),
+        isAvailable: values.isAvailable,
+        metaTitle: values.metaTitle?.trim() || undefined,
+        metaDescription: values.metaDescription?.trim() || undefined,
+      }
+
+      let createdProduct = await createAdminProduct(payload)
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
       for (let index = 0; index < values.variants.length; index += 1) {
         const variantPayload = toVariantPayload(values.variants[index])
@@ -341,6 +437,7 @@ export const ProductCreatePage = () => {
             />
           </Form.Item>
 
+<<<<<<< HEAD
           <Form.Item label="Mô tả">
             <Form.Item name="description" noStyle>
               <RichTextEditor placeholder="Nhập mô tả sản phẩm..." minHeight={260} />
@@ -348,6 +445,65 @@ export const ProductCreatePage = () => {
           </Form.Item>
 
           <Form.Item label="Danh sách ảnh">
+=======
+          <Form.Item label="Mô tả (Editor)">
+            <Card size="small" className="!border-slate-200 !bg-slate-50">
+              <Space wrap className="mb-3">
+                <Button
+                  icon={<BoldOutlined />}
+                  onClick={() => {
+                    insertDescriptionText('**', '**', 'in đậm')
+                  }}
+                >
+                  Đậm
+                </Button>
+                <Button
+                  icon={<ItalicOutlined />}
+                  onClick={() => {
+                    insertDescriptionText('_', '_', 'in nghiêng')
+                  }}
+                >
+                  Nghiêng
+                </Button>
+                <Button
+                  icon={<UnorderedListOutlined />}
+                  onClick={() => {
+                    insertDescriptionText('\n- ', '', 'mục')
+                  }}
+                >
+                  Danh sách
+                </Button>
+                <Button
+                  icon={<OrderedListOutlined />}
+                  onClick={() => {
+                    insertDescriptionText('\n1. ', '', 'mục')
+                  }}
+                >
+                  Đánh số
+                </Button>
+              </Space>
+
+              <Form.Item name="description" noStyle>
+                <Input.TextArea
+                  ref={descriptionEditorRef}
+                  rows={8}
+                  placeholder="Nhập mô tả sản phẩm..."
+                />
+              </Form.Item>
+
+              <div className="mt-3 rounded-md border border-slate-200 bg-white p-3">
+                <Typography.Text type="secondary" className="text-xs">
+                  Xem trước
+                </Typography.Text>
+                <Typography.Paragraph className="!mb-0 !mt-2 whitespace-pre-wrap">
+                  {descriptionValue.trim() || 'Nội dung mô tả sẽ hiển thị tại đây.'}
+                </Typography.Paragraph>
+              </div>
+            </Card>
+          </Form.Item>
+
+          <Form.Item label="Danh sách ảnh (upload file)">
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
             <Space direction="vertical" size={10} className="w-full">
               <Upload
                 multiple
@@ -400,18 +556,73 @@ export const ProductCreatePage = () => {
             <Input placeholder="Danh sách URL ảnh sản phẩm" />
           </Form.Item>
 
+<<<<<<< HEAD
+=======
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Form.Item name="metaTitle" label="Meta title">
+              <Input placeholder="Nhập tiêu đề SEO" />
+            </Form.Item>
+
+            <Form.Item name="metaDescription" label="Meta description">
+              <Input placeholder="Nhập mô tả SEO ngắn" />
+            </Form.Item>
+          </div>
+
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="isAvailable" label="Trạng thái bán" valuePropName="checked">
             <Switch checkedChildren="Đang bán" unCheckedChildren="Ngừng bán" />
           </Form.Item>
 
           <Divider />
 
+<<<<<<< HEAD
           <Typography.Title level={5}>Thông tin bán hàng</Typography.Title>
+=======
+          <Typography.Title level={5}>Biến thể (Form động)</Typography.Title>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.List
             name="variants"
             rules={[
               {
                 validator: async (_, value) => {
+<<<<<<< HEAD
+=======
+                  if (!Array.isArray(value)) {
+                    throw new Error('Vui lòng thêm ít nhất 1 biến thể')
+                  }
+
+                  const normalizedVariants = value as ProductVariantFormValues[]
+                  const seenKeys = new Map<string, number>()
+                  const duplicateErrors: string[] = []
+                  const missingImageErrors: string[] = []
+
+                  normalizedVariants.forEach((variant, index) => {
+                    const colorId = variant?.colorId?.trim() || 'none'
+                    const sizeId = variant?.sizeId?.trim() || 'none'
+                    const key = `${colorId}::${sizeId}`
+                    const existingIndex = seenKeys.get(key)
+
+                    if (existingIndex !== undefined) {
+                      duplicateErrors.push(
+                        `Biến thể #${index + 1} bị trùng màu/size với biến thể #${existingIndex + 1}`
+                      )
+                    } else {
+                      seenKeys.set(key, index)
+                    }
+
+                    const images = normalizeStringArray(variant?.images)
+                    if (images.length === 0) {
+                      missingImageErrors.push(`Biến thể #${index + 1} chưa có ảnh`)
+                    }
+                  })
+
+                  const errors = [...duplicateErrors, ...missingImageErrors]
+                  if (errors.length > 0) {
+                    throw new Error(errors.join('. '))
+                  }
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   if (Array.isArray(value) && value.length > 0) {
                     return
                   }
@@ -423,7 +634,11 @@ export const ProductCreatePage = () => {
           >
             {(fields, { add, remove }, { errors }) => (
               <div className="space-y-3">
+<<<<<<< HEAD
                 {fields.map((field, index) => {
+=======
+              {fields.map((field, index) => {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   const variantIndex = Number(field.name)
                   const variantImages = normalizeStringArray(variantValues[variantIndex]?.images)
 
@@ -446,6 +661,7 @@ export const ProductCreatePage = () => {
                         ) : null
                       }
                     >
+<<<<<<< HEAD
                       <Form.Item label="SKU">
                         <Input disabled placeholder="SKU sẽ được hệ thống tự động tạo" />
                       </Form.Item>
@@ -561,6 +777,124 @@ export const ProductCreatePage = () => {
                         <Switch checkedChildren="Còn hàng" unCheckedChildren="Hết hàng" />
                       </Form.Item>
                     </Card>
+=======
+                    <Form.Item label="SKU">
+                      <Input disabled placeholder="SKU sẽ được hệ thống tự động tạo" />
+                    </Form.Item>
+
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <Form.Item name={[field.name, 'colorId']} label="Màu sắc (tùy chọn)">
+                        <Select
+                          allowClear
+                          showSearch
+                          optionFilterProp="label"
+                          placeholder="Không chọn màu cũng được"
+                          options={(colorsQuery.data ?? []).map((item) => ({
+                            label: item.name,
+                            value: item.id,
+                          }))}
+                        />
+                      </Form.Item>
+
+                      <Form.Item name={[field.name, 'sizeId']} label="Size (tùy chọn)">
+                        <Select
+                          allowClear
+                          showSearch
+                          optionFilterProp="label"
+                          placeholder="Không chọn size cũng được"
+                          options={(sizesQuery.data ?? []).map((item) => ({
+                            label: item.name,
+                            value: item.id,
+                          }))}
+                        />
+                      </Form.Item>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <Form.Item
+                        name={[field.name, 'price']}
+                        label="Giá bán"
+                        rules={[{ required: true, message: 'Vui lòng nhập giá bán' }]}
+                      >
+                        <InputNumber min={0} className="w-full" placeholder="Nhập giá bán" />
+                      </Form.Item>
+
+                      <Form.Item name={[field.name, 'originalPrice']} label="Giá gốc">
+                        <InputNumber
+                          min={0}
+                          className="w-full"
+                          placeholder="Nhập giá gốc (nếu có)"
+                        />
+                      </Form.Item>
+
+                      <Form.Item
+                        name={[field.name, 'stockQuantity']}
+                        label="Tồn kho"
+                        rules={[{ required: true, message: 'Vui lòng nhập tồn kho' }]}
+                      >
+                        <InputNumber min={0} className="w-full" placeholder="Nhập số lượng tồn" />
+                      </Form.Item>
+                    </div>
+
+                    <Form.Item label="Ảnh variant (upload file)">
+                      <Space direction="vertical" size={10} className="w-full">
+                        <Upload
+                          multiple
+                          accept="image/*"
+                          showUploadList={false}
+                          beforeUpload={createVariantImageBeforeUpload(Number(field.name))}
+                        >
+                          <Button icon={<UploadOutlined />} loading={uploadingCount > 0}>
+                            Tải ảnh variant
+                          </Button>
+                        </Upload>
+
+                        {variantImages.length > 0 ? (
+                          <div className="flex flex-wrap gap-3">
+                            {variantImages.map((imageUrl) => (
+                              <div
+                                key={`${field.key}-${imageUrl}`}
+                                className="w-[110px] rounded-md border border-slate-200 p-2"
+                              >
+                                <Image
+                                  src={imageUrl}
+                                  alt="Ảnh variant"
+                                  className="h-[70px] w-full rounded object-cover"
+                                  fallback="/images/product-placeholder.svg"
+                                />
+                                <Button
+                                  danger
+                                  type="text"
+                                  size="small"
+                                  icon={<DeleteOutlined />}
+                                  onClick={() => {
+                                    removeVariantImage(variantIndex, imageUrl)
+                                  }}
+                                >
+                                  Xóa
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <Typography.Text type="secondary">Chưa có ảnh variant.</Typography.Text>
+                        )}
+                      </Space>
+                    </Form.Item>
+                    <Form.Item name={[field.name, 'images']} hidden>
+                      <Input placeholder="Danh sách URL ảnh variant" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name={[field.name, 'isAvailable']}
+                      label="Trạng thái"
+                      valuePropName="checked"
+                    >
+                      <Switch checkedChildren="Còn hàng" unCheckedChildren="Hết hàng" />
+                    </Form.Item>
+                  </Card>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   )
                 })}
 

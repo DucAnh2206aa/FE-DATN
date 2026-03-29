@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons'
+=======
+import { DeleteOutlined, EditOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Button,
@@ -56,6 +60,19 @@ const MASTER_DATA_TABS = ['categories', 'brands', 'colors', 'sizes'] as const
 type MasterDataTab = (typeof MASTER_DATA_TABS)[number]
 const DEFAULT_MASTER_DATA_TAB: MasterDataTab = 'categories'
 
+<<<<<<< HEAD
+=======
+const toSlug = (value: string) => {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 const resolveMasterDataTab = (value: string | null): MasterDataTab => {
   if (value && MASTER_DATA_TABS.includes(value as MasterDataTab)) {
     return value as MasterDataTab
@@ -68,12 +85,23 @@ type ActiveFilter = 'all' | 'active' | 'inactive'
 
 interface CategoryFormValues {
   name: string
+<<<<<<< HEAD
   description?: string
+=======
+  slug: string
+  description?: string
+  parentId?: string
+  image?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive: boolean
 }
 
 interface BrandFormValues {
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   description?: string
   logoUrl?: string
   isActive: boolean
@@ -81,12 +109,20 @@ interface BrandFormValues {
 
 interface ColorFormValues {
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   hexCode?: string
   isActive: boolean
 }
 
 interface SizeFormValues {
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive: boolean
 }
 
@@ -206,6 +242,18 @@ export const MasterDataManagementPage = () => {
       }),
   })
 
+<<<<<<< HEAD
+=======
+  const activeCategoriesQuery = useQuery({
+    queryKey: queryKeys.admin.productMeta.categories,
+    queryFn: () =>
+      listMasterCategories({
+        page: 1,
+        limit: 100,
+      }).then((data) => data.items),
+  })
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   const invalidateMasterData = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['admin'] }),
@@ -378,7 +426,32 @@ export const MasterDataManagementPage = () => {
       {
         title: 'Tên danh mục',
         key: 'name',
+<<<<<<< HEAD
         render: (_, record) => <Typography.Text strong>{record.name}</Typography.Text>,
+=======
+        render: (_, record) => (
+          <Space direction="vertical" size={0}>
+            <Typography.Text strong>{record.name}</Typography.Text>
+            <Typography.Text type="secondary" className="text-xs">
+              slug: {record.slug}
+            </Typography.Text>
+          </Space>
+        ),
+      },
+      {
+        title: 'Parent',
+        dataIndex: 'parentId',
+        key: 'parentId',
+        width: 180,
+        render: (value: string | undefined) => {
+          if (!value) {
+            return <Typography.Text type="secondary">Root</Typography.Text>
+          }
+
+          const parent = activeCategoriesQuery.data?.find((item) => item.id === value)
+          return parent?.name ?? value
+        },
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       },
       {
         title: 'Trạng thái',
@@ -410,7 +483,14 @@ export const MasterDataManagementPage = () => {
                 setEditingCategory(record)
                 categoryForm.setFieldsValue({
                   name: record.name,
+<<<<<<< HEAD
                   description: record.description,
+=======
+                  slug: record.slug,
+                  description: record.description,
+                  parentId: record.parentId,
+                  image: record.image,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   isActive: record.isActive,
                 })
                 setCategoryModalOpen(true)
@@ -434,7 +514,11 @@ export const MasterDataManagementPage = () => {
         ),
       },
     ],
+<<<<<<< HEAD
     [categoryForm, deleteCategoryMutation]
+=======
+    [activeCategoriesQuery.data, categoryForm, deleteCategoryMutation]
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   )
 
   const brandColumns: ColumnsType<MasterBrandItem> = useMemo(
@@ -442,7 +526,18 @@ export const MasterDataManagementPage = () => {
       {
         title: 'Thương hiệu',
         key: 'name',
+<<<<<<< HEAD
         render: (_, record) => <Typography.Text strong>{record.name}</Typography.Text>,
+=======
+        render: (_, record) => (
+          <Space direction="vertical" size={0}>
+            <Typography.Text strong>{record.name}</Typography.Text>
+            <Typography.Text type="secondary" className="text-xs">
+              slug: {record.slug}
+            </Typography.Text>
+          </Space>
+        ),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       },
       {
         title: 'Logo',
@@ -488,6 +583,10 @@ export const MasterDataManagementPage = () => {
                 setEditingBrand(record)
                 brandForm.setFieldsValue({
                   name: record.name,
+<<<<<<< HEAD
+=======
+                  slug: record.slug,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   description: record.description,
                   logoUrl: record.logoUrl,
                   isActive: record.isActive,
@@ -522,6 +621,7 @@ export const MasterDataManagementPage = () => {
         title: 'Màu sắc',
         key: 'name',
         render: (_, record) => (
+<<<<<<< HEAD
           <Space size={8}>
             {record.hexCode ? (
               <span
@@ -530,6 +630,21 @@ export const MasterDataManagementPage = () => {
               />
             ) : null}
             <Typography.Text strong>{record.name}</Typography.Text>
+=======
+          <Space direction="vertical" size={0}>
+            <Space size={8}>
+              {record.hexCode ? (
+                <span
+                  className="inline-block h-3 w-3 rounded-full border border-slate-300"
+                  style={{ backgroundColor: record.hexCode }}
+                />
+              ) : null}
+              <Typography.Text strong>{record.name}</Typography.Text>
+            </Space>
+            <Typography.Text type="secondary" className="text-xs">
+              slug: {record.slug}
+            </Typography.Text>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           </Space>
         ),
       },
@@ -570,6 +685,10 @@ export const MasterDataManagementPage = () => {
                 setEditingColor(record)
                 colorForm.setFieldsValue({
                   name: record.name,
+<<<<<<< HEAD
+=======
+                  slug: record.slug,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   hexCode: record.hexCode,
                   isActive: record.isActive,
                 })
@@ -602,7 +721,18 @@ export const MasterDataManagementPage = () => {
       {
         title: 'Size',
         key: 'name',
+<<<<<<< HEAD
         render: (_, record) => <Typography.Text strong>{record.name}</Typography.Text>,
+=======
+        render: (_, record) => (
+          <Space direction="vertical" size={0}>
+            <Typography.Text strong>{record.name}</Typography.Text>
+            <Typography.Text type="secondary" className="text-xs">
+              slug: {record.slug}
+            </Typography.Text>
+          </Space>
+        ),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       },
       {
         title: 'Trạng thái',
@@ -634,6 +764,10 @@ export const MasterDataManagementPage = () => {
                 setEditingSize(record)
                 sizeForm.setFieldsValue({
                   name: record.name,
+<<<<<<< HEAD
+=======
+                  slug: record.slug,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                   isActive: record.isActive,
                 })
                 setSizeModalOpen(true)
@@ -966,7 +1100,14 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertCategoryPayload = {
               name: values.name.trim(),
+<<<<<<< HEAD
               description: values.description?.trim() || undefined,
+=======
+              slug: values.slug.trim(),
+              description: values.description?.trim() || undefined,
+              parentId: values.parentId || undefined,
+              image: values.image?.trim() || undefined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
               isActive: values.isActive,
             }
 
@@ -988,9 +1129,54 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Cơ bida" />
           </Form.Item>
+<<<<<<< HEAD
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả danh mục" />
           </Form.Item>
+=======
+          <Form.Item
+            name="slug"
+            label="Slug"
+            rules={[{ required: true, message: 'Vui lòng nhập slug' }]}
+          >
+            <Input
+              placeholder="ví-dụ-slug"
+              addonAfter={
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<SettingOutlined />}
+                  onClick={() => {
+                    const name = categoryForm.getFieldValue('name') ?? ''
+                    categoryForm.setFieldValue('slug', toSlug(name))
+                  }}
+                >
+                  Tạo
+                </Button>
+              }
+            />
+          </Form.Item>
+          <Form.Item name="parentId" label="Danh mục cha">
+            <Select
+              allowClear
+              showSearch
+              placeholder="Chọn danh mục cha (nếu có)"
+              optionFilterProp="label"
+              options={(activeCategoriesQuery.data ?? [])
+                .filter((item) => item.id !== editingCategory?.id)
+                .map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+            />
+          </Form.Item>
+          <Form.Item name="description" label="Mô tả">
+            <Input.TextArea rows={3} placeholder="Nhập mô tả danh mục" />
+          </Form.Item>
+          <Form.Item name="image" label="Ảnh danh mục (URL)">
+            <Input placeholder="https://..." />
+          </Form.Item>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>
@@ -1033,6 +1219,10 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertBrandPayload = {
               name: values.name.trim(),
+<<<<<<< HEAD
+=======
+              slug: values.slug.trim(),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
               description: values.description?.trim() || undefined,
               logoUrl: values.logoUrl?.trim() || undefined,
               isActive: values.isActive,
@@ -1056,6 +1246,31 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Predator" />
           </Form.Item>
+<<<<<<< HEAD
+=======
+          <Form.Item
+            name="slug"
+            label="Slug"
+            rules={[{ required: true, message: 'Vui lòng nhập slug' }]}
+          >
+            <Input
+              placeholder="ví-dụ-slug"
+              addonAfter={
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<SettingOutlined />}
+                  onClick={() => {
+                    const name = brandForm.getFieldValue('name') ?? ''
+                    brandForm.setFieldValue('slug', toSlug(name))
+                  }}
+                >
+                  Tạo
+                </Button>
+              }
+            />
+          </Form.Item>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả thương hiệu" />
           </Form.Item>
@@ -1104,6 +1319,10 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertColorPayload = {
               name: values.name.trim(),
+<<<<<<< HEAD
+=======
+              slug: values.slug.trim(),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
               hexCode: values.hexCode?.trim() || undefined,
               isActive: values.isActive,
             }
@@ -1126,6 +1345,31 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Đỏ ruby" />
           </Form.Item>
+<<<<<<< HEAD
+=======
+          <Form.Item
+            name="slug"
+            label="Slug"
+            rules={[{ required: true, message: 'Vui lòng nhập slug' }]}
+          >
+            <Input
+              placeholder="ví-dụ-slug"
+              addonAfter={
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<SettingOutlined />}
+                  onClick={() => {
+                    const name = colorForm.getFieldValue('name') ?? ''
+                    colorForm.setFieldValue('slug', toSlug(name))
+                  }}
+                >
+                  Tạo
+                </Button>
+              }
+            />
+          </Form.Item>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="hexCode" label="Mã HEX (vd: #1D4ED8)">
             <Input placeholder="#1D4ED8" />
           </Form.Item>
@@ -1171,6 +1415,10 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertSizePayload = {
               name: values.name.trim(),
+<<<<<<< HEAD
+=======
+              slug: values.slug.trim(),
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
               isActive: values.isActive,
             }
 
@@ -1192,6 +1440,31 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: 13mm" />
           </Form.Item>
+<<<<<<< HEAD
+=======
+          <Form.Item
+            name="slug"
+            label="Slug"
+            rules={[{ required: true, message: 'Vui lòng nhập slug' }]}
+          >
+            <Input
+              placeholder="ví-dụ-slug"
+              addonAfter={
+                <Button
+                  type="link"
+                  size="small"
+                  icon={<SettingOutlined />}
+                  onClick={() => {
+                    const name = sizeForm.getFieldValue('name') ?? ''
+                    sizeForm.setFieldValue('slug', toSlug(name))
+                  }}
+                >
+                  Tạo
+                </Button>
+              }
+            />
+          </Form.Item>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>

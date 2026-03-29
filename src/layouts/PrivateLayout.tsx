@@ -1,12 +1,22 @@
 import {
   AppstoreOutlined,
+<<<<<<< HEAD
   BellOutlined,
   BgColorsOutlined,
+=======
+  BarChartOutlined,
+  BgColorsOutlined,
+  DashboardOutlined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   FolderOpenOutlined,
   GiftOutlined,
   MessageOutlined,
   OrderedListOutlined,
   PlusSquareOutlined,
+<<<<<<< HEAD
+=======
+  SafetyCertificateOutlined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   SettingOutlined,
   ShoppingCartOutlined,
   ShoppingOutlined,
@@ -16,6 +26,7 @@ import {
   TeamOutlined,
   TrademarkOutlined,
   UnorderedListOutlined,
+<<<<<<< HEAD
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
 import {
@@ -32,13 +43,23 @@ import {
   Typography,
 } from 'antd'
 import { useMemo, useState } from 'react'
+=======
+  CustomerServiceOutlined,
+} from '@ant-design/icons'
+import { useQueryClient } from '@tanstack/react-query'
+import { Button, Layout, Menu, message, Typography } from 'antd'
+import { useEffect, useMemo, useState } from 'react'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { logout } from '@/features/auth/api/auth.api'
 import { useMeQuery } from '@/features/auth/hooks/useMeQuery'
 import { clearAuth } from '@/features/auth/store/auth.slice'
+<<<<<<< HEAD
 import { useBackofficeRealtimeNotifications } from '@/features/notifications/hooks/useBackofficeRealtimeNotifications'
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import {
   buildDashboardMasterDataPath,
   buildDashboardProductsPath,
@@ -47,7 +68,10 @@ import {
 import { clearRefreshTokenCookie, getRefreshTokenCookie } from '@/shared/utils/cookie'
 
 const { Header, Content, Sider } = Layout
+<<<<<<< HEAD
 const SIDER_WIDTH = 240
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
 const MENU_KEYS = {
   CENTER: 'dashboard-center',
@@ -55,6 +79,10 @@ const MENU_KEYS = {
   ORDERS: 'dashboard-orders',
   REVIEWS: 'dashboard-reviews',
   COMMENTS: 'dashboard-comments',
+<<<<<<< HEAD
+=======
+  SUPPORT_CHAT: 'dashboard-support-chat',
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   PRODUCTS_LIST: 'dashboard-products-list',
   PRODUCTS_CREATE: 'dashboard-products-create',
   VOUCHERS: 'dashboard-vouchers',
@@ -63,6 +91,10 @@ const MENU_KEYS = {
   ATTRIBUTE_COLORS: 'dashboard-attribute-colors',
   ATTRIBUTE_SIZES: 'dashboard-attribute-sizes',
   ACCOUNTS: 'dashboard-accounts',
+<<<<<<< HEAD
+=======
+  ROLES: 'dashboard-roles',
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 } as const
 
 const SUBMENU_KEYS = {
@@ -81,6 +113,7 @@ export const PrivateLayout = () => {
   const queryClient = useQueryClient()
 
   const cachedUser = useAppSelector((state) => state.auth.user)
+<<<<<<< HEAD
   const accessToken = useAppSelector((state) => state.auth.accessToken)
   const { data: meData } = useMeQuery()
 
@@ -97,6 +130,11 @@ export const PrivateLayout = () => {
     accessToken,
     role: user?.role,
   })
+=======
+  const { data: meData } = useMeQuery()
+
+  const user = meData ?? cachedUser
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   const selectedMenuKey = useMemo(() => {
     const params = new URLSearchParams(location.search)
@@ -156,7 +194,11 @@ export const PrivateLayout = () => {
     }
 
     if (location.pathname.startsWith(ROUTE_PATHS.DASHBOARD_USERS)) {
+<<<<<<< HEAD
       return MENU_KEYS.ACCOUNTS
+=======
+      return MENU_KEYS.ROLES
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     }
 
     if (location.pathname.startsWith(ROUTE_PATHS.DASHBOARD)) {
@@ -166,8 +208,23 @@ export const PrivateLayout = () => {
     return MENU_KEYS.CENTER
   }, [location.pathname, location.search])
 
+<<<<<<< HEAD
   const selectedKeys = useMemo(() => [selectedMenuKey], [selectedMenuKey])
   const [isSiderCollapsed, setIsSiderCollapsed] = useState(false)
+=======
+  useEffect(() => {
+    const state = location.state as { authSuccess?: 'login' | 'register' } | null
+    if (!state?.authSuccess) {
+      return
+    }
+
+    const content = state.authSuccess === 'register' ? 'Đăng ký thành công' : 'Đăng nhập thành công'
+    void message.success(content)
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+  }, [location.pathname, location.search, location.state, navigate])
+
+  const selectedKeys = useMemo(() => [selectedMenuKey], [selectedMenuKey])
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([])
   const openKeys = useMemo(() => {
     const next = new Set(manualOpenKeys)
@@ -193,7 +250,12 @@ export const PrivateLayout = () => {
       selectedMenuKey === MENU_KEYS.ATTRIBUTE_BRANDS ||
       selectedMenuKey === MENU_KEYS.ATTRIBUTE_COLORS ||
       selectedMenuKey === MENU_KEYS.ATTRIBUTE_SIZES
+<<<<<<< HEAD
     const shouldOpenSystem = selectedMenuKey === MENU_KEYS.ACCOUNTS
+=======
+    const shouldOpenSystem =
+      selectedMenuKey === MENU_KEYS.ACCOUNTS || selectedMenuKey === MENU_KEYS.ROLES
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
     if (shouldOpenOverview) {
       next.add(SUBMENU_KEYS.OVERVIEW)
@@ -236,6 +298,7 @@ export const PrivateLayout = () => {
     navigate(ROUTE_PATHS.LOGIN, { replace: true })
   }
 
+<<<<<<< HEAD
   const notificationListContent = (
     <div className="w-[360px]">
       <div className="mb-3 flex items-center justify-between">
@@ -331,6 +394,11 @@ export const PrivateLayout = () => {
           overflow: 'auto',
         }}
       >
+=======
+  return (
+    <Layout className="min-h-screen">
+      <Sider breakpoint="lg" collapsedWidth="0" theme="light" width={240}>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         <div className="border-b border-slate-200 px-5 py-4">
           <Link to="/">
             <Typography.Title level={4} className="!mb-0 !text-blue-700">
@@ -345,12 +413,25 @@ export const PrivateLayout = () => {
           openKeys={openKeys}
           onOpenChange={setManualOpenKeys}
           items={[
+<<<<<<< HEAD
             // {
             //   key: MENU_KEYS.CENTER,
             //   icon: <DashboardOutlined />,
             //   label: <Link to={ROUTE_PATHS.DASHBOARD_CENTER}>Trung tâm</Link>,
             // },
 
+=======
+            {
+              key: MENU_KEYS.CENTER,
+              icon: <DashboardOutlined />,
+              label: <Link to={ROUTE_PATHS.DASHBOARD_CENTER}>Trung tâm</Link>,
+            },
+            {
+              key: MENU_KEYS.STATISTICS,
+              icon: <BarChartOutlined />,
+              label: <Link to={ROUTE_PATHS.DASHBOARD_STATISTICS}>Thống kê</Link>,
+            },
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
             {
               key: SUBMENU_KEYS.SALES,
               icon: <ShoppingCartOutlined />,
@@ -371,6 +452,14 @@ export const PrivateLayout = () => {
                   icon: <MessageOutlined />,
                   label: <Link to={ROUTE_PATHS.DASHBOARD_COMMENTS}>Bình luận</Link>,
                 },
+<<<<<<< HEAD
+=======
+                {
+                  key: MENU_KEYS.SUPPORT_CHAT,
+                  icon: <CustomerServiceOutlined />,
+                  label: <Link to={ROUTE_PATHS.DASHBOARD_SUPPORT_CHAT}>Hỗ trợ chat</Link>,
+                },
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                 ...(user?.role === 'admin'
                   ? [
                       {
@@ -455,6 +544,14 @@ export const PrivateLayout = () => {
                         icon: <TeamOutlined />,
                         label: <Link to={ROUTE_PATHS.DASHBOARD_ACCOUNTS}>Tài khoản</Link>,
                       },
+<<<<<<< HEAD
+=======
+                      {
+                        key: MENU_KEYS.ROLES,
+                        icon: <SafetyCertificateOutlined />,
+                        label: <Link to={ROUTE_PATHS.DASHBOARD_USERS}>Phân quyền</Link>,
+                      },
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                     ],
                   },
                 ]
@@ -464,6 +561,7 @@ export const PrivateLayout = () => {
         />
       </Sider>
 
+<<<<<<< HEAD
       <Layout
         style={{
           marginLeft: isSiderCollapsed ? 0 : SIDER_WIDTH,
@@ -491,6 +589,16 @@ export const PrivateLayout = () => {
               Đăng xuất
             </Button>
           </Space>
+=======
+      <Layout>
+        <Header className="flex items-center justify-between border-b border-slate-200 bg-white px-6">
+          <Typography.Text strong>
+            {user?.fullName || user?.email || 'Authenticated user'}
+          </Typography.Text>
+          <Button type="default" onClick={handleLogout}>
+            Đăng xuất
+          </Button>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         </Header>
 
         <Content className="p-6">

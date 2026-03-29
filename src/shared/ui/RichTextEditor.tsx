@@ -173,6 +173,10 @@ export const RichTextEditor = ({
           >
             H2
           </Button>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Button
             type={editor?.isActive('heading', { level: 3 }) ? 'primary' : 'default'}
             onClick={() => {
@@ -182,6 +186,10 @@ export const RichTextEditor = ({
           >
             H3
           </Button>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Button
             type={editor?.isActive('paragraph') ? 'primary' : 'default'}
             onClick={() => {

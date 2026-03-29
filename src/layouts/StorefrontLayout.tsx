@@ -14,7 +14,11 @@ import {
   Typography,
 } from 'antd'
 import { sumBy } from 'lodash'
+<<<<<<< HEAD
 import { useCallback, useMemo, useState } from 'react'
+=======
+import { useCallback, useEffect, useMemo, useState } from 'react'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { Link, Outlet, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 
 import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
@@ -22,8 +26,13 @@ import { logout } from '@/features/auth/api/auth.api'
 import { clearAuth } from '@/features/auth/store/auth.slice'
 import { getMyCart } from '@/features/cart/api/cart.api'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
+<<<<<<< HEAD
 import { CustomerChatbotWidget } from '@/features/chatbot/components/CustomerChatbotWidget'
 import { getProductFilters } from '@/features/product/api/product.api'
+=======
+import { getProductFilters } from '@/features/product/api/product.api'
+import { CustomerSupportChatWidget } from '@/features/chat/components/CustomerSupportChatWidget'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import { ProductSearchModal } from '@/features/product/components/ProductSearchModal'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { BRAND } from '@/shared/constants/brand'
@@ -53,6 +62,20 @@ export const StorefrontLayout = () => {
     enabled: Boolean(accessToken),
   })
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    const state = location.state as { authSuccess?: 'login' | 'register' } | null
+    if (!state?.authSuccess) {
+      return
+    }
+
+    const content = state.authSuccess === 'register' ? 'Đăng ký thành công' : 'Đăng nhập thành công'
+    void message.success(content)
+    navigate(`${location.pathname}${location.search}`, { replace: true, state: null })
+  }, [location.pathname, location.search, location.state, navigate])
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   const selectedCategoryId = searchParams.get('categoryId')?.trim() ?? ''
   const selectedBrand = searchParams.get('brand')?.trim() ?? ''
   const cartItemCount = useMemo(() => {
@@ -409,8 +432,22 @@ export const StorefrontLayout = () => {
           setCartDrawerOpen(false)
         }}
       />
+<<<<<<< HEAD
       {!isBackofficeRole(user?.role) && <CustomerChatbotWidget />}
 
+=======
+
+      {!isBackofficeRole(user?.role) && (
+        <>
+          <CustomerChatbotWidget />
+          <CustomerSupportChatWidget
+            isAuthenticated={Boolean(accessToken)}
+            customerId={user?.id}
+          />
+        </>
+      )}
+      
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       <Footer className="mt-10 border-t border-slate-200 bg-white px-4 py-10 md:px-8">
         <div className="mx-auto grid w-full max-w-7xl gap-8 md:grid-cols-3">
           <div>
@@ -457,4 +494,8 @@ export const StorefrontLayout = () => {
       </Footer>
     </Layout>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

@@ -55,6 +55,10 @@ const PAGE_SIZE = 10
 const VARIANT_PAGE_SIZE = 20
 const PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg'
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 const normalizeStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
     return []
@@ -73,7 +77,10 @@ const mergeUniqueStringArray = (current: string[], nextValue: string) => {
 
   return [...current, nextValue]
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 const formatPriceRange = (product: AdminProductItem) => {
   if (product.priceFrom === null || product.priceTo === null) {
     return 'Liên hệ'
@@ -95,6 +102,11 @@ interface ProductFormValues {
   description?: string
   images?: string[]
   isAvailable: boolean
+<<<<<<< HEAD
+=======
+  metaTitle?: string
+  metaDescription?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 interface VariantFormValues {
@@ -474,6 +486,11 @@ export const ProductManagementPage = () => {
                   description: record.description,
                   images: record.images,
                   isAvailable: record.isAvailable,
+<<<<<<< HEAD
+=======
+                  metaTitle: record.metaTitle,
+                  metaDescription: record.metaDescription,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                 })
                 setProductModalOpen(true)
               }}
@@ -485,7 +502,11 @@ export const ProductManagementPage = () => {
               okText="Xóa"
               cancelText="Hủy"
               onConfirm={() => {
+<<<<<<< HEAD
                 // deleteProductMutation.mutate(record.id)
+=======
+                deleteProductMutation.mutate(record.id)
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
               }}
             >
               <Button
@@ -511,6 +532,7 @@ export const ProductManagementPage = () => {
         render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
       },
       {
+<<<<<<< HEAD
         title: 'Ảnh',
         key: 'image',
         width: 96,
@@ -528,6 +550,8 @@ export const ProductManagementPage = () => {
         ),
       },
       {
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         title: 'Màu',
         key: 'color',
         width: 180,
@@ -639,6 +663,7 @@ export const ProductManagementPage = () => {
       description: normalizeRichTextValue(values.description),
       images: normalizeStringArray(values.images),
       isAvailable: values.isAvailable,
+<<<<<<< HEAD
     }
 
     updateProductMutation.mutate({
@@ -646,6 +671,16 @@ export const ProductManagementPage = () => {
       payload,
     })
   }
+=======
+      metaTitle: values.metaTitle?.trim() || undefined,
+      metaDescription: values.metaDescription?.trim() || undefined,
+  }
+
+  updateProductMutation.mutate({
+      productId: editingProduct.id,
+      payload,
+    })
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   const submitVariantForm = (values: VariantFormValues) => {
     if (!activeProductForVariants) {
@@ -695,7 +730,11 @@ export const ProductManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
+<<<<<<< HEAD
         Quản lý sản phẩm
+=======
+        Admin - Quản lý sản phẩm
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       </Typography.Title>
       <Typography.Paragraph className="!mb-0" type="secondary">
         CRUD sản phẩm và variants. Ở form variant, `color` và `size` là tùy chọn.
@@ -819,13 +858,125 @@ export const ProductManagementPage = () => {
           }}
           onFinish={submitProductForm}
         >
+<<<<<<< HEAD
 
 
 
+=======
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Form.Item
+              name="name"
+              label="Tên sản phẩm"
+              rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm' }]}
+            >
+              <Input placeholder="Ví dụ: Cơ Predator P3" />
+            </Form.Item>
+
+            <Form.Item
+              name="categoryId"
+              label="Danh mục"
+              rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
+            >
+              <Select
+                showSearch
+                placeholder="Chọn danh mục"
+                optionFilterProp="label"
+                options={(categoriesQuery.data ?? []).map((item) => ({
+                  label: item.name,
+                  value: item.id,
+                }))}
+              />
+            </Form.Item>
+          </div>
+
+          <Form.Item
+            name="brandId"
+            label="Brand"
+            rules={[{ required: true, message: 'Vui lòng chọn thương hiệu' }]}
+          >
+            <Select
+              showSearch
+              optionFilterProp="label"
+              placeholder="Chọn brand đã có"
+              options={(brandsQuery.data ?? []).map((item) => ({
+                label: item.name,
+                value: item.id,
+              }))}
+            />
+          </Form.Item>
+
+          <Form.Item name="description" label="Mô tả">
+            <RichTextEditor placeholder="Nhập mô tả sản phẩm..." minHeight={240} />
+          </Form.Item>
+
+          <Form.Item label="Danh sách ảnh">
+            <Space direction="vertical" size={10} className="w-full">
+              <Upload
+                multiple
+                accept="image/*"
+                showUploadList={false}
+                beforeUpload={productFormImageBeforeUpload}
+              >
+                <Button icon={<UploadOutlined />} loading={uploadingCount > 0}>
+                  Tải ảnh sản phẩm
+                </Button>
+              </Upload>
+
+              <Typography.Text type="secondary" className="text-xs">
+                Hỗ trợ JPG/PNG/WebP, tối đa 5MB mỗi ảnh.
+              </Typography.Text>
+
+              {productFormImages.length > 0 ? (
+                <div className="flex flex-wrap gap-3">
+                  {productFormImages.map((imageUrl) => (
+                    <div
+                      key={imageUrl}
+                      className="w-[110px] rounded-md border border-slate-200 p-2"
+                    >
+                      <Image
+                        src={imageUrl}
+                        alt="Ảnh sản phẩm"
+                        className="h-[70px] w-full rounded object-cover"
+                        fallback={PRODUCT_PLACEHOLDER}
+                      />
+                      <Button
+                        danger
+                        type="text"
+                        size="small"
+                        icon={<DeleteOutlined />}
+                        onClick={() => {
+                          removeProductFormImage(imageUrl)
+                        }}
+                      >
+                        Xóa
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <Typography.Text type="secondary">Chưa có ảnh sản phẩm.</Typography.Text>
+              )}
+            </Space>
+          </Form.Item>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="images" hidden>
             <Input placeholder="Danh sách URL ảnh sản phẩm" />
           </Form.Item>
 
+<<<<<<< HEAD
+=======
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+            <Form.Item name="metaTitle" label="Meta title">
+              <Input placeholder="Nhập tiêu đề SEO" />
+            </Form.Item>
+            <Form.Item name="metaDescription" label="Meta description">
+              <Input placeholder="Nhập mô tả SEO ngắn" />
+            </Form.Item>
+          </div>
+
+          
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           <Form.Item name="isAvailable" label="Trạng thái bán" valuePropName="checked">
             <Switch checkedChildren="Đang bán" unCheckedChildren="Ngừng bán" />
           </Form.Item>
@@ -851,7 +1002,11 @@ export const ProductManagementPage = () => {
       </Modal>
 
       <Drawer
+<<<<<<< HEAD
         title={`Biến thể - ${activeProductForVariants?.name ?? ''}`}
+=======
+        title={`Variants - ${activeProductForVariants?.name ?? ''}`}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         open={variantDrawerOpen}
         width={980}
         onClose={() => {

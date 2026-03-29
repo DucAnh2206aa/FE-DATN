@@ -8,7 +8,10 @@ export interface UpsertCartItemPayload {
 export interface CartProductSummary {
   id: string
   name: string
+<<<<<<< HEAD
   slug: string
+=======
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   brand: string
   images: string[]
   isAvailable: boolean

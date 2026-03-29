@@ -85,7 +85,11 @@ export const CheckoutPage = () => {
   const queryClient = useQueryClient()
   const [addressForm] = Form.useForm<AddressFormValues>()
 
+<<<<<<< HEAD
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay'>('cod')
+=======
+  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'vnpay' | 'zalopay'>('cod')
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   const [voucherCode, setVoucherCode] = useState('')
   const [manualAddressId, setManualAddressId] = useState<string | null>(null)
   const [createAddressModalOpen, setCreateAddressModalOpen] = useState(false)
@@ -202,7 +206,14 @@ export const CheckoutPage = () => {
         }),
       ])
 
+<<<<<<< HEAD
       if (order.paymentMethod === 'vnpay' && order.paymentUrl) {
+=======
+      if (
+        (order.paymentMethod === 'vnpay' || order.paymentMethod === 'zalopay') &&
+        order.paymentUrl
+      ) {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         window.location.assign(order.paymentUrl)
         return
       }
@@ -250,6 +261,10 @@ export const CheckoutPage = () => {
     createOrderMutation.mutate({
       addressId: selectedAddressId,
       paymentMethod,
+<<<<<<< HEAD
+=======
+     zalopayChannel: paymentMethod === 'zalopay' ? 'gateway' : undefined,
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       voucherCode: normalizeVoucherCode(voucherCode) || undefined,
       selectedVariantIds,
     })
@@ -372,14 +387,31 @@ export const CheckoutPage = () => {
               <Radio.Group
                 value={paymentMethod}
                 onChange={(event) => {
+<<<<<<< HEAD
                   setPaymentMethod(event.target.value as 'cod' | 'vnpay')
+=======
+                  setPaymentMethod(event.target.value as 'cod' | 'vnpay' | 'zalopay')
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                 }}
               >
                 <Space direction="vertical" size={10}>
                   <Radio value="cod">COD - Thanh toán khi nhận hàng</Radio>
                   <Radio value="vnpay">VNPay - Thanh toán online</Radio>
+<<<<<<< HEAD
                 </Space>
               </Radio.Group>
+=======
+                  <Radio value="zalopay">ZaloPay - Thanh toán online</Radio>
+                </Space>
+              </Radio.Group>
+
+              {paymentMethod === 'zalopay' ? (
+              <Typography.Text type="secondary" className="mt-4 block text-sm">
+                  Khi chọn ZaloPay, hệ thống sẽ mở cổng ZaloPay chung để bạn tự chọn ví, thẻ
+                  hoặc ATM ở phía ZaloPay.
+                </Typography.Text>
+              ) : null}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
             </Card>
 
             <Card title={`Sản phẩm đã chọn (${selectedCartItems.length})`}>
@@ -414,8 +446,19 @@ export const CheckoutPage = () => {
                           </Button>
                           <Space size={6} wrap>
                             <Tag className="!m-0 text-xs">SKU: {item.variant?.sku ?? 'N/A'}</Tag>
+<<<<<<< HEAD
                             <Tag className="!m-0 text-xs">Màu: {item.variant?.color ?? 'N/A'}</Tag>
                             <Tag className="!m-0 text-xs">Size: {item.variant?.size ?? 'N/A'}</Tag>
+=======
+                            {item.variant?.color?.trim() ? (
+                              <Tag className="!m-0 text-xs">Màu: {item.variant.color.trim()}</Tag>
+                            ) : null}
+                            {item.variant?.size &&
+                            item.variant.size.trim() &&
+                            !['standard', 'n/a'].includes(item.variant.size.trim().toLowerCase()) ? (
+                              <Tag className="!m-0 text-xs">Size: {item.variant.size.trim()}</Tag>
+                            ) : null}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
                           </Space>
                         </div>
 
@@ -779,4 +822,8 @@ export const CheckoutPage = () => {
       </Modal>
     </div>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

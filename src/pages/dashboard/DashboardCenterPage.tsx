@@ -14,15 +14,31 @@ import {
   TeamOutlined,
 } from '@ant-design/icons'
 import { Card, Col, Row, Space, Typography } from 'antd'
+<<<<<<< HEAD
 import type { ReactNode } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 
 import { useAppSelector } from '@/app/store/hooks'
+=======
+import { useQuery } from '@tanstack/react-query'
+import type { ApexOptions } from 'apexcharts'
+import Chart from 'react-apexcharts'
+import { useMemo, type ReactNode } from 'react'
+import { Link } from 'react-router-dom'
+
+import { useAppSelector } from '@/app/store/hooks'
+import { getAdminDashboardStatistics } from '@/features/admin/api/dashboard-statistics.api'
+import { queryKeys } from '@/shared/api/queryKeys'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 import {
   buildDashboardMasterDataPath,
   buildDashboardProductsPath,
   ROUTE_PATHS,
 } from '@/shared/constants/routes'
+<<<<<<< HEAD
+=======
+import { formatVndCurrency } from '@/shared/utils/currency'
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
 interface CenterMenuItem {
   key: string
@@ -190,11 +206,81 @@ export const DashboardCenterPage = () => {
   const role = useAppSelector((state) => state.auth.user?.role)
   const isAdmin = role === 'admin'
 
+<<<<<<< HEAD
  return <Navigate to={ROUTE_PATHS.DASHBOARD_PRODUCTS} />
 
 
   return (
     <div className="space-y-6">
+=======
+  const statisticsQuery = useQuery({
+    queryKey: queryKeys.admin.dashboardStatistics({ days: 7 }),
+    queryFn: () => getAdminDashboardStatistics(7),
+  })
+
+  const revenueSeries = useMemo(() => {
+    const dailyRevenue = statisticsQuery.data?.trends.dailyRevenue ?? []
+    return [
+      {
+        name: 'Doanh thu',
+        data: dailyRevenue.map((item) => item.revenue),
+      },
+    ]
+  }, [statisticsQuery.data?.trends.dailyRevenue])
+
+  const revenueCategories = useMemo(() => {
+    return (statisticsQuery.data?.trends.dailyRevenue ?? []).map((item) => item.date)
+  }, [statisticsQuery.data?.trends.dailyRevenue])
+
+  const revenueOptions = useMemo(
+    (): ApexOptions => ({
+      chart: {
+        height: 260,
+        type: 'area',
+        toolbar: { show: false },
+      },
+      dataLabels: { enabled: false },
+      stroke: { curve: 'smooth', width: 3 },
+      fill: {
+        type: 'gradient',
+        gradient: { opacityFrom: 0.35, opacityTo: 0.05 },
+      },
+      xaxis: {
+        categories: revenueCategories,
+        labels: { rotate: -30 },
+      },
+      yaxis: {
+        labels: {
+          formatter: (value: number) => formatVndCurrency(value),
+        },
+      },
+      tooltip: {
+        shared: false,
+        intersect: false,
+        y: {
+          formatter: (value: number) => formatVndCurrency(value),
+        },
+      },
+    }),
+    [revenueCategories]
+  )
+
+  return (
+    <div className="space-y-6">
+      <Card>
+        <Space direction="vertical" size={6} className="w-full">
+          <Typography.Title level={4} className="!mb-0">
+            Doanh thu 7 ngày gần nhất
+          </Typography.Title>
+          <Typography.Text type="secondary">
+            Tổng quan nhanh doanh thu để theo dõi xu hướng.
+          </Typography.Text>
+        </Space>
+        <div className="mt-4">
+          <Chart options={revenueOptions} series={revenueSeries} type="area" height={260} />
+        </div>
+      </Card>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       <div className="space-y-1">
         <Typography.Title level={3} className="!mb-0">
           Trung tâm quản trị
@@ -262,4 +348,8 @@ export const DashboardCenterPage = () => {
       </Row>
     </div>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

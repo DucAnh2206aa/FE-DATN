@@ -1,7 +1,4 @@
-import { LeftOutlined, RightOutlined } from '@ant-design/icons'
-import { Button, Carousel, Empty, Grid, Skeleton, Space, Typography } from 'antd'
-import type { CarouselRef } from 'antd/es/carousel'
-import { useRef } from 'react'
+import { Empty, Grid, Skeleton, Typography } from 'antd'
 
 import type { ProductCardItem } from '@/features/product/model/product.types'
 
@@ -19,10 +16,17 @@ export const ProductCarouselSection = ({
   loading = false,
 }: ProductCarouselSectionProps) => {
   const screens = Grid.useBreakpoint()
+<<<<<<< HEAD
   const carouselRef = useRef<CarouselRef>(null)
 
   const cardsPerSlide = screens.xxl ? 6 : screens.xl ? 5 : screens.lg ? 4 : screens.md ? 3 : screens.sm ? 2 : 1
   const hasMultipleSlides = products.length > cardsPerSlide
+=======
+  
+
+  const cardsPerSlide = screens.lg ? 4 : screens.md ? 3 : screens.sm ? 2 : 1
+  
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   return (
     <section className="space-y-4">
@@ -30,6 +34,7 @@ export const ProductCarouselSection = ({
         <Typography.Title level={3} className="!mb-0 !text-slate-900">
           {title}
         </Typography.Title>
+<<<<<<< HEAD
         {hasMultipleSlides ? (
           <Space size={8}>
             <Button
@@ -48,6 +53,13 @@ export const ProductCarouselSection = ({
 
       {loading ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+=======
+        
+      </div>
+
+      {loading ? (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           {Array.from({ length: cardsPerSlide }).map((_, index) => (
             <Skeleton.Node key={index} active className="!h-[300px] !w-full !max-w-none" />
           ))}
@@ -57,6 +69,7 @@ export const ProductCarouselSection = ({
       {!loading && products.length === 0 ? <Empty description="Chưa có sản phẩm" /> : null}
 
       {!loading && products.length > 0 ? (
+<<<<<<< HEAD
         <Carousel
           ref={carouselRef}
           className="home-product-carousel"
@@ -75,6 +88,13 @@ export const ProductCarouselSection = ({
             </div>
           ))}
         </Carousel>
+=======
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} compact />
+          ))}
+        </div>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
       ) : null}
     </section>
   )

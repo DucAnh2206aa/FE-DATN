@@ -1,9 +1,9 @@
-import { useMutation } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import { Button, Card, message, Result, Space, Spin, Typography } from 'antd'
 import { useEffect, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
-import { verifyVnpayReturn } from '@/features/account/api/account.api'
+import { verifyVnpayReturn, verifyZalopayRedirect } from '@/features/account/api/account.api'
 import { ROUTE_PATHS } from '@/shared/constants/routes'
 import { formatVndCurrency } from '@/shared/utils/currency'
 
@@ -12,15 +12,8 @@ export const PaymentSuccessPage = () => {
   const [searchParams] = useSearchParams()
   const hasRequestedVerification = useRef(false)
 
-  const verifyMutation = useMutation({
-    mutationFn: verifyVnpayReturn,
-    onSuccess: (data) => {
-      void message.success(data.isSuccess ? 'Thanh toán thành công' : 'Thanh toán chưa thành công')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
+  const notifiedSuccessKeyRef = useRef<string | null>(null)
+  const notifiedErrorKeyRef = useRef<string | null>(null)
 
   const vnpPayload = useMemo(() => {
     const payload: Record<string, string> = {}
@@ -39,16 +32,44 @@ export const PaymentSuccessPage = () => {
     Boolean(vnpPayload.vnp_SecureHash) &&
     Boolean(vnpPayload.vnp_ResponseCode)
 
-  useEffect(() => {
-    if (!hasVnpReturnData || hasRequestedVerification.current) {
-      return
+  const zalopayPayload = useMemo(() => {
+    const payload: Record<string, string> = {}
+
+    searchParams.forEach((value, key) => {
+      if (
+        key === 'appid' ||
+        key === 'apptransid' ||
+        key === 'pmcid' ||
+        key === 'bankcode' ||
+        key === 'amount' ||
+        key === 'discountamount' ||
+        key === 'status' ||
+        key === 'checksum'
+      ) {
+        payload[key] = value
+      }
+    })
+
+    if (!payload.appid || !payload.apptransid || !payload.checksum) {
+      return null
     }
 
-    hasRequestedVerification.current = true
-    verifyMutation.mutate(vnpPayload)
-  }, [hasVnpReturnData, verifyMutation, vnpPayload])
+    return {
+      appid: payload.appid,
+      apptransid: payload.apptransid,
+      pmcid: payload.pmcid,
+      bankcode: payload.bankcode,
+      amount: payload.amount,
+      discountamount: payload.discountamount,
+      status: payload.status,
+      checksum: payload.checksum,
+    }
+  }, [searchParams])
 
-  if (!hasVnpReturnData) {
+  const hasZalopayReturnData = Boolean(zalopayPayload)
+
+
+  if (!hasVnpReturnData && !hasZalopayReturnData) {
     return (
       <Card className="mx-auto mt-8 max-w-2xl">
         <Result
@@ -65,23 +86,50 @@ export const PaymentSuccessPage = () => {
     )
   }
 
+<<<<<<< HEAD
   if (verifyMutation.isPending || verifyMutation.isIdle) {
+=======
+  const activeGateway = hasVnpReturnData ? 'vnpay' : 'zalopay'
+  if (!verifyResult || !order) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Space direction="vertical" align="center">
           <Spin size="large" />
+<<<<<<< HEAD
           <Typography.Text type="secondary">Đang xác thực giao dịch VNPay...</Typography.Text>
+=======
+          <Typography.Text type="secondary">
+            {activeGateway === 'zalopay'
+              ? 'Đang xác thực giao dịch ZaloPay...'
+              : 'Đang xác thực giao dịch VNPay...'}
+          </Typography.Text>
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         </Space>
       </div>
     )
   }
 
+<<<<<<< HEAD
   if (verifyMutation.isError) {
+=======
+  const isVerifyError =
+    activeGateway === 'vnpay' ? verifyMutation.isError : verifyZalopayMutation.isError
+
+  if (isVerifyError) {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
     return (
       <Card className="mx-auto mt-8 max-w-2xl">
         <Result
           status="error"
+<<<<<<< HEAD
           title="Không xác thực được giao dịch VNPay"
+=======
+          title={
+            activeGateway === 'zalopay'
+              ? 'Không xác thực được giao dịch ZaloPay'
+              : 'Không xác thực được giao dịch VNPay'
+          }
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
           subTitle="Vui lòng kiểm tra lại đơn hàng của bạn và thử thanh toán lại nếu cần."
           extra={
             <Button type="primary" onClick={() => navigate(ROUTE_PATHS.ACCOUNT_ORDERS)}>
@@ -93,15 +141,27 @@ export const PaymentSuccessPage = () => {
     )
   }
 
-  const verifyResult = verifyMutation.data
-  const order = verifyResult.order
-  const isPaymentSuccess = verifyResult.isSuccess
+<<<<<<< HEAD
 
+
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   return (
     <Card className="mx-auto mt-8 max-w-2xl">
       <Result
         status={isPaymentSuccess ? 'success' : 'error'}
+<<<<<<< HEAD
         title={isPaymentSuccess ? 'Thanh toán VNPay thành công' : 'Thanh toán VNPay thất bại'}
+=======
+        title={
+          isPaymentSuccess
+            ? activeGateway === 'zalopay'
+              ? 'Thanh toán ZaloPay thành công'
+              : 'Thanh toán VNPay thành công'
+            : activeGateway === 'zalopay'
+              ? 'Thanh toán ZaloPay thất bại'
+              : 'Thanh toán VNPay thất bại'
+        }
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
         subTitle={`Đơn hàng ${order.orderCode} - ${formatVndCurrency(order.totalAmount)}`}
         extra={[
           <Button
@@ -125,4 +185,8 @@ export const PaymentSuccessPage = () => {
       />
     </Card>
   )
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

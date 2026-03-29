@@ -16,6 +16,7 @@ interface UseHomeProductsOptions {
 const HOME_PAGE_SIZE = 12
 
 export const useHomeProducts = ({ search, categoryId, brand }: UseHomeProductsOptions) => {
+<<<<<<< HEAD
   const topSellingQuery = useQuery({
     queryKey: queryKeys.products.topSelling,
     queryFn: () => getTopSellingProducts(10),
@@ -25,6 +26,17 @@ export const useHomeProducts = ({ search, categoryId, brand }: UseHomeProductsOp
     queryKey: queryKeys.products.newest,
     queryFn: () => getNewestProducts(10),
   })
+=======
+    const topSellingQuery = useQuery({
+        queryKey: queryKeys.products.topSelling,
+        queryFn: () => getTopSellingProducts(8),
+    })
+
+    const newestQuery = useQuery({
+        queryKey: queryKeys.products.newest,
+        queryFn: () => getNewestProducts(8),
+    })
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 
   const allProductsQuery = useInfiniteQuery({
     queryKey: queryKeys.products.list({

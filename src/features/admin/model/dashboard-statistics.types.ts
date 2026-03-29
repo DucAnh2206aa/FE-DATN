@@ -23,7 +23,11 @@ export interface DashboardSummary {
   totalComments: number
 }
 
+<<<<<<< HEAD
 export interface DashboardDailyRevenueItem {
+=======
+  export interface DashboardDailyRevenueItem {
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   date: string
   revenue: number
   orders: number
@@ -49,6 +53,7 @@ export interface DashboardPaymentMethodBreakdownItem {
   revenue: number
 }
 
+<<<<<<< HEAD
 export interface DashboardCategoryBreakdownItem {
   categoryId: string | null
   categoryName: string
@@ -62,6 +67,11 @@ export interface DashboardBreakdowns {
   byStatus: DashboardStatusBreakdownItem[]
   byPaymentMethod: DashboardPaymentMethodBreakdownItem[]
   byCategory: DashboardCategoryBreakdownItem[]
+=======
+export interface DashboardBreakdowns {
+  byStatus: DashboardStatusBreakdownItem[]
+  byPaymentMethod: DashboardPaymentMethodBreakdownItem[]
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 export interface DashboardTopProductItem {
@@ -80,5 +90,9 @@ export interface DashboardStatisticsResponse {
   trends: DashboardTrends
   breakdowns: DashboardBreakdowns
   topProducts: DashboardTopProductItem[]
+<<<<<<< HEAD
   bottomProducts: DashboardTopProductItem[]
 }
+=======
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

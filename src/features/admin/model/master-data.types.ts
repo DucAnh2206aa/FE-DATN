@@ -9,7 +9,14 @@ export interface PaginatedResponse<T> {
 export interface MasterCategoryItem {
   id: string
   name: string
+<<<<<<< HEAD
   description?: string
+=======
+  slug: string
+  description?: string
+  parentId?: string
+  image?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -18,6 +25,10 @@ export interface MasterCategoryItem {
 export interface MasterBrandItem {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   description?: string
   logoUrl?: string
   isActive: boolean
@@ -28,6 +39,10 @@ export interface MasterBrandItem {
 export interface MasterColorItem {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   hexCode?: string
   isActive: boolean
   createdAt: string
@@ -37,6 +52,10 @@ export interface MasterColorItem {
 export interface MasterSizeItem {
   id: string
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -56,12 +75,23 @@ export interface MasterListParams {
 
 export interface UpsertCategoryPayload {
   name: string
+<<<<<<< HEAD
   description?: string
+=======
+  slug: string
+  description?: string
+  parentId?: string
+  image?: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   isActive?: boolean
 }
 
 export interface UpsertBrandPayload {
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   description?: string
   logoUrl?: string
   isActive?: boolean
@@ -69,11 +99,21 @@ export interface UpsertBrandPayload {
 
 export interface UpsertColorPayload {
   name: string
+<<<<<<< HEAD
+=======
+  slug: string
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
   hexCode?: string
   isActive?: boolean
 }
 
 export interface UpsertSizePayload {
   name: string
+<<<<<<< HEAD
   isActive?: boolean
 }
+=======
+  slug: string
+  isActive?: boolean
+}
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf

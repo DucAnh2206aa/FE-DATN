@@ -39,6 +39,7 @@ const normalizeProduct = (value: unknown): CartProductSummary | undefined => {
     return undefined
   }
 
+<<<<<<< HEAD
   return {
     id: toId(record._id ?? record.id),
     name: String(record.name ?? ''),
@@ -47,6 +48,15 @@ const normalizeProduct = (value: unknown): CartProductSummary | undefined => {
     images: toStringArray(record.images),
     isAvailable: Boolean(record.isAvailable),
   }
+=======
+    return {
+        id: toId(record._id ?? record.id),
+        name: String(record.name ?? ''),
+        brand: typeof record.brand === 'string' ? record.brand : PRODUCT_PLACEHOLDER_BRAND,
+        images: toStringArray(record.images),
+        isAvailable: Boolean(record.isAvailable),
+    }
+>>>>>>> 995ad3a6158614808e736f65054e934a17d150bf
 }
 
 const resolveVariantColor = (variant: Record<string, unknown>) => {
