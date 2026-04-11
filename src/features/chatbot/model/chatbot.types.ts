@@ -28,10 +28,10 @@ export interface AskChatbotPayload {
 
 export interface AskChatbotResponse {
     intent: 'preset'
-    answer: string
-    actions: ChatbotAction[]
-    followUpQuestions: ChatbotPresetOption[]
-    suggestedProducts: ChatbotSuggestedProduct[
+  answer: string
+  actions: ChatbotAction[]
+  followUpQuestions: ChatbotPresetOption[]
+  suggestedProducts: ChatbotSuggestedProduct[]
 }
 
 export interface ChatbotUiMessage {
