@@ -1,13 +1,10 @@
-import {
-  CloseOutlined,
-  MessageOutlined,
-  ReloadOutlined,
-  SendOutlined,
-  UserOutlined,
-} from '@ant-design/icons'
-import { Avatar, Badge, Button, Drawer, Input, Space, Spin, Typography, message } from 'antd'
+import { CloseOutlined, MessageOutlined, SendOutlined, UserOutlined } from '@ant-design/icons'
+import { Avatar, Badge, Button, Drawer, Input, message, Space, Spin, Typography } from 'antd'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+
+import { ROUTE_PATHS } from '@/shared/constants/routes'
 
 import { useCustomerSupportChat } from '../hooks/useCustomerSupportChat'
 import type { ChatMessage } from '../model/chat.types'
@@ -53,49 +50,51 @@ interface CustomerSupportChatWidgetProps {
 }
 
 export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportChatWidgetProps) => {
-    const [open, setOpen] = useState(false)
-    const [inputValue, setInputValue] = useState('')
-    const [unreadCount, setUnreadCount] = useState(0)
-    const [drawerWidth, setDrawerWidth] = useState(420)
-    const messageContainerRef = useRef<HTMLDivElement | null>(null)
-    const lastNotifiedMessageIdRef = useRef<string | null>(null)
+    const navigate = useNavigate()
+  const location = useLocation()
+  const [open, setOpen] = useState(false)
+  const [inputValue, setInputValue] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [drawerWidth, setDrawerWidth] = useState(420)
+  const messageContainerRef = useRef<HTMLDivElement | null>(null)
+  const lastNotifiedMessageIdRef = useRef<string | null>(null)
 
   const { messages, sendMessage, isReady, isLoading, currentUserId, lastIncomingMessage } =
     useCustomerSupportChat(open)
 
     useEffect(() => {
-        if (typeof window === 'undefined') {
-            return
-        }
+    if (typeof window === 'undefined') {
+      return
+    }
 
         const updateWidth = () => {
-            setDrawerWidth(window.innerWidth < 640 ? window.innerWidth : 420)
-        }
+      setDrawerWidth(window.innerWidth < 640 ? window.innerWidth : 420)
+    }
 
         updateWidth()
-        window.addEventListener('resize', updateWidth)
-        return () => window.removeEventListener('resize', updateWidth)
-    }, [])
+    window.addEventListener('resize', updateWidth)
+    return () => window.removeEventListener('resize', updateWidth)
+  }, [])
+
+  useEffect(() => {
+    if (!open || !messageContainerRef.current) {
+      return
+    }
 
     
 
-    useEffect(() => {
-        if (!open || !messageContainerRef.current) {
-            return
-        }
-
-        messageContainerRef.current.scrollTo({
-            top: messageContainerRef.current.scrollHeight,
-            behavior: 'smooth',
-        })
-    }, [messages, open])
+    messageContainerRef.current.scrollTo({
+      top: messageContainerRef.current.scrollHeight,
+      behavior: 'smooth',
+    })
+  }, [messages, open])
 
     useEffect(() => {
-        if (open) {
-            setUnreadCount(0)
-        }
-    }, [open])
-    useEffect(() => {
+    if (open) {
+      setUnreadCount(0)
+    }
+  }, [open])
+  useEffect(() => {
     if (!lastIncomingMessage || lastNotifiedMessageIdRef.current === lastIncomingMessage.id) {
       return
     }
@@ -118,10 +117,10 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
     const groupedMessages = useMemo(() => groupMessages(messages), [messages])
 
     const handleSend = async () => {
-        if (!isAuthenticated) {
-            void message.warning('Bạn cần đăng nhập để chat trực tiếp với nhân viên')
-            return
-        }
+    if (!isAuthenticated) {
+      void message.warning('Bạn cần đăng nhập để chat trực tiếp với nhân viên')
+      return
+    }
 
         const content = inputValue.trim()
 
@@ -130,29 +129,37 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
         }
 
         try {
-            await sendMessage(content)
-            setInputValue('')
-        } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Không thể gửi tin nhắn'
-            void message.error(errorMessage)
-        }
+      await sendMessage(content)
+      setInputValue('')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Không thể gửi tin nhắn'
+      void message.error(errorMessage)
+    }
     }
 
     return (
-        <>
-            <div className="fixed bottom-24 right-6 z-[90]">
-                <Badge count={unreadCount} overflowCount={99} size="small">
-                    <Button
-                        type="primary"
-                        className="!h-12 !rounded-full !px-4 shadow-lg"
-                        icon={<MessageOutlined />}
-                        aria-label="Mở chat với nhân viên"
-                        onClick={() => setOpen(true)}
-                    >
-                        Chat với nhân viên
-                    </Button>
-                </Badge>
-            </div>
+    <>
+      <div className="fixed bottom-24 right-6 z-[90]">
+        <Badge count={unreadCount} overflowCount={99} size="small">
+          <Button
+            type="primary"
+            className="!h-12 !rounded-full !px-4 shadow-lg"
+            icon={<MessageOutlined />}
+            aria-label="Mở chat với nhân viên"
+            onClick={() => {
+              if (!isAuthenticated) {
+                const redirect = `${location.pathname}${location.search}${location.hash}`
+                navigate(`${ROUTE_PATHS.LOGIN}?redirect=${encodeURIComponent(redirect)}`)
+                return
+              }
+
+              setOpen(true)
+            }}
+          >
+            Chat với nhân viên
+          </Button>
+        </Badge>
+      </div>
 
             <Drawer
         title={
@@ -160,9 +167,7 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
             <Avatar icon={<UserOutlined />} size={28} />
             <Space direction="vertical" size={0}>
               <Typography.Text strong>Hỗ trợ trực tuyến</Typography.Text>
-              <Typography.Text type="secondary" className="text-xs">
-                {isAuthenticated ? (isReady ? 'Đang kết nối nhân viên' : 'Đang kết nối...') : 'Cần đăng nhập'}
-              </Typography.Text>
+              <Typography.Text type="secondary" className="text-xs"></Typography.Text>
             </Space>
           </Space>
         }
@@ -172,11 +177,7 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
         onClose={() => setOpen(false)}
         closeIcon={<CloseOutlined />}
         destroyOnClose={false}
-        extra={
-          <Button type="text" icon={<ReloadOutlined />} onClick={() => setInputValue('')}>
-            Xóa nội dung
-          </Button>
-        }
+        
         styles={{
           body: { padding: 12 },
           footer: { padding: 12 },
@@ -185,7 +186,11 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
           <Space direction="vertical" size={8} className="w-full">
             <TextArea
               autoSize={{ minRows: 2, maxRows: 4 }}
-              placeholder={isAuthenticated ? 'Nhập tin nhắn cho nhân viên...' : 'Đăng nhập để chat với nhân viên'}
+              placeholder={
+                isAuthenticated
+                  ? 'Nhập tin nhắn cho nhân viên...'
+                  : 'Đăng nhập để chat với nhân viên'
+              }
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onPressEnter={(event) => {
@@ -214,15 +219,20 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
           </Space>
         }
       >
-        <div ref={messageContainerRef} className="flex max-h-[calc(100vh-300px)] flex-col gap-3 overflow-y-auto pr-1">
-            {isLoading ? (
+        <div
+          ref={messageContainerRef}
+          className="flex max-h-[calc(100vh-300px)] flex-col gap-3 overflow-y-auto pr-1"
+        >
+          {isLoading ? (
             <div className="flex justify-center py-6">
               <Spin />
             </div>
           ) : groupedMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center text-slate-400">
               <Typography.Text>Chưa có tin nhắn nào.</Typography.Text>
-              <Typography.Text className="text-xs">Hãy gửi lời chào tới nhân viên hỗ trợ.</Typography.Text>
+              <Typography.Text className="text-xs">
+                Hãy gửi lời chào tới nhân viên hỗ trợ.
+              </Typography.Text>
             </div>
           ) : (
             groupedMessages.map((group) => (
@@ -241,7 +251,9 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
                         }`}
                       >
                         <div className="whitespace-pre-wrap">{item.content}</div>
-                        <div className={`mt-1 text-[11px] ${isMine ? 'text-blue-100' : 'text-slate-400'}`}>
+                        <div
+                          className={`mt-1 text-[11px] ${isMine ? 'text-blue-100' : 'text-slate-400'}`}
+                        >
                           {formatTime(item.createdAt)}
                         </div>
                       </div>

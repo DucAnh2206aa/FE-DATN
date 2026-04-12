@@ -44,6 +44,7 @@ export const CustomerChatbotWidget = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [messagesState, setMessagesState] = useState<ChatbotUiMessage[]>([])
   const [drawerWidth, setDrawerWidth] = useState(420)
   const messageContainerRef = useRef<HTMLDivElement | null>(null)
   const initializedRef = useRef(false)
@@ -73,7 +74,7 @@ export const CustomerChatbotWidget = () => {
   const resetConversation = () => {
     setMessagesState([buildWelcomeMessage(presetOptions)])
   }
-  }
+  
 
 
   useEffect(() => {
@@ -181,7 +182,7 @@ export const CustomerChatbotWidget = () => {
   const messages = useMemo(() => messagesState, [messagesState])
 
   
-  }
+  
 
   return (
     <>
@@ -224,7 +225,7 @@ export const CustomerChatbotWidget = () => {
         }
         styles={{
           body: {
-            padding: 12
+            padding: 12,
           },
         
         }}

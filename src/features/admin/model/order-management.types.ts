@@ -11,9 +11,20 @@ export type AdminPaymentMethod = 'cod' | 'banking' | 'momo' | 'vnpay' | 'zalopay
 export type AdminZalopayChannel = 'gateway' | 'wallet' | 'bank_card' | 'atm'
 export type AdminPaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type AdminReturnRequestStatus = 'pending' | 'approved' | 'rejected' | 'refunded'
+export type AdminVoucherDiscountType = 'percentage' | 'fixed_amount'
 export type AdminCancelRefundRequestStatus = 'pending' | 'rejected' | 'refunded'
 export type AdminRefundMethod = 'bank_transfer' | 'wallet'
 export type AdminUserRole = 'customer' | 'staff' | 'admin'
+
+
+export interface AdminAppliedOrderVoucher {
+  id: string
+  code: string
+  description?: string
+  discountType: AdminVoucherDiscountType
+  discountValue: number
+  maxDiscountAmount?: number
+}
 
 export interface AdminOrderUser {
   id: string
@@ -97,7 +108,13 @@ export interface AdminOrderItem {
   paymentMethod: AdminPaymentMethod
   zalopayChannel?: AdminZalopayChannel
   paymentStatus: AdminPaymentStatus
+  paymentTxnRef?: string
+  paymentTransactionNo?: string
+  paymentGatewayResponseCode?: string
+  paidAt?: string
+  refundedAt?: string
   voucherId?: string
+  voucher?: AdminAppliedOrderVoucher
   status: AdminOrderStatus
   items: AdminOrderItemSnapshot[]
   statusHistory: AdminOrderStatusHistoryItem[]
