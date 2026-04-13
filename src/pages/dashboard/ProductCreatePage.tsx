@@ -400,6 +400,12 @@ export const ProductCreatePage = () => {
                   }
 
                   const normalizedVariants = value as ProductVariantFormValues[]
+                  if (normalizedVariants.length > MAX_PRODUCT_VARIANTS) {
+                    throw new Error(
+                      `Mỗi sản phẩm chỉ được thêm tối đa ${MAX_PRODUCT_VARIANTS} biến thể`
+                    )
+                  }
+                  
                   const seenKeys = new Map<string, number>()
                   const duplicateErrors: string[] = []
                   const missingImageErrors: string[] = []
@@ -586,7 +592,15 @@ export const ProductCreatePage = () => {
                 <Button
                   type="dashed"
                   icon={<PlusOutlined />}
+                  disabled={fields.length >= MAX_PRODUCT_VARIANTS}
                   onClick={() => {
+                    if (fields.length >= MAX_PRODUCT_VARIANTS) {
+                      void message.warning(
+                        `Mỗi sản phẩm chỉ được thêm tối đa ${MAX_PRODUCT_VARIANTS} biến thể`
+                      )
+                      return
+                    }
+                    
                     add({
                       stockQuantity: 0,
                       isAvailable: true,
