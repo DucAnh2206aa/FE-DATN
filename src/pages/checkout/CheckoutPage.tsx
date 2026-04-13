@@ -253,7 +253,7 @@ export const CheckoutPage = () => {
     createOrderMutation.mutate({
       addressId: selectedAddressId,
       paymentMethod,
-     zalopayChannel: paymentMethod === 'zalopay' ? 'gateway' : undefined,
+      zalopayChannel: paymentMethod === 'zalopay' ? 'gateway' : undefined,
       voucherCode: normalizeVoucherCode(voucherCode) || undefined,
       selectedVariantIds,
     })
@@ -386,7 +386,7 @@ export const CheckoutPage = () => {
                 </Space>
               </Radio.Group>
 
-              
+
             </Card>
 
             <Card title={`Sản phẩm đã chọn (${selectedCartItems.length})`}>

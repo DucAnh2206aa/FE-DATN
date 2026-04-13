@@ -9,6 +9,7 @@ import {
   message,
   Modal,
   Popconfirm,
+  Rate,
   Select,
   Space,
   Spin,
@@ -24,6 +25,7 @@ import {
   cancelMyOrder,
   confirmOrderReceived,
   createCancelRefundRequest,
+  createMyReview,
   listMyOrders,
   retryMyVnpayPayment,
 } from '@/features/account/api/account.api'
@@ -31,13 +33,13 @@ import type {
   CancelRefundRequestStatus,
   CreateCancelRefundRequestPayload,
   MyOrderItem,
-  OrderStatus
+  OrderStatus,
 } from '@/features/account/model/account.types'
 import { queryKeys } from '@/shared/api/queryKeys'
-import {
-  getVietQrBankByCode,
-  VIET_QR_BANK_OPTIONS,
-} from '@/shared/constants/vietqr'
+import { getVietQrBankByCode, VIET_QR_BANK_OPTIONS } from '@/shared/constants/vietqr'
+
+
+
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
 
@@ -99,22 +101,6 @@ const PAYMENT_STATUS_LABEL: Record<MyOrderItem['paymentStatus'], string> = {
   refunded: 'Hoàn tiền',
 }
 
-const formatVoucherSummary = (order: MyOrderItem) => {
-  if (!order.voucher) {
-    return 'Không áp dụng'
-  }
-
-  const baseValue =
-    order.voucher.discountType === 'percentage'
-      ? `${order.voucher.discountValue}%`
-      : formatVndCurrency(order.voucher.discountValue)
-
-  return order.voucher.maxDiscountAmount
-    ? `${baseValue} · tối đa ${formatVndCurrency(order.voucher.maxDiscountAmount)}`
-    : baseValue
-}
-
-
 const CANCEL_REFUND_STATUS_LABEL: Record<CancelRefundRequestStatus, string> = {
   pending: 'Chờ xử lý',
   rejected: 'Từ chối',
@@ -138,8 +124,8 @@ const canConfirmReceived = (status: OrderStatus) => {
   return status === 'delivered'
 }
 
-const canRequestReturn = (status: OrderStatus) => {
-  return status === 'completed'
+const canReviewOrder = (order: MyOrderItem) => {
+  return order.status === 'completed' && order.items.some((item) => !item.isReviewed)
 }
 
 const canRetryVnpay = (order: MyOrderItem) => {
@@ -151,7 +137,11 @@ const canRetryVnpay = (order: MyOrderItem) => {
 }
 
 const canRequestCancelRefund = (order: MyOrderItem) => {
-  if (order.status !== 'cancelled' || order.paymentMethod === 'cod' || order.paymentStatus !== 'paid') {
+  if (
+    order.status !== 'cancelled' ||
+    order.paymentMethod === 'cod' ||
+    order.paymentStatus !== 'paid'
+  ) {
     return false
   }
 
@@ -170,11 +160,11 @@ export const MyOrdersPage = () => {
   const [status, setStatus] = useState<OrderStatus | 'all'>('all')
   const [expandedOrderIds, setExpandedOrderIds] = useState<string[]>([])
   const focusOrderId = searchParams.get('orderId')?.trim() ?? ''
-  const [returnModalOpen, setReturnModalOpen] = useState(false)
-  const [returnOrder, setReturnOrder] = useState<MyOrderItem | null>(null)
-  const [returnReason, setReturnReason] = useState('')
-  const [refundMethod, setRefundMethod] = useState<RefundMethod>('bank_transfer')
-  const [returnQuantities, setReturnQuantities] = useState<Record<string, number>>({})
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [reviewOrder, setReviewOrder] = useState<MyOrderItem | null>(null)
+  const [selectedReviewProductId, setSelectedReviewProductId] = useState<string | null>(null)
+  const [reviewRating, setReviewRating] = useState(0)
+  const [reviewContent, setReviewContent] = useState('')
   const [cancelRefundModalOpen, setCancelRefundModalOpen] = useState(false)
   const [cancelRefundOrder, setCancelRefundOrder] = useState<MyOrderItem | null>(null)
   const [detailOrder, setDetailOrder] = useState<MyOrderItem | null>(null)
@@ -241,23 +231,26 @@ export const MyOrdersPage = () => {
     },
   })
 
-  const returnRequestMutation = useMutation({
-    mutationFn: (payload: { orderId: string; items: Array<{ variantId: string; quantity: number }>; reason?: string; refundMethod?: RefundMethod }) =>
-      createReturnRequest(payload.orderId, {
-        items: payload.items,
-        reason: payload.reason,
-        refundMethod: payload.refundMethod,
-      }),
-    onSuccess: async () => {
+  const createReviewMutation = useMutation({
+    mutationFn: createMyReview,
+    onSuccess: async (_, payload) => {
+
+
+
+
+
       await queryClient.invalidateQueries({
         queryKey: queryKeys.account.orders(),
       })
-      void message.success('Đã gửi yêu cầu hoàn hàng')
-      setReturnModalOpen(false)
-      setReturnOrder(null)
-      setReturnQuantities({})
-      setReturnReason('')
-      setRefundMethod('bank_transfer')
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.products.reviews(payload.productId),
+      })
+      void message.success('Đã gửi đánh giá sản phẩm')
+      setReviewModalOpen(false)
+      setReviewOrder(null)
+      setSelectedReviewProductId(null)
+      setReviewRating(0)
+      setReviewContent('')
     },
     onError: (error) => {
       void message.error(error.message)
@@ -282,11 +275,12 @@ export const MyOrdersPage = () => {
   })
 
   useEffect(() => {
-    if (!focusOrderId || hasHandledFocusOrder || !ordersQuery.data?.items?.length) { 
+    if (!focusOrderId || hasHandledFocusOrder || !ordersQuery.data?.items?.length) {
       return
     }
 
     const focusedOrder = ordersQuery.data.items.find((item) => item.id === focusOrderId)
+
     if (!focusedOrder) {
       return
     }
@@ -299,21 +293,34 @@ export const MyOrdersPage = () => {
     setHasHandledFocusOrder(true)
   }, [focusOrderId, hasHandledFocusOrder, ordersQuery.data?.items])
 
-  const openCancelRefundModal = useCallback(
-    (order: MyOrderItem) => {
-      setCancelRefundOrder(order)
-      setCancelRefundModalOpen(true)
-      const existingRequest = order.cancelRefundRequest
-      cancelRefundForm.setFieldsValue({
-        bankCode: existingRequest?.bankCode,
-        bankName: existingRequest?.bankName,
-        accountNumber: existingRequest?.accountNumber,
-        accountHolder: existingRequest?.accountHolder,
-        note: existingRequest?.note,
-      })
-    },
-    [cancelRefundForm]
-  )
+  const openCancelRefundModal = (order: MyOrderItem) => {
+    setCancelRefundOrder(order)
+    setCancelRefundModalOpen(true)
+    const existingRequest = order.cancelRefundRequest
+    cancelRefundForm.setFieldsValue({
+      bankCode: existingRequest?.bankCode,
+      bankName: existingRequest?.bankName,
+      accountNumber: existingRequest?.accountNumber,
+      accountHolder: existingRequest?.accountHolder,
+      note: existingRequest?.note,
+    })
+  }
+
+  const openReviewModal = (order: MyOrderItem) => {
+    const firstPendingReviewItem = order.items.find((item) => !item.isReviewed)
+
+    setReviewOrder(order)
+    setSelectedReviewProductId(
+      firstPendingReviewItem?.productId ?? order.items[0]?.productId ?? null
+    )
+    setReviewRating(0)
+    setReviewContent('')
+    setReviewModalOpen(true)
+  }
+
+  const selectedReviewItem =
+    reviewOrder?.items.find((item) => item.productId === selectedReviewProductId) ?? null
+  const pendingReviewItems = reviewOrder?.items.filter((item) => !item.isReviewed) ?? []
 
   const renderOrderItems = (record: MyOrderItem) => (
     <List
@@ -327,18 +334,26 @@ export const MyOrdersPage = () => {
           <div className="flex w-full items-center gap-3">
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100">
               <img
-              src={item.productImage ?? ITEM_PLACEHOLDER}
+                src={item.productImage ?? ITEM_PLACEHOLDER}
                 alt={item.productName}
                 className="h-full w-full object-cover"
               />
             </div>
-            <div className="min-w-0 flex-1"></div>
-              <Typography.Text strong className="block line-clamp-1">
-                {item.productName}
-              </Typography.Text>
+            <div className="min-w-0 flex-1">
+              <Space size={8} wrap className="mb-1">
+                <Typography.Text strong className="block line-clamp-1">
+                  {item.productName}
+                </Typography.Text>
+                {item.isReviewed ? (
+                  <Tag color="green" className="!m-0">
+                    Đã đánh giá
+                  </Tag>
+                ) : null}
+              </Space>
               <Typography.Text type="secondary" className="text-xs">
                 SKU: {item.variantSku} · Màu: {item.variantColor}
               </Typography.Text>
+            </div>
             <Space direction="vertical" size={0} align="end">
               <Typography.Text>Số lượng: {item.quantity}</Typography.Text>
               <Typography.Text strong>{formatVndCurrency(item.total)}</Typography.Text>
@@ -355,7 +370,7 @@ export const MyOrdersPage = () => {
         <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-               <Typography.Text strong className="block">
+              <Typography.Text strong className="block">
                 Yêu cầu hoàn tiền đơn hủy
               </Typography.Text>
               <Space size={[8, 8]} wrap className="mt-2">
@@ -398,7 +413,7 @@ export const MyOrdersPage = () => {
             </Typography.Text>
           </div>
 
-           {record.cancelRefundRequest.note ? (
+          {record.cancelRefundRequest.note ? (
             <Typography.Text className="mt-2 block text-sm text-slate-700">
               Ghi chú của bạn: {record.cancelRefundRequest.note}
             </Typography.Text>
@@ -418,7 +433,7 @@ export const MyOrdersPage = () => {
               <div className="flex flex-wrap gap-2">
                 {record.cancelRefundRequest.refundEvidenceImages.map((url) => (
                   <a
-                  key={`${record.id}-${url}`}
+                    key={`${record.id}-${url}`}
                     href={url}
                     target="_blank"
                     rel="noreferrer"
@@ -447,7 +462,9 @@ export const MyOrdersPage = () => {
           </Typography.Text>
           <Typography.Text className="block text-sm text-slate-700">
             Thời gian ghi nhận:{' '}
-            {record.refundedAt ? formatDateTime(record.refundedAt) : formatDateTime(record.updatedAt)}
+            {record.refundedAt
+              ? formatDateTime(record.refundedAt)
+              : formatDateTime(record.updatedAt)}
           </Typography.Text>
           <Typography.Text type="secondary" className="mt-1 block text-xs">
             Hệ thống đã ghi nhận hoàn tiền cho đơn hàng này.
@@ -501,77 +518,25 @@ export const MyOrdersPage = () => {
               ),
             },
             {
-              key: 'voucher',
-              label: 'Voucher áp dụng',
-              children: record.voucher ? (
-                <Space direction="vertical" size={2}>
-                  <Space size={[8, 8]} wrap>
-                    <Tag color="purple" className="!m-0">
-                      {record.voucher.code}
-                    </Tag>
-                    <Typography.Text strong>{formatVoucherSummary(record)}</Typography.Text>
-                  </Space>
-                  {record.voucher.description ? (
-                    <Typography.Text type="secondary" className="text-xs">
-                      {record.voucher.description}
-                    </Typography.Text>
-                  ) : null}
-                </Space>
-              ) : (
-                'Không áp dụng'
-              ),
-            },
-            {
-              key: 'subtotal',
-              label: 'Tạm tính',
-              children: formatVndCurrency(record.subtotal),
-            },
-            {
-              key: 'shippingFee',
-              label: 'Phí vận chuyển',
-              children: formatVndCurrency(record.shippingFee),
-            },
-            {
-              key: 'discountAmount',
-              label: 'Giảm giá thực tế',
-              children: formatVndCurrency(record.discountAmount),
-            },
-            {
               key: 'status',
               label: 'Trạng thái đơn',
-              children: <Tag color={ORDER_STATUS_COLOR[record.status]}>{ORDER_STATUS_LABEL[record.status]}</Tag>,
+              children: (
+                <Tag color={ORDER_STATUS_COLOR[record.status]}>
+                  {ORDER_STATUS_LABEL[record.status]}
+                </Tag>
+              ),
             },
             {
               key: 'totalAmount',
               label: 'Tổng tiền',
               children: formatVndCurrency(record.totalAmount),
             },
-            {
-              key: 'paymentTxnRef',
-              label: 'Mã giao dịch hệ thống',
-              children: record.paymentTxnRef ?? '—',
-            },
-            {
-              key: 'paymentTransactionNo',
-              label: 'Mã giao dịch cổng thanh toán',
-              children: record.paymentTransactionNo ?? '—',
-            },
-            {
-              key: 'paymentGatewayResponseCode',
-              label: 'Mã phản hồi cổng thanh toán',
-              children: record.paymentGatewayResponseCode ?? '—',
-            },
-            {
-              key: 'paidAt',
-              label: 'Thời gian thanh toán',
-              children: record.paidAt ? formatDateTime(record.paidAt) : 'Chưa thanh toán',
-            },
           ]}
         />
       ) : null}
 
       <div>
-        <Typography.Text strong className="block mb-2">
+        <Typography.Text strong className="mb-2 block">
           Sản phẩm trong đơn
         </Typography.Text>
         {renderOrderItems(record)}
@@ -642,7 +607,7 @@ export const MyOrdersPage = () => {
           const allowCancel = canCancelOrder(record.status)
           const allowRetryVnpay = canRetryVnpay(record)
           const allowConfirmReceived = canConfirmReceived(record.status)
-          const allowReturn = canRequestReturn(record.status)
+          const allowReview = canReviewOrder(record)
           const allowCancelRefund = canRequestCancelRefund(record)
 
           return (
@@ -685,20 +650,20 @@ export const MyOrdersPage = () => {
                 </Popconfirm>
               ) : null}
 
-              {allowReturn ? (
+              {allowReview ? (
                 <Button
                   size="small"
                   onClick={() => {
-                    setReturnOrder(record)
-                    setReturnModalOpen(true)
-                    const initialQuantities: Record<string, number> = {}
-                    record.items.forEach((item) => {
-                      initialQuantities[item.variantId] = 0
-                    })
-                    setReturnQuantities(initialQuantities)
+                    openReviewModal(record)
+
+
+
+
+
+
                   }}
                 >
-                  Hoàn hàng
+                  Đánh giá sản phẩm
                 </Button>
               ) : null}
 
@@ -731,7 +696,9 @@ export const MyOrdersPage = () => {
                     openCancelRefundModal(record)
                   }}
                 >
-                  {record.cancelRefundRequest?.status === 'rejected' ? 'Gửi lại hoàn tiền' : 'Hoàn tiền'}
+                  {record.cancelRefundRequest?.status === 'rejected'
+                    ? 'Gửi lại hoàn tiền'
+                    : 'Hoàn tiền'}
                 </Button>
               ) : null}
             </Space>
@@ -742,8 +709,9 @@ export const MyOrdersPage = () => {
     [
       cancelOrderMutation,
       confirmReceivedMutation,
-      expandedOrderIds,
+
       openCancelRefundModal,
+      openReviewModal,
       repayOrderMutation,
     ]
   )
@@ -816,9 +784,9 @@ export const MyOrdersPage = () => {
               return current.filter((id) => id !== record.id)
             })
           },
-          expandedRowRender: (record) => (
-            renderOrderDetailContent(record)
-          ),
+          expandedRowRender: (record) => renderOrderDetailContent(record),
+
+
         }}
       />
 
@@ -934,117 +902,159 @@ export const MyOrdersPage = () => {
             </Form.Item>
 
             <Form.Item label="Ghi chú" name="note">
-              <Input.TextArea
-                rows={3}
-                placeholder="Ví dụ: hoàn tiền vào tài khoản chính của tôi"
-              />
+              <Input.TextArea rows={3} placeholder="Ví dụ: hoàn tiền vào tài khoản chính của tôi" />
+
+
+
             </Form.Item>
           </Form>
 
           {selectedCancelRefundBankCode ? (
             <Typography.Text type="secondary" className="text-xs">
               Ngân hàng đã chọn:{' '}
-              {getVietQrBankByCode(selectedCancelRefundBankCode)?.name ?? selectedCancelRefundBankCode}
+              {getVietQrBankByCode(selectedCancelRefundBankCode)?.name ??
+                selectedCancelRefundBankCode}
             </Typography.Text>
           ) : null}
         </Space>
       </Modal>
 
       <Modal
-        open={returnModalOpen}
-        title={`Yêu cầu hoàn hàng${returnOrder ? ` · ${returnOrder.orderCode}` : ''}`}
-        okText="Gửi yêu cầu"
+        open={reviewModalOpen}
+        title={`Đánh giá sản phẩm${reviewOrder ? ` · ${reviewOrder.orderCode}` : ''}`}
+        okText="Gửi đánh giá"
         cancelText="Đóng"
+        confirmLoading={createReviewMutation.isPending}
         onCancel={() => {
-          setReturnModalOpen(false)
-          setReturnOrder(null)
+          setReviewModalOpen(false)
+          setReviewOrder(null)
+          setSelectedReviewProductId(null)
+          setReviewRating(0)
+          setReviewContent('')
         }}
         onOk={() => {
-          if (!returnOrder) {
+          if (!reviewOrder || !selectedReviewItem) {
+            void message.error('Vui lòng chọn sản phẩm cần đánh giá')
             return
           }
 
-          const items = returnOrder.items
-            .map((item) => ({
-              variantId: item.variantId,
-              quantity: returnQuantities[item.variantId] ?? 0,
-            }))
-            .filter((item) => item.quantity > 0)
-
-          if (items.length === 0) {
-            void message.error('Vui lòng chọn số lượng hoàn hàng')
+          if (selectedReviewItem.isReviewed) {
+            void message.warning('Sản phẩm này đã được đánh giá trước đó')
             return
           }
 
-          returnRequestMutation.mutate({
-            orderId: returnOrder.id,
-            items,
-            reason: returnReason.trim() ? returnReason.trim() : undefined,
-            refundMethod,
+
+
+          if (reviewRating < 1) {
+            void message.error('Vui lòng chọn số sao đánh giá')
+            return
+          }
+
+          createReviewMutation.mutate({
+            orderId: reviewOrder.id,
+            productId: selectedReviewItem.productId,
+            rating: reviewRating,
+            content: reviewContent.trim() || undefined,
           })
         }}
-        confirmLoading={returnRequestMutation.isPending}
+
       >
-        {!returnOrder ? null : (
+        {!reviewOrder ? null : (
           <Space direction="vertical" size={16} className="w-full">
             <Typography.Text type="secondary">
-              Chọn số lượng muốn hoàn cho từng sản phẩm (có thể hoàn một phần).
+              Chỉ có thể đánh giá các sản phẩm trong đơn đã hoàn thành. Mỗi sản phẩm chỉ được đánh
+              giá một lần cho mỗi đơn hàng.
             </Typography.Text>
+
             <List
-              dataSource={returnOrder.items}
+              dataSource={reviewOrder.items}
               locale={{ emptyText: 'Không có sản phẩm' }}
-              renderItem={(item) => (
-                <List.Item>
-                  <div className="flex w-full items-center gap-3">
-                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded border border-slate-200">
-                      <img
-                        src={item.productImage ?? ITEM_PLACEHOLDER}
-                        alt={item.productName}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <Typography.Text strong className="block line-clamp-1">
-                        {item.productName}
-                      </Typography.Text>
-                      <Typography.Text type="secondary" className="text-xs">
-                        SKU: {item.variantSku}
-                      </Typography.Text>
-                    </div>
-                    <InputNumber
-                      min={0}
-                      max={item.quantity}
-                      value={returnQuantities[item.variantId] ?? 0}
-                      onChange={(value) => {
-                        setReturnQuantities((current) => ({
-                          ...current,
-                          [item.variantId]: Number(value ?? 0),
-                        }))
+              renderItem={(item) => {
+                const isSelected = item.productId === selectedReviewProductId
+
+                return (
+                  <List.Item>
+                    <button
+                      type="button"
+                      disabled={item.isReviewed}
+                      onClick={() => {
+                        if (!item.isReviewed) {
+                          setSelectedReviewProductId(item.productId)
+                        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                       }}
-                    />
-                  </div>
-                </List.Item>
-              )}
+                      className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
+                        item.isReviewed
+                          ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-70'
+                          : isSelected
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 bg-white hover:border-blue-300'
+                      }`}
+                    >
+                      <div className="h-14 w-14 shrink-0 overflow-hidden rounded border border-slate-200 bg-slate-100">
+                        <img
+                          src={item.productImage ?? ITEM_PLACEHOLDER}
+                          alt={item.productName}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <Space size={8} wrap className="mb-1">
+                          <Typography.Text strong className="block line-clamp-1">
+                            {item.productName}
+                          </Typography.Text>
+                          <Tag color={item.isReviewed ? 'green' : isSelected ? 'blue' : 'default'}>
+                            {item.isReviewed
+                              ? 'Đã đánh giá'
+                              : isSelected
+                                ? 'Đang chọn'
+                                : 'Chưa đánh giá'}
+                          </Tag>
+                        </Space>
+                        <Typography.Text type="secondary" className="text-xs">
+                          SKU: {item.variantSku} · Màu: {item.variantColor}
+                        </Typography.Text>
+                      </div>
+                    </button>
+                  </List.Item>
+                )
+              }}
             />
-            <Space direction="vertical" size={8} className="w-full">
-              <Typography.Text strong>Phương thức hoàn tiền</Typography.Text>
-              <Select
-                value={refundMethod}
-                onChange={(value) => setRefundMethod(value as RefundMethod)}
-                options={[
-                  { label: 'Chuyển khoản', value: 'bank_transfer' },
-                  { label: 'Hoàn vào ví', value: 'wallet' },
-                ]}
-              />
-              <Typography.Text strong>Ghi chú</Typography.Text>
-              <textarea
-                className="w-full rounded-md border border-slate-200 p-2 text-sm"
-                rows={3}
-                placeholder="Lý do hoàn hàng (tùy chọn)"
-                value={returnReason}
-                onChange={(event) => setReturnReason(event.target.value)}
-              />
-            </Space>
+
+            {pendingReviewItems.length === 0 ? (
+              <Typography.Text type="secondary">
+                Tất cả sản phẩm trong đơn này đã được đánh giá.
+              </Typography.Text>
+            ) : (
+              <Space direction="vertical" size={8} className="w-full">
+                <Typography.Text strong>
+                  {selectedReviewItem
+                    ? `Đánh giá cho ${selectedReviewItem.productName}`
+                    : 'Chọn sản phẩm để đánh giá'}
+                </Typography.Text>
+                <Rate value={reviewRating} onChange={setReviewRating} />
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Chia sẻ cảm nhận của bạn về sản phẩm"
+                  value={reviewContent}
+                  onChange={(event) => setReviewContent(event.target.value)}
+                />
+              </Space>
+            )}
           </Space>
         )}
       </Modal>
