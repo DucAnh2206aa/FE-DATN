@@ -391,6 +391,24 @@ export const ProductDetailPage = () => {
   const resolvedActiveVariantSlide = Math.min(activeVariantSlide, maxVariantSlideIndex)
   const resolvedActiveImageIndex = Math.min(activeImageIndex, Math.max(gallery.length - 1, 0))
 
+  const variantSlideIndexMap = useMemo(() => {
+    const slideIndexMap = new Map<string, number>()
+
+    variantSlides.forEach((slideVariants, slideIndex) => {
+      slideVariants.forEach((variant) => {
+        slideIndexMap.set(variant.id, slideIndex)
+      })
+    })
+
+    return slideIndexMap
+  }, [variantSlides])
+  const hasMultipleVariantSlides = variantSlides.length > 1
+  const maxVariantSlideIndex = Math.max(variantSlides.length - 1, 0)
+  const resolvedActiveVariantSlide = Math.min(activeVariantSlide, maxVariantSlideIndex)
+
+  const maxVariantSlideIndex = Math.max(variantSlides.length - 1, 0)
+  const resolvedActiveVariantSlide = Math.min(activeVariantSlide, maxVariantSlideIndex)
+
   const relatedProducts = (relatedProductsQuery.data?.items ?? [])
     .filter((item) => item.id !== productId)
     .slice(0, 8)
@@ -564,15 +582,15 @@ export const ProductDetailPage = () => {
       return
     }
 
-    if (!selectedVariant.isAvailable || selectedVariant.stockQuantity <= 0) {
-      void message.error('Phiên bản đã hết hàng')
-      return
-    }
+  if (!selectedVariant) {
+    void message.warning('Bạn cần chọn phiên bản sản phẩm trước khi thêm vào giỏ hàng')
+    return
+  }
 
-    const normalizedQuantity = Math.min(
-      Math.max(purchaseQuantity, 1),
-      selectedVariant.stockQuantity
-    )
+  if (!selectedVariant.isAvailable || selectedVariant.stockQuantity <= 0) {
+    void message.error('Phiên bản đã hết hàng')
+    return
+  }
 
     if (normalizedQuantity !== purchaseQuantity) {
       setUiState((prev) => ({
@@ -582,35 +600,28 @@ export const ProductDetailPage = () => {
       }))
     }
 
-    const cachedCart = queryClient.getQueryData<CartResponse>(queryKeys.cart.me)
-    const resolvedCart: CartResponse =
-      cachedCart ??
-      (await queryClient.fetchQuery({
-        queryKey: queryKeys.cart.me,
-        queryFn: getMyCart,
-      }))
+  if (normalizedQuantity !== purchaseQuantity) {
+    setPurchaseQuantity(normalizedQuantity)
+  }
 
-    const existingQuantity =
-      resolvedCart.items.find((item) => item.variantId === selectedVariant.id)?.quantity ?? 0
-    const nextQuantity = Math.min(
-      existingQuantity + normalizedQuantity,
-      selectedVariant.stockQuantity
-    )
+  const cachedCart = queryClient.getQueryData<CartResponse>(queryKeys.cart.me)
+  const resolvedCart: CartResponse =
+    cachedCart ??
+    (await queryClient.fetchQuery({
+      queryKey: queryKeys.cart.me,
+      queryFn: getMyCart,
+    }))
 
-    if (nextQuantity <= existingQuantity) {
-      void message.warning('Số lượng trong giỏ đã đạt tối đa theo tồn kho')
-      return
-    }
+  const existingQuantity =
+    resolvedCart.items.find((item) => item.variantId === selectedVariant.id)?.quantity ?? 0
+  const nextQuantity = Math.min(
+    existingQuantity + normalizedQuantity,
+    selectedVariant.stockQuantity
+  )
 
-    addToCartMutation.mutate({
-      productId,
-      variantId: selectedVariant.id,
-      quantity: nextQuantity,
-      selectedAttributes: {
-        color: selectedVariant.color,
-        size: selectedVariant.size,
-      },
-    })
+  if (nextQuantity <= existingQuantity) {
+    void message.warning('Số lượng trong giỏ đã đạt tối đa theo tồn kho')
+    return
   }
 
   const hasActiveVariantFilters = activeColorFilter !== 'all' || activeSizeFilter !== 'all'
@@ -627,20 +638,15 @@ export const ProductDetailPage = () => {
     )
   }
 
-  if (productDetailQuery.isError || !product) {
-    return (
-      <Result
-        status="404"
-        title="Không tìm thấy sản phẩm"
-        extra={
-          <Button type="primary">
-            <Link to={ROUTE_PATHS.ROOT}>Quay về trang chủ</Link>
-          </Button>
-        }
-      />
-    )
-  }
+if (productDetailQuery.isLoading) {
+  return (
+    <div className="flex min-h-[50vh] items-center justify-center">
+      <Spin size="large" />
+    </div>
+  )
+}
 
+if (productDetailQuery.isError || !product) {
   return (
     <div className="space-y-8 py-6">
       <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
@@ -1132,146 +1138,98 @@ export const ProductDetailPage = () => {
         </div>
       </Card>
 
-      <Card title="Mô tả sản phẩm">
-        {normalizedDescription ? (
-          hasMarkupDescription ? (
-            <div
-              className="rich-text-render text-slate-700"
-              dangerouslySetInnerHTML={{
-                __html: sanitizedDescriptionHtml,
-              }}
+                  <Typography.Text type="secondary" className="text-xs">
+                    {formatDateTime(review.createdAt)}
+                  </Typography.Text>
+                  {review.replyContent ? (
+                    <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2">
+                      <Typography.Text strong className="block text-xs text-blue-700">
+                        Phản hồi từ cửa hàng
+                      </Typography.Text>
+                      <Typography.Paragraph className="!mb-0 !mt-1 text-sm">
+                        {review.replyContent}
+                      </Typography.Paragraph>
+                      {review.repliedAt ? (
+                        <Typography.Text type="secondary" className="text-xs">
+                          {formatDateTime(review.repliedAt)}
+                        </Typography.Text>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </Space>
+              }
             />
-          ) : (
-            <Typography.Paragraph className="!mb-0 whitespace-pre-line">
-              {normalizedDescription}
-            </Typography.Paragraph>
-          )
-        ) : (
-          <Typography.Paragraph className="!mb-0" type="secondary">
-            Sản phẩm chưa có mô tả chi tiết.
-          </Typography.Paragraph>
+          </List.Item>
         )}
-      </Card>
+      />
+    </Card>
 
-      <Card title="Đánh giá khách hàng">
-        {productReviewsQuery.isLoading ? <Spin /> : null}
+    <Card title="Bình luận">
+      <Space direction="vertical" size="large" className="w-full">
+        <CommentComposer
+          isAuthenticated={Boolean(accessToken)}
+          isSubmitting={commentMutation.isPending}
+          onSubmit={async (content) => {
+            await commentMutation.mutateAsync(content)
+          }}
+        />
+
+        <Typography.Text type="secondary">
+          {productCommentsQuery.data?.items.length ?? 0} bình luận
+        </Typography.Text>
+
+        {productCommentsQuery.isLoading ? (
+          <div className="py-4 text-center">
+            <Spin />
+          </div>
+        ) : null}
 
         <List
-          dataSource={productReviewsQuery.data?.items ?? []}
-          renderItem={(review: ReviewListItem) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={
-                  <Avatar src={review.user?.avatarUrl}>
-                    {review.user?.fullName?.charAt(0) ?? 'U'}
-                  </Avatar>
-                }
-                title={
-                  <Space direction="vertical" size={0}>
-                    <Typography.Text strong>
-                      {review.user?.fullName ?? review.user?.email ?? 'Khách hàng'}
-                    </Typography.Text>
-                    <Rate disabled value={review.rating} className="!text-sm" />
-                  </Space>
-                }
-                description={
-                  <Space direction="vertical" size={4}>
-                    <Typography.Paragraph className="!mb-0">
-                      {review.content || 'Không có nội dung'}
-                    </Typography.Paragraph>
-
-                    <Typography.Text type="secondary" className="text-xs">
-                      {formatDateTime(review.createdAt)}
-                    </Typography.Text>
-                    {review.replyContent ? (
-                      <div className="rounded-md border border-blue-100 bg-blue-50 px-3 py-2">
-                        <Typography.Text strong className="block text-xs text-blue-700">
-                          Phản hồi từ cửa hàng
-                        </Typography.Text>
-                        <Typography.Paragraph className="!mb-0 !mt-1 text-sm">
-                          {review.replyContent}
-                        </Typography.Paragraph>
-                        {review.repliedAt ? (
-                          <Typography.Text type="secondary" className="text-xs">
-                            {formatDateTime(review.repliedAt)}
-                          </Typography.Text>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </Space>
-                }
-              />
+          dataSource={productCommentsQuery.data?.items ?? []}
+          split={false}
+          renderItem={(comment: CommentListItem) => (
+            <List.Item className="!px-0">
+              <div className="w-full rounded-xl border border-slate-200 bg-white p-4">
+                <List.Item.Meta
+                  avatar={
+                    <Avatar src={comment.user?.avatarUrl}>
+                      {comment.user?.fullName?.charAt(0) ?? 'U'}
+                    </Avatar>
+                  }
+                  title={comment.user?.fullName ?? comment.user?.email ?? 'Người dùng'}
+                  description={
+                    <Space direction="vertical" size={4}>
+                      <Typography.Paragraph className="!mb-0 text-slate-700">
+                        {comment.content}
+                      </Typography.Paragraph>
+                      <Typography.Text type="secondary" className="text-xs">
+                        {formatDateTime(comment.createdAt)}
+                      </Typography.Text>
+                    </Space>
+                  }
+                />
+              </div>
             </List.Item>
           )}
         />
-      </Card>
+      </Space>
+    </Card>
 
-      <Card title="Bình luận">
-        <Space direction="vertical" size="large" className="w-full">
-          <CommentComposer
-            isAuthenticated={Boolean(accessToken)}
-            isSubmitting={commentMutation.isPending}
-            onSubmit={async (content) => {
-              await commentMutation.mutateAsync(content)
-            }}
-          />
+    <Card title="Sản phẩm liên quan">
+      {relatedProductsQuery.isLoading ? <Spin /> : null}
 
-          <Typography.Text type="secondary">
-            {productCommentsQuery.data?.items.length ?? 0} bình luận
-          </Typography.Text>
+      {!relatedProductsQuery.isLoading && relatedProducts.length === 0 ? (
+        <Empty description="Không có sản phẩm liên quan" />
+      ) : null}
 
-          {productCommentsQuery.isLoading ? (
-            <div className="py-4 text-center">
-              <Spin />
-            </div>
-          ) : null}
-
-          <List
-            dataSource={productCommentsQuery.data?.items ?? []}
-            split={false}
-            renderItem={(comment: CommentListItem) => (
-              <List.Item className="!px-0">
-                <div className="w-full rounded-xl border border-slate-200 bg-white p-4">
-                  <List.Item.Meta
-                    avatar={
-                      <Avatar src={comment.user?.avatarUrl}>
-                        {comment.user?.fullName?.charAt(0) ?? 'U'}
-                      </Avatar>
-                    }
-                    title={comment.user?.fullName ?? comment.user?.email ?? 'Người dùng'}
-                    description={
-                      <Space direction="vertical" size={4}>
-                        <Typography.Paragraph className="!mb-0 text-slate-700">
-                          {comment.content}
-                        </Typography.Paragraph>
-                        <Typography.Text type="secondary" className="text-xs">
-                          {formatDateTime(comment.createdAt)}
-                        </Typography.Text>
-                      </Space>
-                    }
-                  />
-                </div>
-              </List.Item>
-            )}
-          />
-        </Space>
-      </Card>
-
-      <Card title="Sản phẩm liên quan">
-        {relatedProductsQuery.isLoading ? <Spin /> : null}
-
-        {!relatedProductsQuery.isLoading && relatedProducts.length === 0 ? (
-          <Empty description="Không có sản phẩm liên quan" />
-        ) : null}
-
-        <Row gutter={[16, 16]}>
-          {relatedProducts.map((item) => (
-            <Col key={item.id} xs={24} sm={12} lg={8} xl={6}>
-              <ProductCard product={item} compact />
-            </Col>
-          ))}
-        </Row>
-      </Card>
-    </div>
-  )
+      <Row gutter={[16, 16]}>
+        {relatedProducts.map((item) => (
+          <Col key={item.id} xs={24} sm={12} lg={8} xl={6}>
+            <ProductCard product={item} compact />
+          </Col>
+        ))}
+      </Row>
+    </Card>
+  </div>
+)
 }
