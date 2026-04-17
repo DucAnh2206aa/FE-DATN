@@ -18,7 +18,7 @@ import {
   Typography,
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 import {
@@ -30,6 +30,7 @@ import {
   retryMyVnpayPayment,
 } from '@/features/account/api/account.api'
 import type {
+  CancelMyOrderPayload,
   CancelRefundRequestStatus,
   CreateCancelRefundRequestPayload,
   MyOrderItem,
@@ -37,9 +38,6 @@ import type {
 } from '@/features/account/model/account.types'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { getVietQrBankByCode, VIET_QR_BANK_OPTIONS } from '@/shared/constants/vietqr'
-
-
-
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
 
@@ -47,6 +45,7 @@ const ORDER_PAGE_SIZE = 8
 const ITEM_PLACEHOLDER = '/images/product-placeholder.svg'
 
 const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  awaiting_payment: 'Chờ thanh toán',
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
   shipping: 'Đang giao',
@@ -57,6 +56,7 @@ const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
 }
 
 const ORDER_STATUS_COLOR: Record<OrderStatus, string> = {
+  awaiting_payment: 'orange',
   pending: 'gold',
   confirmed: 'blue',
   shipping: 'cyan',
@@ -91,7 +91,7 @@ const getPaymentMethodLabel = (order: MyOrderItem) => {
     return 'ZaloPay - Ví'
   }
 
-   return 'ZaloPay '
+  return 'ZaloPay '
 }
 
 const PAYMENT_STATUS_LABEL: Record<MyOrderItem['paymentStatus'], string> = {
@@ -99,6 +99,21 @@ const PAYMENT_STATUS_LABEL: Record<MyOrderItem['paymentStatus'], string> = {
   paid: 'Đã thanh toán',
   failed: 'Thất bại',
   refunded: 'Hoàn tiền',
+}
+
+const formatVoucherSummary = (order: MyOrderItem) => {
+  if (!order.voucher) {
+    return 'Không áp dụng'
+  }
+
+  const baseValue =
+    order.voucher.discountType === 'percentage'
+      ? `${order.voucher.discountValue}%`
+      : formatVndCurrency(order.voucher.discountValue)
+
+  return order.voucher.maxDiscountAmount
+    ? `${baseValue} · tối đa ${formatVndCurrency(order.voucher.maxDiscountAmount)}`
+    : baseValue
 }
 
 const CANCEL_REFUND_STATUS_LABEL: Record<CancelRefundRequestStatus, string> = {
@@ -117,7 +132,7 @@ const CANCEL_REFUND_STATUS_COLOR: Record<CancelRefundRequestStatus, string> = {
 // worklog: 2026-03-04 21:16:19 | ducanh | cleanup | canCancelOrder
 // worklog: 2026-03-04 12:58:05 | trantu | fix | canCancelOrder
 const canCancelOrder = (status: OrderStatus) => {
-  return status === 'pending' || status === 'confirmed'
+  return status === 'awaiting_payment' || status === 'pending' || status === 'confirmed'
 }
 
 const canConfirmReceived = (status: OrderStatus) => {
@@ -131,7 +146,7 @@ const canReviewOrder = (order: MyOrderItem) => {
 const canRetryVnpay = (order: MyOrderItem) => {
   return (
     (order.paymentMethod === 'vnpay' || order.paymentMethod === 'zalopay') &&
-    order.status === 'pending' &&
+    order.status === 'awaiting_payment' &&
     (order.paymentStatus === 'pending' || order.paymentStatus === 'failed')
   )
 }
@@ -148,6 +163,14 @@ const canRequestCancelRefund = (order: MyOrderItem) => {
   return !order.cancelRefundRequest || order.cancelRefundRequest.status === 'rejected'
 }
 
+const getCancelOrderNote = (order: MyOrderItem) => {
+  const cancelledHistory = [...order.statusHistory]
+    .reverse()
+    .find((history) => history.status === 'cancelled')
+
+  return cancelledHistory?.note?.trim() || undefined
+}
+
 // worklog: 2026-03-04 12:32:16 | trantu | refactor | MyOrdersPage
 // worklog: 2026-03-04 14:54:15 | ducanh | refactor | MyOrdersPage
 // worklog: 2026-03-04 10:16:25 | quochuy | cleanup | MyOrdersPage
@@ -155,6 +178,7 @@ const canRequestCancelRefund = (order: MyOrderItem) => {
 export const MyOrdersPage = () => {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()
+  const [cancelOrderForm] = Form.useForm<CancelMyOrderPayload>()
   const [cancelRefundForm] = Form.useForm<CreateCancelRefundRequestPayload>()
   const [page, setPage] = useState(1)
   const [status, setStatus] = useState<OrderStatus | 'all'>('all')
@@ -165,6 +189,8 @@ export const MyOrdersPage = () => {
   const [selectedReviewProductId, setSelectedReviewProductId] = useState<string | null>(null)
   const [reviewRating, setReviewRating] = useState(0)
   const [reviewContent, setReviewContent] = useState('')
+  const [cancelOrderModalOpen, setCancelOrderModalOpen] = useState(false)
+  const [cancelOrderTarget, setCancelOrderTarget] = useState<MyOrderItem | null>(null)
   const [cancelRefundModalOpen, setCancelRefundModalOpen] = useState(false)
   const [cancelRefundOrder, setCancelRefundOrder] = useState<MyOrderItem | null>(null)
   const [detailOrder, setDetailOrder] = useState<MyOrderItem | null>(null)
@@ -187,12 +213,16 @@ export const MyOrdersPage = () => {
   })
 
   const cancelOrderMutation = useMutation({
-    mutationFn: (orderId: string) => cancelMyOrder(orderId),
+    mutationFn: (payload: { orderId: string; body: CancelMyOrderPayload }) =>
+      cancelMyOrder(payload.orderId, payload.body),
     onSuccess: async () => {
       await queryClient.invalidateQueries({
         queryKey: queryKeys.account.orders(),
       })
       void message.success('Đã hủy đơn hàng')
+      setCancelOrderModalOpen(false)
+      setCancelOrderTarget(null)
+      cancelOrderForm.resetFields()
     },
     onError: (error) => {
       void message.error(error.message)
@@ -211,7 +241,7 @@ export const MyOrdersPage = () => {
         return
       }
 
-      void message.warning('Không tạo được liên kết thanh toán VNPay')
+      void message.warning('Không tạo được liên kết thanh toán')
     },
     onError: (error) => {
       void message.error(error.message)
@@ -234,11 +264,6 @@ export const MyOrdersPage = () => {
   const createReviewMutation = useMutation({
     mutationFn: createMyReview,
     onSuccess: async (_, payload) => {
-
-
-
-
-
       await queryClient.invalidateQueries({
         queryKey: queryKeys.account.orders(),
       })
@@ -285,28 +310,46 @@ export const MyOrdersPage = () => {
       return
     }
 
-    setExpandedOrderIds((current) =>
-      current.includes(focusOrderId) ? current : [...current, focusOrderId]
-    )
-    setDetailOrder(focusedOrder)
-    setDetailModalOpen(true)
-    setHasHandledFocusOrder(true)
+    const timer = window.setTimeout(() => {
+      setExpandedOrderIds((current) =>
+        current.includes(focusOrderId) ? current : [...current, focusOrderId]
+      )
+      setDetailOrder(focusedOrder)
+      setDetailModalOpen(true)
+      setHasHandledFocusOrder(true)
+    }, 0)
+
+    return () => window.clearTimeout(timer)
   }, [focusOrderId, hasHandledFocusOrder, ordersQuery.data?.items])
 
-  const openCancelRefundModal = (order: MyOrderItem) => {
-    setCancelRefundOrder(order)
-    setCancelRefundModalOpen(true)
-    const existingRequest = order.cancelRefundRequest
-    cancelRefundForm.setFieldsValue({
-      bankCode: existingRequest?.bankCode,
-      bankName: existingRequest?.bankName,
-      accountNumber: existingRequest?.accountNumber,
-      accountHolder: existingRequest?.accountHolder,
-      note: existingRequest?.note,
-    })
-  }
+  const openCancelRefundModal = useCallback(
+    (order: MyOrderItem) => {
+      setCancelRefundOrder(order)
+      setCancelRefundModalOpen(true)
+      const existingRequest = order.cancelRefundRequest
+      cancelRefundForm.setFieldsValue({
+        bankCode: existingRequest?.bankCode,
+        bankName: existingRequest?.bankName,
+        accountNumber: existingRequest?.accountNumber,
+        accountHolder: existingRequest?.accountHolder,
+        note: existingRequest?.note,
+      })
+    },
+    [cancelRefundForm]
+  )
 
-  const openReviewModal = (order: MyOrderItem) => {
+  const openCancelOrderModal = useCallback(
+    (order: MyOrderItem) => {
+      setCancelOrderTarget(order)
+      setCancelOrderModalOpen(true)
+      cancelOrderForm.setFieldsValue({
+        note: '',
+      })
+    },
+    [cancelOrderForm]
+  )
+
+  const openReviewModal = useCallback((order: MyOrderItem) => {
     const firstPendingReviewItem = order.items.find((item) => !item.isReviewed)
 
     setReviewOrder(order)
@@ -316,7 +359,7 @@ export const MyOrdersPage = () => {
     setReviewRating(0)
     setReviewContent('')
     setReviewModalOpen(true)
-  }
+  }, [])
 
   const selectedReviewItem =
     reviewOrder?.items.find((item) => item.productId === selectedReviewProductId) ?? null
@@ -518,6 +561,42 @@ export const MyOrdersPage = () => {
               ),
             },
             {
+              key: 'voucher',
+              label: 'Voucher áp dụng',
+              children: record.voucher ? (
+                <Space direction="vertical" size={2}>
+                  <Space size={[8, 8]} wrap>
+                    <Tag color="purple" className="!m-0">
+                      {record.voucher.code}
+                    </Tag>
+                    <Typography.Text strong>{formatVoucherSummary(record)}</Typography.Text>
+                  </Space>
+                  {record.voucher.description ? (
+                    <Typography.Text type="secondary" className="text-xs">
+                      {record.voucher.description}
+                    </Typography.Text>
+                  ) : null}
+                </Space>
+              ) : (
+                'Không áp dụng'
+              ),
+            },
+            {
+              key: 'subtotal',
+              label: 'Tạm tính',
+              children: formatVndCurrency(record.subtotal),
+            },
+            {
+              key: 'shippingFee',
+              label: 'Phí vận chuyển',
+              children: formatVndCurrency(record.shippingFee),
+            },
+            {
+              key: 'discountAmount',
+              label: 'Giảm giá thực tế',
+              children: formatVndCurrency(record.discountAmount),
+            },
+            {
               key: 'status',
               label: 'Trạng thái đơn',
               children: (
@@ -526,10 +605,39 @@ export const MyOrdersPage = () => {
                 </Tag>
               ),
             },
+            ...(record.status === 'cancelled' && getCancelOrderNote(record)
+              ? [
+                  {
+                    key: 'cancelNote',
+                    label: 'Lý do hủy',
+                    children: getCancelOrderNote(record),
+                  },
+                ]
+              : []),
             {
               key: 'totalAmount',
               label: 'Tổng tiền',
               children: formatVndCurrency(record.totalAmount),
+            },
+            {
+              key: 'paymentTxnRef',
+              label: 'Mã giao dịch hệ thống',
+              children: record.paymentTxnRef ?? '—',
+            },
+            {
+              key: 'paymentTransactionNo',
+              label: 'Mã giao dịch cổng thanh toán',
+              children: record.paymentTransactionNo ?? '—',
+            },
+            {
+              key: 'paymentGatewayResponseCode',
+              label: 'Mã phản hồi cổng thanh toán',
+              children: record.paymentGatewayResponseCode ?? '—',
+            },
+            {
+              key: 'paidAt',
+              label: 'Thời gian thanh toán',
+              children: record.paidAt ? formatDateTime(record.paidAt) : 'Chưa thanh toán',
             },
           ]}
         />
@@ -545,8 +653,6 @@ export const MyOrdersPage = () => {
       {renderOrderRefundBlocks(record)}
     </div>
   )
-
-
 
   const columns: ColumnsType<MyOrderItem> = useMemo(
     () => [
@@ -609,7 +715,6 @@ export const MyOrdersPage = () => {
           const allowConfirmReceived = canConfirmReceived(record.status)
           const allowReview = canReviewOrder(record)
           const allowCancelRefund = canRequestCancelRefund(record)
-
           return (
             <Space wrap>
               <Button
@@ -655,12 +760,6 @@ export const MyOrdersPage = () => {
                   size="small"
                   onClick={() => {
                     openReviewModal(record)
-
-
-
-
-
-
                   }}
                 >
                   Đánh giá sản phẩm
@@ -668,23 +767,23 @@ export const MyOrdersPage = () => {
               ) : null}
 
               {allowCancel ? (
-                <Popconfirm
-                  title="Bạn muốn hủy đơn hàng này?"
-                  description={
-                    record.paymentStatus === 'paid' && record.paymentMethod !== 'cod'
-                      ? 'Sau khi hủy đơn, bạn có thể gửi yêu cầu hoàn tiền và cung cấp thông tin tài khoản ngân hàng.'
-                      : undefined
-                  }
-                  okText="Hủy đơn"
-                  cancelText="Đóng"
-                  onConfirm={() => {
-                    cancelOrderMutation.mutate(record.id)
+                <Button
+                  size="small"
+                  danger
+                  loading={cancelOrderMutation.isPending && cancelOrderTarget?.id === record.id}
+                  onClick={() => {
+                    openCancelOrderModal(record)
+
+
+
+
+
                   }}
                 >
-                  <Button size="small" danger loading={cancelOrderMutation.isPending}>
-                    Hủy đơn
-                  </Button>
-                </Popconfirm>
+                  Hủy đơn
+                </Button>
+
+
               ) : null}
 
               {allowCancelRefund ? (
@@ -708,8 +807,9 @@ export const MyOrdersPage = () => {
     ],
     [
       cancelOrderMutation,
+      cancelOrderTarget?.id,
       confirmReceivedMutation,
-
+      openCancelOrderModal,
       openCancelRefundModal,
       openReviewModal,
       repayOrderMutation,
@@ -733,6 +833,7 @@ export const MyOrdersPage = () => {
           className="w-full md:w-52"
           options={[
             { label: 'Tất cả trạng thái', value: 'all' },
+            { label: ORDER_STATUS_LABEL.awaiting_payment, value: 'awaiting_payment' },
             { label: ORDER_STATUS_LABEL.pending, value: 'pending' },
             { label: ORDER_STATUS_LABEL.confirmed, value: 'confirmed' },
             { label: ORDER_STATUS_LABEL.shipping, value: 'shipping' },
@@ -785,8 +886,6 @@ export const MyOrdersPage = () => {
             })
           },
           expandedRowRender: (record) => renderOrderDetailContent(record),
-
-
         }}
       />
 
@@ -794,6 +893,18 @@ export const MyOrdersPage = () => {
         open={detailModalOpen}
         title={`Chi tiết đơn hàng${detailOrder ? ` · ${detailOrder.orderCode}` : ''}`}
         footer={[
+          detailOrder && canRetryVnpay(detailOrder) ? (
+            <Button
+              key="repay"
+              type="primary"
+              loading={repayOrderMutation.isPending}
+              onClick={() => {
+                repayOrderMutation.mutate(detailOrder.id)
+              }}
+            >
+              Thanh toán lại
+            </Button>
+          ) : null,
           <Button
             key="close"
             onClick={() => {
@@ -811,6 +922,74 @@ export const MyOrdersPage = () => {
         }}
       >
         {detailOrder ? renderOrderDetailContent(detailOrder, true) : null}
+      </Modal>
+
+      <Modal
+        open={cancelOrderModalOpen}
+        title={`Hủy đơn hàng${cancelOrderTarget ? ` · ${cancelOrderTarget.orderCode}` : ''}`}
+        okText="Xác nhận hủy"
+        cancelText="Đóng"
+        confirmLoading={cancelOrderMutation.isPending}
+        onCancel={() => {
+          setCancelOrderModalOpen(false)
+          setCancelOrderTarget(null)
+          cancelOrderForm.resetFields()
+        }}
+        onOk={() => {
+          if (!cancelOrderTarget) {
+            return
+          }
+
+          cancelOrderForm
+            .validateFields()
+            .then((values) => {
+              cancelOrderMutation.mutate({
+                orderId: cancelOrderTarget.id,
+                body: {
+                  note: values.note.trim(),
+                },
+              })
+            })
+            .catch(() => undefined)
+        }}
+      >
+        <Space direction="vertical" size={16} className="w-full">
+          {cancelOrderTarget ? (
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              <Typography.Text strong className="block text-slate-900">
+                {cancelOrderTarget.orderCode}
+              </Typography.Text>
+              <Typography.Text className="block">
+                Tổng tiền: {formatVndCurrency(cancelOrderTarget.totalAmount)}
+              </Typography.Text>
+              {cancelOrderTarget.paymentStatus === 'paid' &&
+              cancelOrderTarget.paymentMethod !== 'cod' ? (
+                <Typography.Text type="secondary" className="mt-1 block text-xs">
+                  Sau khi hủy đơn, bạn có thể gửi yêu cầu hoàn tiền và cung cấp thông tin tài khoản
+                  ngân hàng.
+                </Typography.Text>
+              ) : null}
+            </div>
+          ) : null}
+
+          <Form<CancelMyOrderPayload> form={cancelOrderForm} layout="vertical">
+            <Form.Item
+              label="Lý do hủy đơn"
+              name="note"
+              rules={[
+                { required: true, message: 'Vui lòng nhập lý do hủy đơn' },
+                { max: 255, message: 'Lý do hủy tối đa 255 ký tự' },
+              ]}
+            >
+              <Input.TextArea
+                rows={4}
+                maxLength={255}
+                showCount
+                placeholder="Ví dụ: tôi muốn đổi địa chỉ nhận hàng, đặt nhầm sản phẩm hoặc cần đổi phương thức thanh toán"
+              />
+            </Form.Item>
+          </Form>
+        </Space>
       </Modal>
 
       <Modal
@@ -903,9 +1082,6 @@ export const MyOrdersPage = () => {
 
             <Form.Item label="Ghi chú" name="note">
               <Input.TextArea rows={3} placeholder="Ví dụ: hoàn tiền vào tài khoản chính của tôi" />
-
-
-
             </Form.Item>
           </Form>
 
@@ -943,8 +1119,6 @@ export const MyOrdersPage = () => {
             return
           }
 
-
-
           if (reviewRating < 1) {
             void message.error('Vui lòng chọn số sao đánh giá')
             return
@@ -957,7 +1131,6 @@ export const MyOrdersPage = () => {
             content: reviewContent.trim() || undefined,
           })
         }}
-
       >
         {!reviewOrder ? null : (
           <Space direction="vertical" size={16} className="w-full">
@@ -981,21 +1154,6 @@ export const MyOrdersPage = () => {
                         if (!item.isReviewed) {
                           setSelectedReviewProductId(item.productId)
                         }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
                       }}
                       className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left transition ${
                         item.isReviewed
