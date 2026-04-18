@@ -49,6 +49,7 @@ const PAGE_SIZE = 10
 const ITEM_PLACEHOLDER = '/images/product-placeholder.svg'
 
 const ORDER_STATUS_LABEL: Record<AdminOrderStatus, string> = {
+  awaiting_payment: 'Chờ thanh toán',
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
   shipping: 'Đang giao',
@@ -59,6 +60,7 @@ const ORDER_STATUS_LABEL: Record<AdminOrderStatus, string> = {
 }
 
 const ORDER_STATUS_COLOR: Record<AdminOrderStatus, string> = {
+  awaiting_payment: 'orange',
   pending: 'gold',
   confirmed: 'blue',
   shipping: 'cyan',
@@ -69,6 +71,7 @@ const ORDER_STATUS_COLOR: Record<AdminOrderStatus, string> = {
 }
 
 const ORDER_STATUS_TRANSITIONS: Record<AdminOrderStatus, AdminOrderStatus[]> = {
+  awaiting_payment: ['cancelled'],
   pending: ['confirmed', 'cancelled'],
   confirmed: ['shipping', 'cancelled'],
   shipping: ['delivered'],
@@ -175,6 +178,16 @@ interface UpdateCancelRefundFormValues {
   adminNote?: string
 }
 
+interface StatusConfirmConfig {
+  title: string
+  currentLabel: string
+  nextLabel: string
+  description?: string
+  danger?: boolean
+  onConfirm: () => Promise<unknown>
+}
+
+
 export const OrderManagementPage = () => {
   const queryClient = useQueryClient()
   const [statusForm] = Form.useForm<UpdateStatusFormValues>()
@@ -256,8 +269,7 @@ export const OrderManagementPage = () => {
         note?: string
         refundEvidenceImages?: string[]
       }
-    }) =>
-      updateAdminReturnRequest(payload.orderId, payload.returnRequestId, payload.payload),
+      }) => updateAdminReturnRequest(payload.orderId, payload.returnRequestId, payload.payload),
     onSuccess: async (updatedOrder) => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
       void message.success('Đã cập nhật hoàn hàng')
@@ -379,7 +391,8 @@ export const OrderManagementPage = () => {
       setCancelRefundEvidenceImages((prev) => [...prev, uploaded.url])
       void message.success('Tải bill chuyển khoản thành công')
     } catch (error) {
-      const messageText = error instanceof Error ? error.message : 'Upload bill chuyển khoản thất bại'
+      const messageText =
+        error instanceof Error ? error.message : 'Upload bill chuyển khoản thất bại'
       void message.error(messageText)
     } finally {
       setUploadingCancelRefundEvidence(false)
@@ -392,17 +405,134 @@ export const OrderManagementPage = () => {
     setCancelRefundEvidenceImages((prev) => prev.filter((item) => item !== url))
   }
 
+  const openStatusConfirm = ({
+    title,
+    currentLabel,
+    nextLabel,
+    description,
+    danger = false,
+    onConfirm,
+  }: StatusConfirmConfig) => {
+    void Modal.confirm({
+      title,
+      centered: true,
+      okText: 'Xác nhận',
+      cancelText: 'Quay lại',
+      okButtonProps: danger ? { danger: true } : undefined,
+      content: (
+        <Space direction="vertical" size={4}>
+          <Typography.Text>
+            <Typography.Text strong>{currentLabel}</Typography.Text>
+            {' -> '}
+            <Typography.Text strong>{nextLabel}</Typography.Text>
+          </Typography.Text>
+          <Typography.Text type="secondary">
+            {description ?? 'Vui lòng kiểm tra kỹ trước khi cập nhật trạng thái.'}
+          </Typography.Text>
+        </Space>
+      ),
+      onOk: onConfirm,
+    })
+  }
+
+
   const handleSubmitStatus = (values: UpdateStatusFormValues) => {
     if (!updatingOrder) {
       return
     }
 
-    updateStatusMutation.mutate({
-      orderId: updatingOrder.id,
-      payload: {
-        status: values.status,
-        note: values.note?.trim() || undefined,
-      },
+    const trimmedNote = values.note?.trim() || undefined
+
+    openStatusConfirm({
+      title: `Xác nhận cập nhật trạng thái đơn ${updatingOrder.orderCode}`,
+      currentLabel: ORDER_STATUS_LABEL[updatingOrder.status],
+      nextLabel: ORDER_STATUS_LABEL[values.status],
+      description: trimmedNote
+        ? `Ghi chú: ${trimmedNote}`
+        : 'Thao tác này sẽ cập nhật tiến trình xử lý của đơn hàng.',
+      danger: values.status === 'cancelled',
+      onConfirm: async () =>
+        updateStatusMutation.mutateAsync({
+          orderId: updatingOrder.id,
+          payload: {
+            status: values.status,
+            note: trimmedNote,
+          },
+        }),
+    })
+  }
+  const handleSubmitReturnRequest = (
+    orderId: string,
+    request: AdminReturnRequest,
+    values: UpdateReturnRequestFormValues,
+  ) => {
+    const effectiveRefundMethod = values.refundMethod ?? request.refundMethod
+
+    if (
+      values.status === 'refunded' &&
+      effectiveRefundMethod === 'bank_transfer' &&
+      refundEvidenceImages.length === 0
+    ) {
+      void message.error('Cần ảnh minh chứng hoàn tiền khi chuyển khoản')
+      return
+    }
+
+    const trimmedNote = values.note?.trim() || undefined
+    const descriptionParts = [
+      effectiveRefundMethod ? `Phương thức hoàn: ${REFUND_METHOD_LABEL[effectiveRefundMethod]}` : '',
+      trimmedNote ? `Ghi chú: ${trimmedNote}` : '',
+    ].filter(Boolean)
+
+    openStatusConfirm({
+      title: 'Xác nhận cập nhật yêu cầu hoàn hàng',
+      currentLabel: RETURN_STATUS_LABEL[request.status],
+      nextLabel: RETURN_STATUS_LABEL[values.status],
+      description:
+        descriptionParts.join(' · ') || 'Thao tác này sẽ cập nhật trạng thái xử lý hoàn hàng.',
+      danger: values.status === 'rejected',
+      onConfirm: async () =>
+        updateReturnRequestMutation.mutateAsync({
+          orderId,
+          returnRequestId: request.id,
+          payload: {
+            status: values.status,
+            refundMethod: values.refundMethod,
+            note: trimmedNote,
+            refundEvidenceImages,
+          },
+        }),
+    })
+  }
+
+  const handleSubmitCancelRefundRequest = (
+    orderId: string,
+    request: AdminCancelRefundRequest,
+    values: UpdateCancelRefundFormValues,
+    ) => {
+    if (values.status === 'refunded' && cancelRefundEvidenceImages.length === 0) {
+      void message.error('Cần upload bill chuyển khoản trước khi xác nhận hoàn tiền')
+      return
+    }
+
+    const trimmedAdminNote = values.adminNote?.trim() || undefined
+
+    openStatusConfirm({
+      title: 'Xác nhận xử lý hoàn tiền đơn hủy',
+      currentLabel: CANCEL_REFUND_STATUS_LABEL[request.status],
+      nextLabel: CANCEL_REFUND_STATUS_LABEL[values.status],
+      description: trimmedAdminNote
+        ? `Ghi chú nhân viên: ${trimmedAdminNote}`
+        : `Số tiền hoàn: ${formatVndCurrency(request.refundAmount)}`,
+      danger: values.status === 'rejected',
+      onConfirm: async () =>
+        updateCancelRefundMutation.mutateAsync({
+          orderId,
+          payload: {
+            status: values.status,
+            adminNote: trimmedAdminNote,
+            refundEvidenceImages: cancelRefundEvidenceImages,
+          },
+        }),
     })
   }
 
@@ -503,6 +633,7 @@ export const OrderManagementPage = () => {
 
   const orders = ordersQuery.data?.items ?? []
   const totalRevenue = sumBy(orders, (order) => order.totalAmount)
+  const awaitingPaymentCount = orders.filter((order) => order.status === 'awaiting_payment').length
   const pendingCount = orders.filter((order) => order.status === 'pending').length
 
   const sortedStatusHistory = useMemo(() => {
@@ -536,9 +667,12 @@ export const OrderManagementPage = () => {
         </Typography.Text>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
         <Card>
           <Statistic title="Tổng đơn (theo filter)" value={ordersQuery.data?.totalItems ?? 0} />
+        </Card>
+        <Card>
+          <Statistic title="Đơn chờ thanh toán" value={awaitingPaymentCount} />
         </Card>
         <Card>
           <Statistic title="Đơn chờ xác nhận (trang hiện tại)" value={pendingCount} />
@@ -594,15 +728,16 @@ export const OrderManagementPage = () => {
             value={statusFilter}
             className="w-full md:w-56"
               options={[
-                { label: 'Tất cả trạng thái', value: 'all' },
-                { label: ORDER_STATUS_LABEL.pending, value: 'pending' },
-                { label: ORDER_STATUS_LABEL.confirmed, value: 'confirmed' },
-                { label: ORDER_STATUS_LABEL.shipping, value: 'shipping' },
-                { label: ORDER_STATUS_LABEL.delivered, value: 'delivered' },
-                { label: ORDER_STATUS_LABEL.completed, value: 'completed' },
-                { label: ORDER_STATUS_LABEL.cancelled, value: 'cancelled' },
-                { label: ORDER_STATUS_LABEL.returned, value: 'returned' },
-              ]}
+              { label: 'Tất cả trạng thái', value: 'all' },
+              { label: ORDER_STATUS_LABEL.awaiting_payment, value: 'awaiting_payment' },
+              { label: ORDER_STATUS_LABEL.pending, value: 'pending' },
+              { label: ORDER_STATUS_LABEL.confirmed, value: 'confirmed' },
+              { label: ORDER_STATUS_LABEL.shipping, value: 'shipping' },
+              { label: ORDER_STATUS_LABEL.delivered, value: 'delivered' },
+              { label: ORDER_STATUS_LABEL.completed, value: 'completed' },
+              { label: ORDER_STATUS_LABEL.cancelled, value: 'cancelled' },
+              { label: ORDER_STATUS_LABEL.returned, value: 'returned' },
+            ]}
             onChange={(value) => {
               setPage(1)
               setStatusFilter(value as AdminOrderStatus | 'all')
@@ -947,7 +1082,10 @@ export const OrderManagementPage = () => {
                         {formatVndCurrency(cancelRefundRequest.refundAmount)}
                       </Typography.Text>
                     </Space>
-                    <Button size="small" onClick={() => openCancelRefundModal(detailOrder.id, cancelRefundRequest)}>
+                    <Button
+                      size="small"
+                      onClick={() => openCancelRefundModal(detailOrder.id, cancelRefundRequest)}
+                    >
                       Xử lý hoàn tiền
                     </Button>
                   </div>
@@ -1024,7 +1162,13 @@ export const OrderManagementPage = () => {
                       </Typography.Text>
                       <div className="flex flex-wrap gap-2">
                         {cancelRefundRequest.refundEvidenceImages.map((url) => (
-                          <a key={url} href={url} target="_blank" rel="noreferrer" className="block">
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block"
+                          >
                             <img
                               src={url}
                               alt="Bill chuyển khoản"
@@ -1087,28 +1231,7 @@ export const OrderManagementPage = () => {
           returnForm
             .validateFields()
             .then((values) => {
-              const effectiveRefundMethod =
-                values.refundMethod ?? returnContext.request.refundMethod
-
-              if (
-                values.status === 'refunded' &&
-                effectiveRefundMethod === 'bank_transfer' &&
-                refundEvidenceImages.length === 0
-              ) {
-                void message.error('Cần ảnh minh chứng hoàn tiền khi chuyển khoản')
-                return
-              }
-
-              updateReturnRequestMutation.mutate({
-                orderId: returnContext.orderId,
-                returnRequestId: returnContext.request.id,
-                payload: {
-                  status: values.status,
-                  refundMethod: values.refundMethod,
-                  note: values.note?.trim() || undefined,
-                  refundEvidenceImages,
-                },
-              })
+              handleSubmitReturnRequest(returnContext.orderId, returnContext.request, values)
             })
             .catch(() => undefined)
         }}
@@ -1202,19 +1325,11 @@ export const OrderManagementPage = () => {
           cancelRefundForm
             .validateFields()
             .then((values) => {
-              if (values.status === 'refunded' && cancelRefundEvidenceImages.length === 0) {
-                void message.error('Cần upload bill chuyển khoản trước khi xác nhận hoàn tiền')
-                return
-              }
-
-              updateCancelRefundMutation.mutate({
-                orderId: cancelRefundContext.orderId,
-                payload: {
-                  status: values.status,
-                  adminNote: values.adminNote?.trim() || undefined,
-                  refundEvidenceImages: cancelRefundEvidenceImages,
-                },
-              })
+               handleSubmitCancelRefund(
+                cancelRefundContext.orderId,
+                cancelRefundContext.request,
+                values,
+              )
             })
             .catch(() => undefined)
         }}
