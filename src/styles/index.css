@@ -94,30 +94,13 @@ body {
   border-radius: 999px;
 }
 
-.product-variant-carousel .slick-slide {
-  padding-inline: 2px;
-}
-
-.product-variant-carousel .product-variant-option {
-  min-height: 238px;
-  align-items: stretch;
-}
-
-.product-variant-carousel .product-variant-option .ant-radio {
+.product-variant-picker .ant-radio {
   display: none;
 }
 
-.product-variant-carousel .product-variant-option > span:last-child {
+.product-variant-picker > span:last-child {
   width: 100%;
   padding-inline-start: 0;
-}
-
-.product-variant-carousel .slick-dots {
-  bottom: -4px;
-}
-
-.product-variant-carousel .slick-dots li button {
-  border-radius: 999px;
 }
 
 .home-product-carousel .slick-list {
