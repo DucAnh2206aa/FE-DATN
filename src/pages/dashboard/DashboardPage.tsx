@@ -15,7 +15,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import dayjs, { type Dayjs } from 'dayjs'
-import { useMemo, useState, type ReactNode } from 'react'
+import { type ReactNode, useMemo, useState } from 'react'
 import Chart from 'react-apexcharts'
 import { Link } from 'react-router-dom'
 
@@ -28,7 +28,7 @@ import type {
   DashboardTopVariantItem,
 } from '@/features/admin/model/dashboard-statistics.types'
 import { queryKeys } from '@/shared/api/queryKeys'
-import { buildProductDetailPath } from '@/shared/constants/routes'
+import { buildDashboardProductDetailPath } from '@/shared/constants/routes'
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
 
@@ -46,6 +46,7 @@ const PERIOD_OPTIONS = [
 ] satisfies { label: string; value: StatisticsFilterMode }[]
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
+  awaiting_payment: 'Chờ thanh toán',
   pending: 'Chờ xác nhận',
   confirmed: 'Đã xác nhận',
   shipping: 'Đang giao',
@@ -55,8 +56,8 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   returned: 'Trả hàng',
 }
 
-
 const STATUS_COLORS: Record<string, string> = {
+  awaiting_payment: 'orange',
   pending: 'default',
   confirmed: 'blue',
   shipping: 'geekblue',
@@ -72,7 +73,10 @@ const topProductColumns: ColumnsType<DashboardTopProductItem> = [
     key: 'name',
     render: (_, record) => (
       <Space direction="vertical" size={0} className="min-w-0">
-        <Link to={buildProductDetailPath(record.productId)} className="font-medium text-blue-600 hover:text-blue-700">
+        <Link
+          to={buildDashboardProductDetailPath(record.productId)}
+          className="font-medium text-blue-600 hover:text-blue-700"
+        >
           {record.name}
         </Link>
         <Typography.Text type="secondary" className="text-xs">
@@ -93,19 +97,14 @@ const topProductColumns: ColumnsType<DashboardTopProductItem> = [
     key: 'reviewCount',
     width: 110,
   },
-
-
-
-
-
-
-
   {
     title: 'Trạng thái',
     key: 'isAvailable',
     width: 130,
     render: (_, record) => (
-      <Tag color={record.isAvailable ? 'green' : 'default'}>{record.isAvailable ? 'Đang bán' : 'Ngừng bán'}</Tag>
+      <Tag color={record.isAvailable ? 'green' : 'default'}>
+        {record.isAvailable ? 'Đang bán' : 'Ngừng bán'}
+      </Tag>
     ),
   },
 ]
@@ -116,17 +115,13 @@ const topVariantColumns: ColumnsType<DashboardTopVariantItem> = [
     key: 'variant',
     render: (_, record) => (
       <Space size={10} align="center">
-        <Avatar
-          shape="square"
-          size={42}
-          src={record.thumbnailUrl ?? PRODUCT_PLACEHOLDER}
-        />
+        <Avatar shape="square" size={42} src={record.thumbnailUrl ?? PRODUCT_PLACEHOLDER} />
         <Space direction="vertical" size={0} className="min-w-0">
           <Typography.Text strong className="line-clamp-1">
             {record.variantSku || 'SKU'}
           </Typography.Text>
           <Link
-            to={buildProductDetailPath(record.productId)}
+            to={buildDashboardProductDetailPath(record.productId)}
             className="text-xs text-blue-600 hover:text-blue-700"
           >
             {record.productName}
@@ -177,7 +172,7 @@ const useRevenueChartOptions = (stats?: DashboardStatisticsResponse) => {
     return {
       series: [
         {
-          name: 'Doanh thu đã giao',
+          name: 'Doanh thu hoàn thành',
           type: 'area' as const,
           data: data.map((item) => item.revenue),
         },
@@ -367,11 +362,10 @@ export const DashboardPage = () => {
   const isLoading = statisticsQuery.isLoading || statisticsQuery.isFetching
 
   const statusSeries = stats?.breakdowns.byStatus.map((item) => item.count) ?? []
-  const statusLabels = stats?.breakdowns.byStatus.map((item) => ORDER_STATUS_LABELS[item.status]) ?? []
+  const statusLabels =
+    stats?.breakdowns.byStatus.map((item) => ORDER_STATUS_LABELS[item.status]) ?? []
   const hasStatusData = statusSeries.some((value) => value > 0)
   const hasCategoryData = (stats?.breakdowns.byCategory.length ?? 0) > 0
-  const paymentMethodUsedCount =
-    stats?.breakdowns.byPaymentMethod.filter((item) => item.count > 0).length ?? 0
 
   return (
     <div className="space-y-6">
@@ -417,30 +411,18 @@ export const DashboardPage = () => {
           <DashboardMetricGroup
             title="Thống kê doanh thu"
             loading={isLoading}
-            primaryLabel="Doanh thu đã giao"
+            primaryLabel="Doanh thu hoàn thành"
             primaryValue={summary?.deliveredRevenue ?? 0}
             primaryFormatter={(value) => formatVndCurrency(Number(value ?? 0))}
             secondaryItems={[
               {
-                label: 'Doanh thu gộp',
-                value: summary?.grossRevenue ?? 0,
-                formatter: (value) => formatVndCurrency(Number(value ?? 0)),
-              },
-              {
-                label: 'Giá trị đơn TB',
+                label: 'Giá trị đơn hoàn thành TB',
                 value: summary?.averageDeliveredOrderValue ?? 0,
                 formatter: (value) => formatVndCurrency(Number(value ?? 0)),
               },
             ]}
           />
-
-
-
-
-
-
         </Col>
-
 
         <Col xs={24} xl={12}>
           <DashboardMetricGroup
@@ -449,10 +431,10 @@ export const DashboardPage = () => {
             primaryLabel="Tổng đơn hàng"
             primaryValue={summary?.totalOrders ?? 0}
             secondaryItems={[
-              { label: 'Đã giao/hoàn thành', value: summary?.deliveredOrders ?? 0 },
+              { label: 'Hoàn thành', value: summary?.deliveredOrders ?? 0 },
               { label: 'Đang xử lý', value: summary?.processingOrders ?? 0 },
               { label: 'Đã hủy/trả', value: summary?.cancelledOrders ?? 0 },
-              { label: 'Kênh thanh toán đang dùng', value: paymentMethodUsedCount },
+              // { label: 'Kênh thanh toán đang dùng', value: paymentMethodUsedCount },
             ]}
           />
         </Col>
@@ -461,11 +443,10 @@ export const DashboardPage = () => {
           <DashboardMetricGroup
             title="Thống kê khách hàng"
             loading={isLoading}
-            primaryLabel="Khách phát sinh đơn"
-            primaryValue={summary?.purchasingCustomers ?? 0}
+            primaryLabel="Tổng khách hàng"
+            primaryValue={summary?.customersCount ?? 0}
             secondaryItems={[
-              { label: 'Khách hàng mới', value: summary?.newCustomersCount ?? 0 },
-              { label: 'Tổng khách hàng', value: summary?.customersCount ?? 0 },
+              // { label: 'Khách hàng mới', value: summary?.newCustomersCount ?? 0 },
               { label: 'Đang hoạt động', value: summary?.activeUsers ?? 0 },
               { label: 'Ngưng hoạt động', value: summary?.inactiveUsers ?? 0 },
             ]}
@@ -476,41 +457,23 @@ export const DashboardPage = () => {
           <DashboardMetricGroup
             title="Thống kê sản phẩm"
             loading={isLoading}
-            primaryLabel="Sản phẩm có phát sinh bán"
-            primaryValue={summary?.soldProducts ?? 0}
-            secondaryItems={[
-              { label: 'Biến thể có phát sinh bán', value: summary?.soldVariants ?? 0 },
-              { label: 'Tổng số lượng bán', value: summary?.totalItemsSold ?? 0 },
-              { label: 'Tổng sản phẩm', value: summary?.totalProducts ?? 0 },
-              { label: 'Đang bán', value: summary?.availableProducts ?? 0 },
-            ]}
-          />
-        </Col>
-
-        <Col xs={24} xl={12}>
-          <DashboardMetricGroup
-            title="Thống kê danh mục"
-            loading={isLoading}
-            primaryLabel="Danh mục có phát sinh đơn"
-            primaryValue={summary?.categoriesWithOrders ?? 0}
-            secondaryItems={[
-              { label: 'Tổng danh mục', value: summary?.totalCategories ?? 0 },
-              { label: 'Biến thể sắp hết', value: summary?.lowStockVariants ?? 0 },
-              { label: 'Biến thể hết hàng', value: summary?.outOfStockVariants ?? 0 },
-              {
-                label: 'Bình luận / đánh giá',
-                value: `${summary?.totalComments ?? 0} / ${summary?.totalReviews ?? 0}`,
-              },
-            ]}
+            primaryLabel="Tổng sản phẩm"
+            primaryValue={summary?.totalProducts ?? 0}
+            secondaryItems={[{ label: 'Tổng số lượng bán', value: summary?.totalItemsSold ?? 0 }]}
           />
         </Col>
       </Row>
 
       <Card
-        title={`Doanh thu theo ngày trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
+        title={`Doanh thu hoàn thành theo ngày trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
         loading={isLoading}
       >
-        <Chart type="line" height={320} series={revenueChart.series} options={revenueChart.options} />
+        <Chart
+          type="line"
+          height={320}
+          series={revenueChart.series}
+          options={revenueChart.options}
+        />
       </Card>
 
       <Row gutter={[16, 16]}>
