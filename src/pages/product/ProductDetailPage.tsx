@@ -1,4 +1,4 @@
-import { MinusOutlined, PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import { LeftOutlined, MinusOutlined, PlusOutlined, RightOutlined, ShoppingCartOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Avatar,
@@ -23,7 +23,7 @@ import {
 import type { CarouselRef } from 'antd/es/carousel'
 import DOMPurify from 'dompurify'
 import { chunk } from 'lodash'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 
 import { useAppSelector } from '@/app/store/hooks'
@@ -50,6 +50,22 @@ import { formatDateTime } from '@/shared/utils/date'
 import { hasRichTextMarkup } from '@/shared/utils/rich-text'
 
 const PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg'
+
+interface ProductDetailUiState {
+  productId: string
+  selectedVariantId: string | null
+  purchaseQuantity: number
+  activeImageIndex: number
+  activeVariantSlide: number
+}
+
+const createDefaultProductDetailUiState = (productId: string): ProductDetailUiState => ({
+  productId,
+  selectedVariantId: null,
+  purchaseQuantity: 1,
+  activeImageIndex: 0,
+  activeVariantSlide: 0,
+})
 
 const formatPriceRange = (variants: ProductVariantItem[]) => {
   if (variants.length === 0) {
@@ -97,6 +113,10 @@ export const ProductDetailPage = () => {
   const [selectedVariantId, setSelectedVariantId] = useState<string | null>(null)
   const [purchaseQuantity, setPurchaseQuantity] = useState(1)
   const carouselRef = useRef<CarouselRef>(null)
+  const variantCarouselRef = useRef<CarouselRef>(null)
+
+  const { selectedVariantId, purchaseQuantity, activeImageIndex, activeVariantSlide } =
+    currentUiState
 
   const productDetailQuery = useQuery({
     queryKey: queryKeys.products.detail(productId),
@@ -224,6 +244,44 @@ export const ProductDetailPage = () => {
 
     return selectedVariant ?? product.variants[0]
   }, [product, selectedVariant])
+
+  const variantCardsPerSlide = screens.xl ? 4 : screens.lg ? 3 : screens.sm ? 2 : 1
+  const variantSlides = useMemo(() => {
+    if (!product || product.variants.length === 0) {
+      return []
+    }
+
+    return Array.from(
+      { length: Math.ceil(product.variants.length / variantCardsPerSlide) },
+      (_, index) =>
+        product.variants.slice(
+          index * variantCardsPerSlide,
+          index * variantCardsPerSlide + variantCardsPerSlide
+        )
+    )
+  }, [product, variantCardsPerSlide])
+  const variantSlideIndexMap = useMemo(() => {
+    const slideIndexMap = new Map<string, number>()
+
+    variantSlides.forEach((slideVariants, slideIndex) => {
+      slideVariants.forEach((variant) => {
+        slideIndexMap.set(variant.id, slideIndex)
+      })
+    })
+
+    return slideIndexMap
+  }, [variantSlides])
+  const maxVariantSlideIndex = Math.max(variantSlides.length - 1, 0)
+  const resolvedActiveVariantSlide = Math.min(activeVariantSlide, maxVariantSlideIndex)
+  const hasMultipleVariantSlides = variantSlides.length > 1
+  const variantGridClassName = screens.xl
+    ? 'grid-cols-4'
+    : screens.lg
+      ? 'grid-cols-3'
+      : screens.sm
+        ? 'grid-cols-2'
+        : 'grid-cols-1'
+
   const variantCardsPerSlide = screens.xxl ? 4 : screens.lg ? 3 : screens.md ? 2 : 1
   const variantGapPx = 8
   const variantItemWidth = useMemo(() => {
@@ -246,6 +304,17 @@ export const ProductDetailPage = () => {
     .filter((item) => item.id !== productId)
     .slice(0, 8)
 
+  useEffect(() => {
+    if (!resolvedSelectedVariantId) {
+      return
+    }
+
+    const nextSlideIndex = variantSlideIndexMap.get(resolvedSelectedVariantId) ?? 0
+    const clampedSlideIndex = Math.min(nextSlideIndex, maxVariantSlideIndex)
+
+    variantCarouselRef.current?.goTo(clampedSlideIndex)
+  }, [maxVariantSlideIndex, resolvedSelectedVariantId, variantCardsPerSlide, variantSlideIndexMap])
+
   // worklog: 2026-03-04 21:11:32 | quochuy | refactor | handleSelectVariant
   // worklog: 2026-03-04 18:01:37 | trantu | cleanup | handleSelectVariant
   const handleSelectVariant = (variant: ProductVariantItem) => {
@@ -254,6 +323,22 @@ export const ProductDetailPage = () => {
     carouselRef.current?.goTo(variantImageIndexMap.get(variant.id) ?? 0)
   }
   
+  const handleVariantSlidePrev = () => {
+    variantCarouselRef.current?.prev()
+  }
+
+  const handleVariantSlideNext = () => {
+    variantCarouselRef.current?.next()
+  }
+
+  const handleVariantCarouselAfterChange = (slideIndex: number) => {
+    setUiState((prev) => ({
+      ...(prev.productId === productId ? prev : createDefaultProductDetailUiState(productId)),
+      productId,
+      activeVariantSlide: slideIndex,
+    }))
+  }
+
   const handleVariantSlidePrev = () => {
     variantCarouselRef.current?.prev()
   }
