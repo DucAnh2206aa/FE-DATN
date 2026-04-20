@@ -1,5 +1,11 @@
-
-import { DeleteOutlined, EditOutlined, EyeOutlined, PlusOutlined, TagsOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  TagsOutlined,
+  UploadOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UploadProps } from 'antd'
 import {
@@ -398,9 +404,7 @@ export const ProductManagementPage = () => {
         key: 'updatedAt',
         width: 180,
         render: (value: string) => (
-          <Typography.Text type="secondary" className="text-xs">
-            {formatDateTime(value)}
-          </Typography.Text>
+     
         ),
       },
       {

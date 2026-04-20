@@ -1,7 +1,9 @@
 import {
   AppstoreOutlined,
-  BellOutlined,
   BarChartOutlined,
+  BellOutlined,
+  BgColorsOutlined,
+  CustomerServiceOutlined,
   BgColorsOutlined,
   DashboardOutlined,
   FolderOpenOutlined,
@@ -18,11 +20,21 @@ import {
   TeamOutlined,
   TrademarkOutlined,
   UnorderedListOutlined,
-  CustomerServiceOutlined,
-  RobotOutlined,
 } from '@ant-design/icons'
 import { useQueryClient } from '@tanstack/react-query'
-import { Badge, Button, Empty, Layout, List, Menu, message, Popover, Space, Tag, Typography } from 'antd'
+import {
+  Badge,
+  Button,
+  Empty,
+  Layout,
+  List,
+  Menu,
+  message,
+  Popover,
+  Space,
+  Tag,
+  Typography,
+} from 'antd'
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
 
@@ -400,7 +412,7 @@ const notificationListContent = (
                   {
                     key: SUBMENU_KEYS.CATALOG,
                     icon: <AppstoreOutlined />,
-                    label: 'Catalog',
+                      label: 'Hệ danh mục', 
                     children: [
                       {
                         key: SUBMENU_KEYS.PRODUCTS,
