@@ -1,4 +1,5 @@
 export type AdminOrderStatus =
+  | 'awaiting_payment'
   | 'pending'
   | 'confirmed'
   | 'shipping'
@@ -138,7 +139,6 @@ export interface ListAdminOrdersParams {
   page?: number
   limit?: number
   status?: AdminOrderStatus
-  userId?: string
   search?: string
 }
 
