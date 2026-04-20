@@ -11,10 +11,10 @@ import type {
   AdminOrderStatus,
   AdminOrderStatusHistoryItem,
   AdminOrderUser,
+  AdminRefundMethod,
   AdminReturnRequest,
   AdminReturnRequestItem,
   AdminReturnRequestStatus,
-  AdminRefundMethod,
   AdminUserRole,
   ListAdminOrdersParams,
   UpdateAdminCancelRefundRequestPayload,
@@ -34,7 +34,9 @@ const toRecord = (value: unknown): Record<string, unknown> | undefined => {
 }
 
 const toStringArray = (value: unknown): string[] => {
-  return Array.isArray(value) ? value.filter((item): item is string => typeof item === 'string') : []
+   return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : []
 }
 
 const normalizeVoucherDiscountType = (value: unknown): AdminAppliedOrderVoucher['discountType'] => {
@@ -42,7 +44,8 @@ const normalizeVoucherDiscountType = (value: unknown): AdminAppliedOrderVoucher[
 }
 
 const normalizeOrderStatus = (value: unknown): AdminOrderStatus => {
-  return value === 'confirmed' ||
+  return value === 'awaiting_payment' ||
+    value === 'confirmed' ||
     value === 'shipping' ||
     value === 'delivered' ||
     value === 'completed' ||
@@ -135,8 +138,7 @@ const normalizeReturnRequest = (value: Record<string, unknown>): AdminReturnRequ
 const normalizeCancelRefundRequest = (value: Record<string, unknown>): AdminCancelRefundRequest => {
   return {
     requestedBy: toId(value.requestedBy),
-    status:
-      value.status === 'rejected' || value.status === 'refunded' ? value.status : 'pending',
+    status: value.status === 'rejected' || value.status === 'refunded' ? value.status : 'pending',
     refundAmount: Number(value.refundAmount ?? 0),
     bankCode: String(value.bankCode ?? ''),
     bankName: String(value.bankName ?? ''),
@@ -254,9 +256,12 @@ export const listAdminOrders = async (
   params: ListAdminOrdersParams = {}
 ): Promise<AdminOrdersResponse> => {
   try {
-    const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/orders/admin/all', {
-      params,
-    })
+    const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>(
+      '/orders/admin/all',
+      {
+        params,
+      }
+    )
 
     return normalizeOrdersResponse(extractApiData(response))
   } catch (error) {

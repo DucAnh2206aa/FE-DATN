@@ -80,20 +80,25 @@ body {
   }
 }
 
-.product-variant-carousel .slick-slide {
-  padding-inline: 2px;
+.product-detail-gallery-thumbnails {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(148 163 184 / 0.5) transparent;
 }
 
-.product-variant-carousel .product-variant-option {
-  min-height: 110px;
-  align-items: stretch;
+.product-detail-gallery-thumbnails::-webkit-scrollbar {
+  height: 6px;
 }
 
-.product-variant-carousel .product-variant-option .ant-radio {
+.product-detail-gallery-thumbnails::-webkit-scrollbar-thumb {
+  background: rgb(148 163 184 / 0.45);
+  border-radius: 999px;
+}
+
+.product-variant-picker .ant-radio {
   display: none;
 }
 
-.product-variant-carousel .product-variant-option > span:last-child {
+.product-variant-picker > span:last-child {
   width: 100%;
   padding-inline-start: 0;
 }

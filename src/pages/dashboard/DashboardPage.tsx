@@ -74,7 +74,7 @@ const topProductColumns: ColumnsType<DashboardTopProductItem> = [
     render: (_, record) => (
       <Space direction="vertical" size={0} className="min-w-0">
         <Link
-          to={buildDashboardProductDetailPath(record.productId)}
+          to={buildProductDetailPath(record.productId)}
           className="font-medium text-blue-600 hover:text-blue-700"
         >
           {record.name}
@@ -416,7 +416,7 @@ export const DashboardPage = () => {
             primaryFormatter={(value) => formatVndCurrency(Number(value ?? 0))}
             secondaryItems={[
               {
-                label: 'Giá trị đơn hoàn thành TB',
+                label: 'Giá trị đơn TB',
                 value: summary?.averageDeliveredOrderValue ?? 0,
                 formatter: (value) => formatVndCurrency(Number(value ?? 0)),
               },
@@ -468,7 +468,7 @@ export const DashboardPage = () => {
         title={`Doanh thu hoàn thành theo ngày trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
         loading={isLoading}
       >
-        <Chart
+         <Chart
           type="line"
           height={320}
           series={revenueChart.series}

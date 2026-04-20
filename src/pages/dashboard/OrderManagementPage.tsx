@@ -187,6 +187,7 @@ interface StatusConfirmConfig {
   onConfirm: () => Promise<unknown>
 }
 
+
 export const OrderManagementPage = () => {
   const queryClient = useQueryClient()
   const [statusForm] = Form.useForm<UpdateStatusFormValues>()
@@ -268,7 +269,7 @@ export const OrderManagementPage = () => {
         note?: string
         refundEvidenceImages?: string[]
       }
-    }) => updateAdminReturnRequest(payload.orderId, payload.returnRequestId, payload.payload),
+      }) => updateAdminReturnRequest(payload.orderId, payload.returnRequestId, payload.payload),
     onSuccess: async (updatedOrder) => {
       await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
       void message.success('Đã cập nhật hoàn hàng')
@@ -434,6 +435,7 @@ export const OrderManagementPage = () => {
     })
   }
 
+
   const handleSubmitStatus = (values: UpdateStatusFormValues) => {
     if (!updatingOrder) {
       return
@@ -459,11 +461,10 @@ export const OrderManagementPage = () => {
         }),
     })
   }
-
   const handleSubmitReturnRequest = (
     orderId: string,
     request: AdminReturnRequest,
-    values: UpdateReturnRequestFormValues
+    values: UpdateReturnRequestFormValues,
   ) => {
     const effectiveRefundMethod = values.refundMethod ?? request.refundMethod
 
@@ -478,9 +479,7 @@ export const OrderManagementPage = () => {
 
     const trimmedNote = values.note?.trim() || undefined
     const descriptionParts = [
-      effectiveRefundMethod
-        ? `Phương thức hoàn: ${REFUND_METHOD_LABEL[effectiveRefundMethod]}`
-        : '',
+      effectiveRefundMethod ? `Phương thức hoàn: ${REFUND_METHOD_LABEL[effectiveRefundMethod]}` : '',
       trimmedNote ? `Ghi chú: ${trimmedNote}` : '',
     ].filter(Boolean)
 
@@ -505,11 +504,11 @@ export const OrderManagementPage = () => {
     })
   }
 
-  const handleSubmitCancelRefund = (
+  const handleSubmitCancelRefundRequest = (
     orderId: string,
     request: AdminCancelRefundRequest,
-    values: UpdateCancelRefundFormValues
-  ) => {
+    values: UpdateCancelRefundFormValues,
+    ) => {
     if (values.status === 'refunded' && cancelRefundEvidenceImages.length === 0) {
       void message.error('Cần upload bill chuyển khoản trước khi xác nhận hoàn tiền')
       return
@@ -728,7 +727,7 @@ export const OrderManagementPage = () => {
           <Select
             value={statusFilter}
             className="w-full md:w-56"
-            options={[
+              options={[
               { label: 'Tất cả trạng thái', value: 'all' },
               { label: ORDER_STATUS_LABEL.awaiting_payment, value: 'awaiting_payment' },
               { label: ORDER_STATUS_LABEL.pending, value: 'pending' },
@@ -1326,10 +1325,10 @@ export const OrderManagementPage = () => {
           cancelRefundForm
             .validateFields()
             .then((values) => {
-              handleSubmitCancelRefund(
+               handleSubmitCancelRefund(
                 cancelRefundContext.orderId,
                 cancelRefundContext.request,
-                values
+                values,
               )
             })
             .catch(() => undefined)
