@@ -123,6 +123,10 @@ export const ProductDetailPage = () => {
     createDefaultProductDetailUiState(productId)
   )
   const carouselRef = useRef<CarouselRef>(null)
+  const variantCarouselRef = useRef<CarouselRef>(null)
+
+  const { selectedVariantId, purchaseQuantity, activeImageIndex, activeVariantSlide } =
+    currentUiState
 
   const currentUiState =
     uiState.productId === productId ? uiState : createDefaultProductDetailUiState(productId)
@@ -292,6 +296,17 @@ export const ProductDetailPage = () => {
     .filter((item) => item.id !== productId)
     .slice(0, 8)
 
+  useEffect(() => {
+    if (!resolvedSelectedVariantId) {
+      return
+    }
+
+    const nextSlideIndex = variantSlideIndexMap.get(resolvedSelectedVariantId) ?? 0
+    const clampedSlideIndex = Math.min(nextSlideIndex, maxVariantSlideIndex)
+
+    variantCarouselRef.current?.goTo(clampedSlideIndex)
+  }, [maxVariantSlideIndex, resolvedSelectedVariantId, variantCardsPerSlide, variantSlideIndexMap])
+
   // worklog: 2026-03-04 21:11:32 | quochuy | refactor | handleSelectVariant
   // worklog: 2026-03-04 18:01:37 | trantu | cleanup | handleSelectVariant
   const handleSelectVariant = (variant: ProductVariantItem) => {
@@ -321,6 +336,22 @@ export const ProductDetailPage = () => {
       productId,
       activeImageIndex: index,
     }))
+  }
+
+  const handleVariantCarouselAfterChange = (slideIndex: number) => {
+    setUiState((prev) => ({
+      ...(prev.productId === productId ? prev : createDefaultProductDetailUiState(productId)),
+      productId,
+      activeVariantSlide: slideIndex,
+    }))
+  }
+
+  const handleVariantSlidePrev = () => {
+    variantCarouselRef.current?.prev()
+  }
+
+  const handleVariantSlideNext = () => {
+    variantCarouselRef.current?.next()
   }
 
   // worklog: 2026-03-04 14:54:46 | trantu | refactor | handleDecreaseQuantity
