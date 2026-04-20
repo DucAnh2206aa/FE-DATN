@@ -139,7 +139,6 @@ export interface ListAdminOrdersParams {
   page?: number
   limit?: number
   status?: AdminOrderStatus
-  userId?: string
   search?: string
 }
 

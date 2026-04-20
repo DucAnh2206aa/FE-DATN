@@ -106,7 +106,7 @@ const getPaymentMethodLabel = (order: AdminOrderItem) => {
     return 'ZaloPay - Ví'
   }
 
-   return 'ZaloPay '
+  return 'ZaloPay '
 }
 
 const PAYMENT_STATUS_LABEL: Record<AdminOrderItem['paymentStatus'], string> = {
@@ -210,8 +210,8 @@ export const OrderManagementPage = () => {
 
   const [page, setPage] = useState(1)
   const [statusFilter, setStatusFilter] = useState<AdminOrderStatus | 'all'>('all')
-  const [userIdInput, setUserIdInput] = useState('')
-  const [userIdFilter, setUserIdFilter] = useState('')
+
+
   const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -224,7 +224,7 @@ export const OrderManagementPage = () => {
       page,
       limit: PAGE_SIZE,
       status: statusFilter === 'all' ? undefined : statusFilter,
-      userId: userIdFilter || undefined,
+
       search: searchTerm || undefined,
     }),
     queryFn: () =>
@@ -232,7 +232,7 @@ export const OrderManagementPage = () => {
         page,
         limit: PAGE_SIZE,
         status: statusFilter === 'all' ? undefined : statusFilter,
-        userId: userIdFilter || undefined,
+
         search: searchTerm || undefined,
       }),
   })
@@ -706,23 +706,23 @@ export const OrderManagementPage = () => {
             }}
           />
 
-          <Input.Search
-            allowClear
-            className="w-full md:max-w-xs"
-            placeholder="Lọc theo userId"
-            value={userIdInput}
-            onChange={(event) => {
-              setUserIdInput(event.target.value)
-              if (!event.target.value.trim()) {
-                setPage(1)
-                setUserIdFilter('')
-              }
-            }}
-            onSearch={(value) => {
-              setPage(1)
-              setUserIdFilter(value.trim())
-            }}
-          />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
           <Select
             value={statusFilter}
