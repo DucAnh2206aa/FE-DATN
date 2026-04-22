@@ -87,10 +87,13 @@ const renderVariantPrice = (variant: ProductVariantItem) => {
   if (variant.originalPrice && variant.originalPrice > variant.price) {
     return (
       <Space direction="vertical" size={0}>
-        <Typography.Text strong className="!text-[11px] !leading-4 !text-blue-700">
+        <Typography.Text
+          strong
+          className="!text-lg !leading-7 !text-blue-700 !whitespace-nowrap xl:!text-[30px]"
+        >
           {formatVndCurrency(variant.price)}
         </Typography.Text>
-        <Typography.Text type="secondary" delete className="text-[10px] leading-4">
+        <Typography.Text type="secondary" delete className="text-xs leading-4 !whitespace-nowrap">
           {formatVndCurrency(variant.originalPrice)}
         </Typography.Text>
       </Space>
@@ -98,7 +101,10 @@ const renderVariantPrice = (variant: ProductVariantItem) => {
   }
 
   return (
-    <Typography.Text strong className="!text-[11px] !leading-4 !text-blue-700">
+    <Typography.Text
+      strong
+      className="!text-lg !leading-7 !text-blue-700 !whitespace-nowrap xl:!text-[30px]"
+    >
       {formatVndCurrency(variant.price)}
     </Typography.Text>
   )
@@ -245,7 +251,7 @@ export const ProductDetailPage = () => {
     return selectedVariant ?? product.variants[0]
   }, [product, selectedVariant])
 
-  const variantCardsPerSlide = screens.xl ? 4 : screens.lg ? 3 : screens.sm ? 2 : 1
+  const variantCardsPerSlide = screens.lg ? 3 : screens.sm ? 2 : 1
   const variantSlides = useMemo(() => {
     if (!product || product.variants.length === 0) {
       return []
@@ -274,13 +280,11 @@ export const ProductDetailPage = () => {
   const maxVariantSlideIndex = Math.max(variantSlides.length - 1, 0)
   const resolvedActiveVariantSlide = Math.min(activeVariantSlide, maxVariantSlideIndex)
   const hasMultipleVariantSlides = variantSlides.length > 1
-  const variantGridClassName = screens.xl
-    ? 'grid-cols-4'
-    : screens.lg
-      ? 'grid-cols-3'
-      : screens.sm
-        ? 'grid-cols-2'
-        : 'grid-cols-1'
+  const variantGridClassName = screens.lg
+    ? 'grid-cols-3'
+    : screens.sm
+      ? 'grid-cols-2'
+      : 'grid-cols-1'
 
   const variantCardsPerSlide = screens.xxl ? 4 : screens.lg ? 3 : screens.md ? 2 : 1
   const variantGapPx = 8
@@ -770,10 +774,161 @@ export const ProductDetailPage = () => {
                   </Typography.Paragraph>
                 ) : null}
               </div>
+              <Space size={[8, 8]} wrap>
+              <Badge status="processing" text="COD" />
+              <Badge status="success" text="VNPay" />
+              <Badge status="success" text="ZaloPay" />
             </Space>
-          </Card>
-        </Col>
-      </Row>
+          </div>
+        </Card>
+      </div>
+
+      <Card className="!rounded-[28px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)]">
+        <div className="space-y-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-1">
+              <Typography.Title level={3} className="!mb-0 !text-[30px]">
+                Chọn phiên bản
+              </Typography.Title>
+              <Typography.Text type="secondary">
+                {product.variants.length > 0
+                  ? `${product.variants.length} biến thể có sẵn, chọn trực tiếp trước khi thêm vào giỏ.`
+                  : 'Hiện chưa có biến thể để lựa chọn.'}
+              </Typography.Text>
+            </div>
+
+            {hasMultipleVariantSlides ? (
+              <Space size={8}>
+                <Button
+                  shape="circle"
+                  icon={<LeftOutlined />}
+                  aria-label="Xem biến thể trước"
+                  disabled={resolvedActiveVariantSlide <= 0}
+                  onClick={handleVariantSlidePrev}
+                />
+                <Button
+                  shape="circle"
+                  type="primary"
+                  ghost
+                  icon={<RightOutlined />}
+                  aria-label="Xem biến thể tiếp theo"
+                  disabled={resolvedActiveVariantSlide >= maxVariantSlideIndex}
+                  onClick={handleVariantSlideNext}
+                />
+              </Space>
+            ) : null}
+          </div>
+
+          {product.variants.length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description="Hiện chưa có phiên bản sản phẩm"
+            />
+          ) : (
+            <Radio.Group
+              value={resolvedSelectedVariantId ?? undefined}
+              className="w-full"
+              onChange={(event) => {
+                const selected = product.variants.find(
+                  (variant) => variant.id === String(event.target.value)
+                )
+
+                if (selected) {
+                  handleSelectVariant(selected)
+                }
+              }}
+            >
+              <Carousel
+                ref={variantCarouselRef}
+                draggable
+                dots={hasMultipleVariantSlides}
+                infinite={false}
+                afterChange={handleVariantCarouselAfterChange}
+                className="product-variant-carousel"
+              >
+                {variantSlides.map((slideVariants, slideIndex) => (
+                  <div key={`variant-slide-${slideIndex}`}>
+                    <div className={`grid gap-4 pb-2 ${variantGridClassName}`}>
+                      {slideVariants.map((variant) => {
+                        const image = variant.images[0] ?? product.images[0] ?? PRODUCT_PLACEHOLDER
+                        const isSelected = variant.id === resolvedSelectedVariantId
+                        const availabilityLabel = getVariantAvailabilityLabel(variant)
+
+                        return (
+                          <Radio
+                            key={variant.id}
+                            value={variant.id}
+                            className={`product-variant-picker product-variant-option !m-0 !flex !h-full !w-full rounded-[24px] border bg-white p-4 transition-all duration-200 [&>span:last-child]:flex [&>span:last-child]:w-full [&>span:last-child]:flex-1 ${
+                              isSelected
+                                ? 'border-blue-500 bg-blue-50/70 shadow-[0_22px_44px_-34px_rgba(37,99,235,0.75)]'
+                                : 'border-slate-200 hover:border-blue-300 hover:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.45)]'
+                            }`}
+                          ><div className="flex h-full w-full flex-col gap-4">
+                              <div className="flex items-start gap-4">
+                                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-slate-100">
+                                  <img
+                                    src={image}
+                                    alt={`${product.name}-${getVariantLabel(variant)}`}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </div>
+                                <div className="min-w-0 flex-1 space-y-2">
+                                  <div className="space-y-1">
+                                    <Typography.Text
+                                      strong
+                                      className="block !text-lg !leading-7"
+                                    >
+                                      {getVariantLabel(variant)}
+                                      </Typography.Text>
+                                      <Typography.Text
+                                      type="secondary"
+                                      className="block truncate text-sm"
+                                    >
+                                      SKU: {variant.sku}
+                                    </Typography.Text>
+                                  </div>
+
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    <Tag className="!m-0 !rounded-full !border-0 !bg-slate-100 !px-3 !py-1 !text-xs !text-slate-600">
+                                      {variant.color?.trim() || 'Mặc định'}
+                                    </Tag>
+                                    <Tag className="!m-0 !rounded-full !border-0 !bg-slate-100 !px-3 !py-1 !text-xs !text-slate-600">
+                                      {variant.size?.trim() || 'Tiêu chuẩn'}
+                                    </Tag>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="mt-auto flex items-end justify-between gap-4 border-t border-slate-100 pt-4">
+                                <div className="min-w-0 flex-1">
+                                  {renderVariantPrice(variant)}
+                                </div>
+                                <div className="shrink-0 rounded-full bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">
+                                  Kho: {variant.stockQuantity}
+                                </div>
+                              </div>
+
+                              <Typography.Text
+                                className={`block text-sm font-medium ${
+                                  availabilityLabel === 'Còn hàng'
+                                    ? 'text-lime-700'
+                                    : 'text-slate-500'
+                                }`}
+                              >
+                                {availabilityLabel}
+                              </Typography.Text>
+            </div>
+                          </Radio>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </Carousel>
+            </Radio.Group>
+          )}
+        </div>
+      </Card>
 
       <Card title="Mô tả sản phẩm">
         {normalizedDescription ? (
