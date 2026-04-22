@@ -53,7 +53,6 @@ const normalizeBrand = (value: Record<string, unknown>): MasterBrandItem => {
     name: String(value.name ?? ''),
     slug: String(value.slug ?? ''),
     description: typeof value.description === 'string' ? value.description : undefined,
-    logoUrl: typeof value.logoUrl === 'string' ? value.logoUrl : undefined,
     isActive: typeof value.isActive === 'boolean' ? value.isActive : true,
     createdAt: String(value.createdAt ?? ''),
     updatedAt: String(value.updatedAt ?? ''),

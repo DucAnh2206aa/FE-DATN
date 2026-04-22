@@ -90,7 +90,6 @@ interface BrandFormValues {
   name: string
   slug: string
   description?: string
-  logoUrl?: string
   isActive: boolean
 }
 
@@ -502,20 +501,7 @@ export const MasterDataManagementPage = () => {
           </Space>
         ),
       },
-      {
-        title: 'Logo',
-        dataIndex: 'logoUrl',
-        key: 'logoUrl',
-        width: 260,
-        render: (value: string | undefined) =>
-          value ? (
-            <Typography.Text copyable className="text-xs">
-              {value}
-            </Typography.Text>
-          ) : (
-            <Typography.Text type="secondary">-</Typography.Text>
-          ),
-      },
+      
       {
         title: 'Trạng thái',
         dataIndex: 'isActive',
@@ -548,7 +534,6 @@ export const MasterDataManagementPage = () => {
                   name: record.name,
                   slug: record.slug,
                   description: record.description,
-                  logoUrl: record.logoUrl,
                   isActive: record.isActive,
                 })
                 setBrandModalOpen(true)
@@ -1150,7 +1135,6 @@ export const MasterDataManagementPage = () => {
               name: values.name.trim(),
               slug: values.slug.trim(),
               description: values.description?.trim() || undefined,
-              logoUrl: values.logoUrl?.trim() || undefined,
               isActive: values.isActive,
             }
 
@@ -1196,9 +1180,6 @@ export const MasterDataManagementPage = () => {
           </Form.Item>
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả thương hiệu" />
-          </Form.Item>
-          <Form.Item name="logoUrl" label="Logo URL">
-            <Input placeholder="https://..." />
           </Form.Item>
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />

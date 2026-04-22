@@ -23,7 +23,6 @@ export interface MasterBrandItem {
   name: string
   slug: string
   description?: string
-  logoUrl?: string
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -73,7 +72,6 @@ export interface UpsertBrandPayload {
   name: string
   slug: string
   description?: string
-  logoUrl?: string
   isActive?: boolean
 }
 
