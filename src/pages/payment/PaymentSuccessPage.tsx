@@ -11,6 +11,8 @@ import {
 import { ROUTE_PATHS } from '@/shared/constants/routes'
 import { formatVndCurrency } from '@/shared/utils/currency'
 
+const ZALOPAY_POLLING_INTERVAL_MS = 5000
+const ZALOPAY_POLLING_TIMEOUT_MS = 60000
 export const PaymentSuccessPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -88,6 +90,7 @@ export const PaymentSuccessPage = () => {
   }, [searchParams])
 
   const hasZalopayReturnData = Boolean(zalopayPayload)
+  const paymentReturnKey = searchParams.toString()
 
   useEffect(() => {
     if ((hasVnpReturnData || hasZalopayReturnData) && hasRequestedVerification.current) {
