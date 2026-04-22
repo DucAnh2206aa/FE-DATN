@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Button, Card, message, Result, Space, Spin, Typography } from 'antd'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import { verifyVnpayReturn, verifyZalopayRedirect } from '@/features/account/api/account.api'
@@ -11,6 +11,7 @@ export const PaymentSuccessPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const hasRequestedVerification = useRef(false)
+  const [slowVerificationKey, setSlowVerificationKey] = useState<string | null>(null)
 
   const verifyMutation = useMutation({
     mutationFn: verifyVnpayReturn,
@@ -84,13 +85,14 @@ export const PaymentSuccessPage = () => {
   }, [searchParams])
 
   const hasZalopayReturnData = Boolean(zalopayPayload)
+  const hasPaymentReturnData = hasVnpReturnData || hasZalopayReturnData
 
   useEffect(() => {
     if ((hasVnpReturnData || hasZalopayReturnData) && hasRequestedVerification.current) {
       return
     }
 
-    if (!hasVnpReturnData && !hasZalopayReturnData) {
+    if (!hasPaymentReturnData) {
       return
     }
 
@@ -130,13 +132,63 @@ export const PaymentSuccessPage = () => {
   }
 
   const activeGateway = hasVnpReturnData ? 'vnpay' : 'zalopay'
+  const isVerifyingPayment = hasPaymentReturnData && (activeQuery.isPending || activeQuery.fetchStatus === 'fetching')
+  const activeVerificationKey = isVerifyingPayment
+    ? `${activeGateway}:${searchParams.toString()}`
+    : null
   const isVerifying =
     activeGateway === 'vnpay'
       ? verifyMutation.isPending || (!hasRequestedVerification.current && verifyMutation.isIdle)
       : verifyZalopayMutation.isPending ||
         (!hasRequestedVerification.current && verifyZalopayMutation.isIdle)
 
-  if (isVerifying) {
+    const isVerificationSlow =
+    activeVerificationKey !== null && slowVerificationKey === activeVerificationKey
+
+  useEffect(() => {
+    if (!activeVerificationKey) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setSlowVerificationKey(activeVerificationKey)
+    }, 12000)
+
+    return () => window.clearTimeout(timer)
+  }, [activeVerificationKey])
+
+  if (isVerificationSlow) {
+    return (
+      <Card className="mx-auto mt-8 max-w-2xl">
+        <Result
+          status="warning"
+          title="Giao dịch đang được xử lý"
+          subTitle="Cổng thanh toán đang phản hồi chậm. Bạn có thể tải lại trang hoặc vào đơn hàng của tôi để kiểm tra trạng thái mới nhất."
+          extra={[
+            <Button
+              key="reload"
+              type="primary"
+              onClick={() => {
+                window.location.reload()
+              }}
+            >
+              Tải lại trang
+            </Button>,
+            <Button
+              key="orders"
+              onClick={() => {
+                navigate(ROUTE_PATHS.ACCOUNT_ORDERS)
+              }}
+            >
+              Đơn hàng của tôi
+            </Button>,
+          ]}
+        />
+      </Card>
+    )
+  }
+
+  if (isVerifyingPayment) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Space direction="vertical" align="center">
