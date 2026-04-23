@@ -34,7 +34,7 @@ const toRecord = (value: unknown): Record<string, unknown> | undefined => {
 }
 
 const toStringArray = (value: unknown): string[] => {
-   return Array.isArray(value)
+  return Array.isArray(value)
     ? value.filter((item): item is string => typeof item === 'string')
     : []
 }
@@ -205,7 +205,7 @@ const normalizeOrder = (value: Record<string, unknown>): AdminOrderItem => {
       value.zalopayChannel === 'atm'
         ? value.zalopayChannel
         : undefined,
-        paymentTxnRef: typeof value.paymentTxnRef === 'string' ? value.paymentTxnRef : undefined,
+    paymentTxnRef: typeof value.paymentTxnRef === 'string' ? value.paymentTxnRef : undefined,
     paymentTransactionNo:
       typeof value.paymentTransactionNo === 'string' ? value.paymentTransactionNo : undefined,
     paymentGatewayResponseCode:

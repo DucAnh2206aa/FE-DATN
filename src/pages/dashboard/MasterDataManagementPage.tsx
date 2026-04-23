@@ -69,29 +69,24 @@ type ActiveFilter = 'all' | 'active' | 'inactive'
 
 interface CategoryFormValues {
   name: string
-
   description?: string
-
   isActive: boolean
 }
 
 interface BrandFormValues {
   name: string
-
   description?: string
   isActive: boolean
 }
 
 interface ColorFormValues {
   name: string
-
   hexCode?: string
   isActive: boolean
 }
 
 interface SizeFormValues {
   name: string
-
   isActive: boolean
 }
 
@@ -425,9 +420,7 @@ export const MasterDataManagementPage = () => {
                 setEditingCategory(record)
                 categoryForm.setFieldsValue({
                   name: record.name,
-
                   description: record.description,
-
                   isActive: record.isActive,
                 })
                 setCategoryModalOpen(true)
@@ -461,7 +454,6 @@ export const MasterDataManagementPage = () => {
         key: 'name',
         render: (_, record) => <Typography.Text strong>{record.name}</Typography.Text>,
       },
-      
       {
         title: 'Trạng thái',
         dataIndex: 'isActive',
@@ -492,7 +484,6 @@ export const MasterDataManagementPage = () => {
                 setEditingBrand(record)
                 brandForm.setFieldsValue({
                   name: record.name,
-
                   description: record.description,
                   isActive: record.isActive,
                 })
@@ -574,7 +565,6 @@ export const MasterDataManagementPage = () => {
                 setEditingColor(record)
                 colorForm.setFieldsValue({
                   name: record.name,
-
                   hexCode: record.hexCode,
                   isActive: record.isActive,
                 })
@@ -639,7 +629,6 @@ export const MasterDataManagementPage = () => {
                 setEditingSize(record)
                 sizeForm.setFieldsValue({
                   name: record.name,
-
                   isActive: record.isActive,
                 })
                 setSizeModalOpen(true)
@@ -972,9 +961,7 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertCategoryPayload = {
               name: values.name.trim(),
-
               description: values.description?.trim() || undefined,
-
               isActive: values.isActive,
             }
 
@@ -996,11 +983,9 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Cơ bida" />
           </Form.Item>
-
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả danh mục" />
           </Form.Item>
-
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>
@@ -1043,7 +1028,6 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertBrandPayload = {
               name: values.name.trim(),
-
               description: values.description?.trim() || undefined,
               isActive: values.isActive,
             }
@@ -1066,7 +1050,6 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Predator" />
           </Form.Item>
-
           <Form.Item name="description" label="Mô tả">
             <Input.TextArea rows={3} placeholder="Nhập mô tả thương hiệu" />
           </Form.Item>
@@ -1134,36 +1117,36 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Đỏ ruby" />
           </Form.Item>
-          <Form.Item label="Màu sắc">
-            <ColorPicker
-              value={colorHexValue}
-              format="hex"
-              allowClear
-              disabledAlpha
-              showText={(color) => color.toHexString().toUpperCase()}
-              onChange={(value) => {
-                colorForm.setFieldValue('hexCode', value.toHexString().toUpperCase())
-              }}
-              onClear={() => {
-                colorForm.setFieldValue('hexCode', undefined)
-              }}
-            >
-              <Button className="!h-14 !w-full !justify-between !px-4 text-left">
-                <Space size={12}>
-                  <span
-                    className="inline-block h-5 w-5 rounded-full border border-slate-300"
-                    style={{ backgroundColor: colorHexValue || 'transparent' }}
-                  />
-                  <span className={colorHexValue ? 'text-slate-900' : 'text-slate-400'}>
-                    {colorHexValue ? colorHexValue.toUpperCase() : 'Chọn màu bằng ColorPicker'}
-                  </span>
-                </Space>
-              </Button>
-            </ColorPicker>
-          </Form.Item>
-          <Form.Item name="hexCode" hidden>
-            <Input />
-          </Form.Item>
+    <Form.Item label="Màu sắc">
+      <ColorPicker
+        value={colorHexValue}
+        format="hex"
+        allowClear
+        disabledAlpha
+        showText={(color) => color.toHexString().toUpperCase()}
+        onChange={(value) => {
+          colorForm.setFieldValue('hexCode', value.toHexString().toUpperCase())
+        }}
+        onClear={() => {
+          colorForm.setFieldValue('hexCode', undefined)
+        }}
+      >
+        <Button className="!h-14 !w-full !justify-between !px-4 text-left">
+          <Space size={12}>
+            <span
+              className="inline-block h-5 w-5 rounded-full border border-slate-300"
+              style={{ backgroundColor: colorHexValue || 'transparent' }}
+            />
+            <span className={colorHexValue ? 'text-slate-900' : 'text-slate-400'}>
+              {colorHexValue ? colorHexValue.toUpperCase() : 'Chọn màu bằng ColorPicker'}
+            </span>
+          </Space>
+        </Button>
+      </ColorPicker>
+    </Form.Item>
+    <Form.Item name="hexCode" hidden>
+      <Input />
+    </Form.Item>
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>
@@ -1206,7 +1189,6 @@ export const MasterDataManagementPage = () => {
           onFinish={(values) => {
             const payload: UpsertSizePayload = {
               name: values.name.trim(),
-
               isActive: values.isActive,
             }
 
@@ -1228,7 +1210,6 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: 13mm" />
           </Form.Item>
-
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>

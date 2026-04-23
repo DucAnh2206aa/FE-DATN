@@ -4,7 +4,6 @@ import {
   BellOutlined,
   BgColorsOutlined,
   CustomerServiceOutlined,
-  BgColorsOutlined,
   DashboardOutlined,
   FolderOpenOutlined,
   GiftOutlined,
@@ -52,7 +51,8 @@ import { consumeAuthSuccessFlash } from '@/shared/utils/auth-success-flash'
 import { clearRefreshTokenCookie, getRefreshTokenCookie } from '@/shared/utils/cookie'
 
 const { Header, Content, Sider } = Layout
-import { useBackofficeRealtimeNotifications } from '@/features/notifications/hooks/useBackofficeRealtimeNotifications'
+const SIDER_WIDTH = 240
+
 const MENU_KEYS = {
   CENTER: 'dashboard-center',
   STATISTICS: 'dashboard-statistics',
@@ -68,8 +68,8 @@ const MENU_KEYS = {
   ATTRIBUTE_BRANDS: 'dashboard-attribute-brands',
   ATTRIBUTE_COLORS: 'dashboard-attribute-colors',
   ATTRIBUTE_SIZES: 'dashboard-attribute-sizes',
-  ROLES: 'dashboard-roles',
-} as const  
+  ACCOUNTS: 'dashboard-accounts',
+} as const
 
 const SUBMENU_KEYS = {
   OVERVIEW: 'submenu-overview',
@@ -89,7 +89,9 @@ export const PrivateLayout = () => {
   const cachedUser = useAppSelector((state) => state.auth.user)
   const accessToken = useAppSelector((state) => state.auth.accessToken)
   const { data: meData } = useMeQuery()
- const {
+
+  const user = meData ?? cachedUser
+  const {
     items: notificationItems,
     unreadCount,
     isConnected: isNotificationConnected,
@@ -101,7 +103,6 @@ export const PrivateLayout = () => {
     accessToken,
     role: user?.role,
   })
-  const user = meData ?? cachedUser
 
   const selectedMenuKey = useMemo(() => {
     const params = new URLSearchParams(location.search)
@@ -165,7 +166,7 @@ export const PrivateLayout = () => {
     }
 
     if (location.pathname.startsWith(ROUTE_PATHS.DASHBOARD_USERS)) {
-    return MENU_KEYS.ACCOUNTS
+      return MENU_KEYS.ACCOUNTS
     }
 
     if (location.pathname.startsWith(ROUTE_PATHS.DASHBOARD)) {
@@ -184,7 +185,7 @@ export const PrivateLayout = () => {
 
     const content = authSuccess === 'register' ? 'Đăng ký thành công' : 'Đăng nhập thành công'
     void message.success(content)
-}, [location.key])  
+  }, [location.key])
 
   const selectedKeys = useMemo(() => [selectedMenuKey], [selectedMenuKey])
   const [isSiderCollapsed, setIsSiderCollapsed] = useState(false)
@@ -214,7 +215,7 @@ export const PrivateLayout = () => {
       selectedMenuKey === MENU_KEYS.ATTRIBUTE_COLORS ||
       selectedMenuKey === MENU_KEYS.ATTRIBUTE_SIZES
     const shouldOpenSystem =
-   selectedMenuKey === MENU_KEYS.ACCOUNTS || selectedMenuKey === MENU_KEYS.CHATBOT_PRESETS
+      selectedMenuKey === MENU_KEYS.ACCOUNTS || selectedMenuKey === MENU_KEYS.CHATBOT_PRESETS
 
     if (shouldOpenOverview) {
       next.add(SUBMENU_KEYS.OVERVIEW)
@@ -256,7 +257,8 @@ export const PrivateLayout = () => {
     void message.success('Đăng xuất thành công')
     navigate(ROUTE_PATHS.LOGIN, { replace: true })
   }
-const notificationListContent = (
+
+  const notificationListContent = (
     <div className="w-[360px]">
       <div className="mb-3 flex items-center justify-between">
         <Typography.Text strong>Thông báo</Typography.Text>
@@ -334,7 +336,7 @@ const notificationListContent = (
 
   return (
     <Layout className="min-h-screen">
-    <Sider
+      <Sider
         breakpoint="lg"
         collapsedWidth="0"
         theme="light"
@@ -370,7 +372,7 @@ const notificationListContent = (
               icon: <DashboardOutlined />,
               label: <Link to={ROUTE_PATHS.DASHBOARD_CENTER}>Trung tâm</Link>,
             },
-           
+
             {
               key: SUBMENU_KEYS.SALES,
               icon: <ShoppingCartOutlined />,
@@ -387,9 +389,9 @@ const notificationListContent = (
                   label: <Link to={ROUTE_PATHS.DASHBOARD_REVIEWS}>Đánh giá</Link>,
                 },
                 {
-                    key: MENU_KEYS.STATISTICS,
-                        icon: <BarChartOutlined />,
-                        label: <Link to={ROUTE_PATHS.DASHBOARD_STATISTICS}>Thống kê</Link>,
+                  key: MENU_KEYS.COMMENTS,
+                  icon: <MessageOutlined />,
+                  label: <Link to={ROUTE_PATHS.DASHBOARD_COMMENTS}>Bình luận</Link>,
                 },
                 {
                   key: MENU_KEYS.SUPPORT_CHAT,
@@ -412,7 +414,7 @@ const notificationListContent = (
                   {
                     key: SUBMENU_KEYS.CATALOG,
                     icon: <AppstoreOutlined />,
-                      label: 'Hệ danh mục', 
+                    label: 'Hệ danh mục',
                     children: [
                       {
                         key: SUBMENU_KEYS.PRODUCTS,
@@ -488,9 +490,9 @@ const notificationListContent = (
                       //   ),
                       // },
                       {
-                        key: MENU_KEYS.ROLES,
-                        icon: <SafetyCertificateOutlined />,
-                        label: <Link to={ROUTE_PATHS.DASHBOARD_USERS}>Phân quyền</Link>,
+                        key: MENU_KEYS.STATISTICS,
+                        icon: <BarChartOutlined />,
+                        label: <Link to={ROUTE_PATHS.DASHBOARD_STATISTICS}>Thống kê</Link>,
                       },
                     ],
                   },
@@ -501,7 +503,7 @@ const notificationListContent = (
         />
       </Sider>
 
-        <Layout
+      <Layout
         style={{
           marginLeft: isSiderCollapsed ? 0 : SIDER_WIDTH,
           transition: 'margin-left 0.2s ease',
@@ -509,9 +511,9 @@ const notificationListContent = (
       >
         <Header className="flex items-center justify-between border-b border-slate-200 bg-white px-6">
           <Typography.Text strong>
-              Xin chào, {user?.fullName || user?.email || 'Authenticated user'}
+            Xin chào, {user?.fullName || user?.email || 'Authenticated user'}
           </Typography.Text>
-       <Space size={12}>
+          <Space size={12}>
             {(user?.role === 'staff' || user?.role === 'admin') && (
               <Popover
                 placement="bottomRight"

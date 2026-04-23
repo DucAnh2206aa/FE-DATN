@@ -423,7 +423,7 @@ export const CheckoutPage = () => {
                             ) : null}
                             {item.variant?.size &&
                             item.variant.size.trim() &&
-                           !['standard', 'n/a'].includes(
+                            !['standard', 'n/a'].includes(
                               item.variant.size.trim().toLowerCase()
                             ) ? (
                               <Tag className="!m-0 text-xs">Size: {item.variant.size.trim()}</Tag>

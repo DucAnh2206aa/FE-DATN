@@ -6,7 +6,7 @@ export interface ChatUserSummary {
 }
 
 export interface ChatConversation {
-    id: string
+  id: string
   type: string
   isActive: boolean
   participantIds: string[]

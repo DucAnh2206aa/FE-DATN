@@ -74,7 +74,7 @@ const topProductColumns: ColumnsType<DashboardTopProductItem> = [
     render: (_, record) => (
       <Space direction="vertical" size={0} className="min-w-0">
         <Link
-          to={buildProductDetailPath(record.productId)}
+          to={buildDashboardProductDetailPath(record.productId)}
           className="font-medium text-blue-600 hover:text-blue-700"
         >
           {record.name}
@@ -416,7 +416,7 @@ export const DashboardPage = () => {
             primaryFormatter={(value) => formatVndCurrency(Number(value ?? 0))}
             secondaryItems={[
               {
-                label: 'Giá trị đơn TB',
+                label: 'Giá trị đơn hoàn thành TB',
                 value: summary?.averageDeliveredOrderValue ?? 0,
                 formatter: (value) => formatVndCurrency(Number(value ?? 0)),
               },
@@ -447,8 +447,8 @@ export const DashboardPage = () => {
             primaryValue={summary?.customersCount ?? 0}
             secondaryItems={[
               // { label: 'Khách hàng mới', value: summary?.newCustomersCount ?? 0 },
-              { label: 'Đang hoạt động', value: summary?.activeUsers ?? 0 },
-              { label: 'Ngưng hoạt động', value: summary?.inactiveUsers ?? 0 },
+              // { label: 'Đang hoạt động', value: summary?.activeUsers ?? 0 },
+              // { label: 'Ngưng hoạt động', value: summary?.inactiveUsers ?? 0 },
             ]}
           />
         </Col>
@@ -468,7 +468,7 @@ export const DashboardPage = () => {
         title={`Doanh thu hoàn thành theo ngày trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
         loading={isLoading}
       >
-         <Chart
+        <Chart
           type="line"
           height={320}
           series={revenueChart.series}

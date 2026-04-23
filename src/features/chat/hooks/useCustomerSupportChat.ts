@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import { env } from '@/shared/constants/env'
 import { useAppSelector } from '@/app/store/hooks'
 import { useMeQuery } from '@/features/auth/hooks/useMeQuery'
+
 import {
   createSupportConversation,
   listConversationMessages,
@@ -30,15 +31,15 @@ const mergeIncomingMessage = (
   nextMessage: ChatMessage,
   currentUserId?: string | null
 ) => {
-    const nextIndex = previous.findIndex((item) => item.id === nextMessage.id)
+  const nextIndex = previous.findIndex((item) => item.id === nextMessage.id)
 
-        if (nextIndex >= 0) {
+  if (nextIndex >= 0) {
     const nextItems = [...previous]
     nextItems[nextIndex] = nextMessage
     return sortMessages(nextItems)
   }
 
-    const optimisticIndex = previous.findIndex((item) => {
+  const optimisticIndex = previous.findIndex((item) => {
     if (!item.id.startsWith('temp-')) {
       return false
     }
@@ -60,16 +61,16 @@ const mergeIncomingMessage = (
 }
 
 export const useCustomerSupportChat = (open: boolean) => {
-    const accessToken = useAppSelector((state) => state.auth.accessToken)
+  const accessToken = useAppSelector((state) => state.auth.accessToken)
   const authUserId = useAppSelector((state) => state.auth.user?.id)
   const { data: meData } = useMeQuery()
-    const socketRef = useRef<Socket | null>(null)
+  const socketRef = useRef<Socket | null>(null)
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [lastIncomingMessage, setLastIncomingMessage] = useState<ChatMessage | null>(null)
   const currentUserId = meData?.id ?? authUserId ?? null
 
-    const conversationsQuery = useQuery({
+  const conversationsQuery = useQuery({
     queryKey: ['support-conversations', accessToken],
     queryFn: () => listSupportConversations(1, 1),
     enabled: Boolean(accessToken),
@@ -142,7 +143,7 @@ export const useCustomerSupportChat = (open: boolean) => {
     const handleMessage = (payload: { conversationId?: string; message?: ChatMessage }) => {
       const nextMessage = payload?.message
 
-    if (payload?.conversationId !== conversationId || !nextMessage) {
+      if (payload?.conversationId !== conversationId || !nextMessage) {
         return
       }
 
@@ -150,7 +151,7 @@ export const useCustomerSupportChat = (open: boolean) => {
         setLastIncomingMessage(nextMessage)
       }
 
-            setMessages((prev) => mergeIncomingMessage(prev, nextMessage, currentUserId))
+      setMessages((prev) => mergeIncomingMessage(prev, nextMessage, currentUserId))
     }
 
     joinConversationRoom()
@@ -227,9 +228,9 @@ export const useCustomerSupportChat = (open: boolean) => {
     sendMessage,
     currentUserId,
     lastIncomingMessage,
-        isReady: Boolean(activeConversationId),
+    isReady: Boolean(activeConversationId),
     isLoading:
       open &&
       (conversationsQuery.isLoading || createConversationMutation.isPending || !activeConversationId),
-    }
+  }
 }

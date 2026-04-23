@@ -64,7 +64,6 @@ export interface AppliedOrderVoucher {
   maxDiscountAmount?: number
 }
 
-
 export interface OrderItemSnapshot {
   productId: string
   productName: string
@@ -206,6 +205,14 @@ export interface CancelMyOrderPayload {
   note: string
 }
 
+export interface CreateMyReviewPayload {
+  orderId: string
+  productId: string
+  rating: number
+  content?: string
+  images?: string[]
+}
+
 export interface VerifyVnpayReturnPayload {
   [key: string]: string | number | undefined
 }
@@ -234,7 +241,6 @@ export interface VerifyZalopayRedirectResponse {
 }
 
 export type UpdateMyProfileResponse = AuthUser
-
 
 export interface CheckoutVoucherItem {
   id: string

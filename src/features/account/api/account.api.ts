@@ -325,7 +325,7 @@ export const updateMyProfile = async (
   payload: UpdateMyProfilePayload
 ): Promise<UpdateMyProfileResponse> => {
   try {
-     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
+    const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
       '/auth/me',
       payload
     )
@@ -420,7 +420,7 @@ export const cancelMyOrder = async (orderId: string, payload: CancelMyOrderPaylo
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>(
       `/orders/${orderId}/cancel`,
-       {
+      {
         note: payload.note.trim(),
       }
     )

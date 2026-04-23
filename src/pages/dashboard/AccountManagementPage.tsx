@@ -106,7 +106,6 @@ const editRoleOptions = [
   { label: 'Admin', value: 'admin', disabled: true },
 ]
 
-
 export const AccountManagementPage = () => {
   const queryClient = useQueryClient()
   const [createForm] = Form.useForm<CreateUserFormValues>()
@@ -557,7 +556,7 @@ export const AccountManagementPage = () => {
               </Avatar>
 
               <Space direction="vertical" size={6}>
-                 <Upload
+                <Upload
                   accept="image/*"
                   showUploadList={false}
                   beforeUpload={handleAvatarBeforeUpload}
@@ -603,7 +602,6 @@ export const AccountManagementPage = () => {
               />
             </Form.Item>
           </div>
-
         </Form>
       </Modal>
 

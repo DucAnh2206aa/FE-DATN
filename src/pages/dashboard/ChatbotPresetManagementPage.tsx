@@ -7,7 +7,6 @@ import {
   Form,
   Image,
   Input,
-
   message,
   Modal,
   Popconfirm,
@@ -423,10 +422,6 @@ export const ChatbotPresetManagementPage = () => {
               ))}
             </div>
           )}
-
-
-
-
 
           <div className="grid gap-4 md:grid-cols-2">
             <Form.Item label="Kích hoạt" name="isActive" valuePropName="checked">

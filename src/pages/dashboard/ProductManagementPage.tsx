@@ -47,7 +47,7 @@ import type {
   AdminProductItem,
   AdminProductVariantItem,
   UpsertAdminProductVariantPayload,
-} from '@/features/admin/model/product-management.types'  
+} from '@/features/admin/model/product-management.types'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { uploadImage } from '@/shared/api/upload.api'
 import {
@@ -55,7 +55,6 @@ import {
   buildDashboardProductEditPath,
   ROUTE_PATHS,
 } from '@/shared/constants/routes'
-
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
 
@@ -109,7 +108,6 @@ interface VariantFormValues {
 export const ProductManagementPage = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-
   const [variantForm] = Form.useForm<VariantFormValues>()
 
   const [page, setPage] = useState(1)
@@ -127,7 +125,6 @@ export const ProductManagementPage = () => {
   const [editingVariant, setEditingVariant] = useState<AdminProductVariantItem | null>(null)
   const [variantPage, setVariantPage] = useState(1)
   const [uploadingCount, setUploadingCount] = useState(0)
-
   const variantFormImages = normalizeStringArray(Form.useWatch('images', variantForm))
 
   const validateImageFile = (file: File) => {
@@ -377,9 +374,6 @@ export const ProductManagementPage = () => {
         render: (_, record) => (
           <Space direction="vertical" size={0}>
             <Typography.Text>{record.brand}</Typography.Text>
-            <Typography.Text type="secondary" className="text-xs">
-              {record.brandId ? `id: ${record.brandId}` : 'brand text'}
-            </Typography.Text>
           </Space>
         ),
       },
@@ -404,13 +398,15 @@ export const ProductManagementPage = () => {
         key: 'updatedAt',
         width: 180,
         render: (value: string) => (
-     
+          <Typography.Text type="secondary" className="text-xs">
+            {formatDateTime(value)}
+          </Typography.Text>
         ),
       },
       {
         title: 'Hành động',
         key: 'actions',
-       width: 360,
+        width: 360,
         render: (_, record) => (
           <Space wrap>
             <Button
@@ -421,7 +417,8 @@ export const ProductManagementPage = () => {
                 setVariantDrawerOpen(true)
               }}
             ></Button>
-              <Button
+
+            <Button
               icon={<EyeOutlined />}
               onClick={() => {
                 navigate(buildDashboardProductDetailPath(record.id))

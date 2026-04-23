@@ -56,11 +56,17 @@ const normalizeSummary = (value: Record<string, unknown>): DashboardSummary => {
     totalItemsSold: Number(value.totalItemsSold ?? 0),
     totalUsers: Number(value.totalUsers ?? 0),
     customersCount: Number(value.customersCount ?? 0),
+    newCustomersCount: Number(value.newCustomersCount ?? 0),
+    purchasingCustomers: Number(value.purchasingCustomers ?? 0),
     staffCount: Number(value.staffCount ?? 0),
     adminCount: Number(value.adminCount ?? 0),
     activeUsers: Number(value.activeUsers ?? 0),
     inactiveUsers: Number(value.inactiveUsers ?? 0),
+    totalCategories: Number(value.totalCategories ?? 0),
+    categoriesWithOrders: Number(value.categoriesWithOrders ?? 0),
     totalProducts: Number(value.totalProducts ?? 0),
+    soldProducts: Number(value.soldProducts ?? 0),
+    soldVariants: Number(value.soldVariants ?? 0),
     availableProducts: Number(value.availableProducts ?? 0),
     outOfStockVariants: Number(value.outOfStockVariants ?? 0),
     lowStockVariants: Number(value.lowStockVariants ?? 0),
@@ -83,6 +89,14 @@ const normalizeTrends = (value: Record<string, unknown>): DashboardTrends => {
 
   return {
     days: Number(value.days ?? 7),
+    period:
+      value.period === 'day' ||
+      value.period === 'week' ||
+      value.period === 'month' ||
+      value.period === 'custom'
+        ? value.period
+        : 'rolling',
+    label: String(value.label ?? ''),
     fromDate: String(value.fromDate ?? ''),
     toDate: String(value.toDate ?? ''),
     dailyRevenue: rawDailyRevenue
@@ -191,14 +205,27 @@ const normalizeDashboardStatistics = (
   }
 }
 
-export const getAdminDashboardStatistics = async (days = 7): Promise<DashboardStatisticsResponse> => {
+const normalizeDashboardStatisticsFilters = (
+  filters: DashboardStatisticsFilters | number | undefined
+): DashboardStatisticsFilters => {
+  if (typeof filters === 'number') {
+    return {
+      days: filters,
+    }
+  }
+
+  return filters ?? { days: 7 }
+}
+
+export const getAdminDashboardStatistics = async (
+  filters?: DashboardStatisticsFilters | number
+): Promise<DashboardStatisticsResponse> => {
   try {
+    const normalizedFilters = normalizeDashboardStatisticsFilters(filters)
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>(
       '/orders/admin/statistics',
       {
-        params: {
-          days,
-        },
+        params: normalizedFilters,
       }
     )
 

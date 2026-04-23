@@ -773,17 +773,10 @@ export const MyOrdersPage = () => {
                   loading={cancelOrderMutation.isPending && cancelOrderTarget?.id === record.id}
                   onClick={() => {
                     openCancelOrderModal(record)
-
-
-
-
-
                   }}
                 >
                   Hủy đơn
                 </Button>
-
-
               ) : null}
 
               {allowCancelRefund ? (

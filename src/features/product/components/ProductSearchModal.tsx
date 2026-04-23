@@ -7,14 +7,14 @@ import { ProductCard } from '@/features/product/components/ProductCard'
 import { queryKeys } from '@/shared/api/queryKeys'
 
 interface ProductSearchModalProps {
-    open: boolean
+  open: boolean
   onClose: () => void
 }
 
 const SEARCH_PAGE_SIZE = 12
 
 export const ProductSearchModal = ({ open, onClose }: ProductSearchModalProps) => {
-    const [keyword, setKeyword] = useState('')
+  const [keyword, setKeyword] = useState('')
   const [debouncedKeyword, setDebouncedKeyword] = useState('')
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export const ProductSearchModal = ({ open, onClose }: ProductSearchModalProps) =
         limit: SEARCH_PAGE_SIZE,
         search: debouncedKeyword,
         isAvailable: true,
-        }),
+      }),
     getNextPageParam: (lastPage) => {
       if (lastPage.page >= lastPage.totalPages) {
         return undefined
@@ -127,9 +127,10 @@ export const ProductSearchModal = ({ open, onClose }: ProductSearchModalProps) =
                 >
                   <ProductCard product={product} compact highlightText={debouncedKeyword} />
                 </div>
-                ))}
+              ))}
             </div>
-        {searchQuery.isFetchingNextPage ? (
+
+            {searchQuery.isFetchingNextPage ? (
               <div className="py-4 text-center">
                 <Spin />
               </div>

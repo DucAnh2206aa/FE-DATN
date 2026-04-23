@@ -31,9 +31,9 @@ const mergeIncomingMessage = (
   nextMessage: ChatMessage,
   currentUserId?: string | null
 ) => {
-   const nextIndex = previous.findIndex((item) => item.id === nextMessage.id)
+  const nextIndex = previous.findIndex((item) => item.id === nextMessage.id)
 
-    if (nextIndex >= 0) {
+  if (nextIndex >= 0) {
     const nextItems = [...previous]
     nextItems[nextIndex] = nextMessage
     return sortMessages(nextItems)
@@ -44,20 +44,20 @@ const mergeIncomingMessage = (
       return false
     }
 
-     return (
+    return (
       item.conversationId === nextMessage.conversationId &&
       item.senderId === (currentUserId ?? nextMessage.senderId) &&
       item.content.trim() === nextMessage.content.trim()
     )
   })
 
-        if (optimisticIndex >= 0) {
+  if (optimisticIndex >= 0) {
     const nextItems = [...previous]
     nextItems[optimisticIndex] = nextMessage
     return sortMessages(nextItems)
   }
 
-    return sortMessages([...previous, nextMessage])
+  return sortMessages([...previous, nextMessage])
 }
 
 export const useStaffSupportChat = () => {
@@ -68,7 +68,7 @@ export const useStaffSupportChat = () => {
 
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-const currentUserId = meData?.id ?? authUserId ?? null
+  const currentUserId = meData?.id ?? authUserId ?? null
 
   const conversationsQuery = useQuery({
     queryKey: ['support-conversations-staff', accessToken],
@@ -150,8 +150,7 @@ const currentUserId = meData?.id ?? authUserId ?? null
     joinConversationRoom()
     socket.on('connect', joinConversationRoom)
     socket.on('chat:message_created', handleMessage)
-
-     socket.on('staff:notification', (payload: { type?: string; metadata?: Record<string, unknown> }) => {
+    socket.on('staff:notification', (payload: { type?: string; metadata?: Record<string, unknown> }) => {
       if (payload?.type !== 'chat_message') {
         return
       }
@@ -164,7 +163,7 @@ const currentUserId = meData?.id ?? authUserId ?? null
       socket.off('chat:message_created', handleMessage)
       socket.off('staff:notification')
     }
-     }, [activeConversationId, conversationsQuery, currentUserId])
+  }, [activeConversationId, conversationsQuery, currentUserId])
 
   const sendMessage = async (content: string) => {
     if (!activeConversationId || !content.trim()) {
@@ -174,7 +173,7 @@ const currentUserId = meData?.id ?? authUserId ?? null
     const optimisticMessage: ChatMessage = {
       id: `temp-${Date.now()}`,
       conversationId: activeConversationId,
-       senderId: currentUserId ?? 'me',
+      senderId: currentUserId ?? 'me',
       content,
       createdAt: new Date().toISOString(),
     }
@@ -216,7 +215,7 @@ const currentUserId = meData?.id ?? authUserId ?? null
     conversations,
     messages,
     activeConversationId,
-     currentUserId,
+    currentUserId,
     selectConversation,
     sendMessage,
     isLoading: conversationsQuery.isLoading || joinMutation.isPending,

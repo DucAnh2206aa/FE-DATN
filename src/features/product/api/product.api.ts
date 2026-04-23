@@ -200,7 +200,7 @@ export const getProductFilters = async (): Promise<ProductFiltersResponse> => {
         .map((item) => item.trim())
         .filter(Boolean),
       colors: rawColors
-         .filter(
+        .filter(
           (item): item is Record<string, unknown> => Boolean(item) && typeof item === 'object'
         )
         .map((item) => normalizeFilterColor(item)),

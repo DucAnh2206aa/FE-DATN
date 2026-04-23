@@ -27,7 +27,7 @@ export interface AskChatbotPayload {
 }
 
 export interface AskChatbotResponse {
-    intent: 'preset'
+  intent: 'preset'
   answer: string
   actions: ChatbotAction[]
   followUpQuestions: ChatbotPresetOption[]

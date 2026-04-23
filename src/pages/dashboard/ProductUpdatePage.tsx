@@ -143,6 +143,7 @@ export const ProductUpdatePage = () => {
   })
   const currentVariantCount = variantsQuery.data?.totalItems ?? 0
   const hasReachedVariantLimit = currentVariantCount >= MAX_PRODUCT_VARIANTS
+
   useEffect(() => {
     if (!productQuery.data) {
       return
@@ -450,6 +451,7 @@ export const ProductUpdatePage = () => {
       })
       return
     }
+
     if (hasReachedVariantLimit) {
       void message.error(`Mỗi sản phẩm chỉ được thêm tối đa ${MAX_PRODUCT_VARIANTS} biến thể`)
       return
@@ -792,6 +794,7 @@ export const ProductUpdatePage = () => {
               htmlType="submit"
               loading={createVariantMutation.isPending || updateVariantMutation.isPending}
             >
+              {editingVariant ? 'Lưu thay đổi' : 'Tạo biến thể'}
             </Button>
           </div>
         </Form>

@@ -158,10 +158,10 @@ export const StaffSupportChatPanel = () => {
         <div className="flex-1 overflow-y-auto py-4">
           {activeConversationId ? (
             <div className="flex flex-col gap-3">
-             {messages.length === 0 ? (
+              {messages.length === 0 ? (
                 <Typography.Text type="secondary">Chưa có tin nhắn.</Typography.Text>
               ) : (
-                messages.map((item) => renderMessageBubble(item, item.senderId === currentUserId)) 
+                messages.map((item) => renderMessageBubble(item, item.senderId === currentUserId))
               )}
             </div>
           ) : (
@@ -171,7 +171,7 @@ export const StaffSupportChatPanel = () => {
           )}
         </div>
 
-          <div className="border-t border-slate-100 pt-3">
+        <div className="border-t border-slate-100 pt-3">
           <Space direction="vertical" className="w-full" size={8}>
             <TextArea
               autoSize={{ minRows: 2, maxRows: 4 }}

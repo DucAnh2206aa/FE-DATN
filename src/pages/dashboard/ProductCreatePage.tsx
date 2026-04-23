@@ -17,7 +17,6 @@ import {
   Upload,
 } from 'antd'
 import { useState } from 'react'
-
 import { useNavigate } from 'react-router-dom'
 
 import {
@@ -32,12 +31,13 @@ import type {
   CreateAdminProductPayload,
   UpsertAdminProductVariantPayload,
 } from '@/features/admin/model/product-management.types'
-
 import { queryKeys } from '@/shared/api/queryKeys'
 import { uploadImage } from '@/shared/api/upload.api'
 import { ROUTE_PATHS } from '@/shared/constants/routes'
 import { RichTextEditor } from '@/shared/ui/RichTextEditor'
 import { normalizeRichTextValue } from '@/shared/utils/rich-text'
+
+const MAX_PRODUCT_VARIANTS = 8
 
 const normalizeStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
@@ -75,7 +75,6 @@ interface ProductCreateFormValues {
   description?: string
   images?: string[]
   isAvailable: boolean
-
   variants: ProductVariantFormValues[]
 }
 
@@ -99,7 +98,6 @@ export const ProductCreatePage = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm<ProductCreateFormValues>()
   const [uploadingCount, setUploadingCount] = useState(0)
-
   const productImages = normalizeStringArray(Form.useWatch('images', form))
   const variantValues = Form.useWatch('variants', form) ?? []
 
@@ -204,7 +202,6 @@ export const ProductCreatePage = () => {
     mutationFn: async (values: ProductCreateFormValues) => {
       const payload: CreateAdminProductPayload = {
         name: values.name.trim(),
-
         categoryId: values.categoryId,
         brandId: values.brandId.trim(),
         description: normalizeRichTextValue(values.description),
@@ -405,7 +402,7 @@ export const ProductCreatePage = () => {
                       `Mỗi sản phẩm chỉ được thêm tối đa ${MAX_PRODUCT_VARIANTS} biến thể`
                     )
                   }
-                  
+
                   const seenKeys = new Map<string, number>()
                   const duplicateErrors: string[] = []
                   const missingImageErrors: string[] = []
@@ -446,6 +443,13 @@ export const ProductCreatePage = () => {
           >
             {(fields, { add, remove }, { errors }) => (
               <div className="space-y-3">
+                {fields.length > 0 ? (
+                  <Typography.Text type="secondary">
+                    Tối đa {MAX_PRODUCT_VARIANTS} biến thể cho mỗi sản phẩm. Hiện có {fields.length}
+                    /{MAX_PRODUCT_VARIANTS}.
+                  </Typography.Text>
+                ) : null}
+
                 {fields.map((field, index) => {
                   const variantIndex = Number(field.name)
                   const variantImages = normalizeStringArray(variantValues[variantIndex]?.images)
@@ -600,7 +604,7 @@ export const ProductCreatePage = () => {
                       )
                       return
                     }
-                    
+
                     add({
                       stockQuantity: 0,
                       isAvailable: true,

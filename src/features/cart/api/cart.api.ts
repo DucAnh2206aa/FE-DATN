@@ -3,37 +3,37 @@ import { extractApiData, toApiClientError } from '@/shared/api/response'
 import type { ApiSuccess } from '@/shared/types/api.types'
 
 import type {
-    CartItem,
-    CartProductSummary,
-    CartResponse,
-    CartVariantSummary,
-    UpsertCartItemPayload,
+  CartItem,
+  CartProductSummary,
+  CartResponse,
+  CartVariantSummary,
+  UpsertCartItemPayload,
 } from '../model/cart.types'
 
 const PRODUCT_PLACEHOLDER_BRAND = 'Generic'
 
 const toId = (value: unknown) => {
-    return typeof value === 'string' ? value : String(value ?? '')
+  return typeof value === 'string' ? value : String(value ?? '')
 }
 
 const toStringArray = (value: unknown) => {
-    if (!Array.isArray(value)) {
-        return []
-    }
+  if (!Array.isArray(value)) {
+    return []
+  }
 
-    return value.filter((item): item is string => typeof item === 'string')
+  return value.filter((item): item is string => typeof item === 'string')
 }
 
 const toRecord = (value: unknown): Record<string, unknown> | undefined => {
-    if (!value || typeof value !== 'object') {
-        return undefined
-    }
+  if (!value || typeof value !== 'object') {
+    return undefined
+  }
 
-    return value as Record<string, unknown>
+  return value as Record<string, unknown>
 }
 
 const normalizeProduct = (value: unknown): CartProductSummary | undefined => {
-    const record = toRecord(value)
+  const record = toRecord(value)
 
   if (!record) {
     return undefined
@@ -49,22 +49,21 @@ const normalizeProduct = (value: unknown): CartProductSummary | undefined => {
 }
 
 const resolveVariantColor = (variant: Record<string, unknown>) => {
-    if (typeof variant.color === 'string' && variant.color.trim()) {
+  if (typeof variant.color === 'string' && variant.color.trim()) {
     return {
       color: variant.color.trim(),
       colorHex: typeof variant.colorHex === 'string' ? variant.colorHex : undefined,
     }
-    }
+  }
 
-    const colorInfo = toRecord(variant.colorId)
+  const colorInfo = toRecord(variant.colorId)
 
-    if (!colorInfo) {
-
+  if (!colorInfo) {
     return {
-        color: undefined,
+      color: undefined,
       colorHex: undefined,
     }
-    }
+  }
 
   return {
     color: typeof colorInfo.name === 'string' ? colorInfo.name : undefined,
@@ -73,7 +72,7 @@ const resolveVariantColor = (variant: Record<string, unknown>) => {
 }
 
 const normalizeVariant = (value: unknown): CartVariantSummary | undefined => {
-    const record = toRecord(value)
+  const record = toRecord(value)
 
   if (!record) {
     return undefined
@@ -97,7 +96,7 @@ const normalizeVariant = (value: unknown): CartVariantSummary | undefined => {
 }
 
 const normalizeCartItem = (value: unknown): CartItem | null => {
-    const record = toRecord(value)
+  const record = toRecord(value)
 
   if (!record) {
     return null
@@ -117,7 +116,7 @@ const normalizeCartItem = (value: unknown): CartItem | null => {
 }
 
 const normalizeCart = (value: Record<string, unknown>): CartResponse => {
-    const rawItems = Array.isArray(value.items) ? value.items : []
+  const rawItems = Array.isArray(value.items) ? value.items : []
 
   return {
     id: toId(value.id ?? value._id),
@@ -128,7 +127,7 @@ const normalizeCart = (value: Record<string, unknown>): CartResponse => {
 }
 
 export const getMyCart = async () => {
-    try {
+  try {
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/cart')
     const data = extractApiData(response)
     return normalizeCart(data)
@@ -138,7 +137,7 @@ export const getMyCart = async () => {
 }
 
 export const upsertCartItem = async (payload: UpsertCartItemPayload) => {
-    try {
+  try {
     const response = await httpClient.put<ApiSuccess<Record<string, unknown>>>('/cart/items', payload)
     return normalizeCart(extractApiData(response))
   } catch (error) {
@@ -147,7 +146,7 @@ export const upsertCartItem = async (payload: UpsertCartItemPayload) => {
 }
 
 export const removeCartItem = async (variantId: string) => {
-    try {
+  try {
     const response = await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/cart/items/${variantId}`)
     return normalizeCart(extractApiData(response))
   } catch (error) {
@@ -156,7 +155,7 @@ export const removeCartItem = async (variantId: string) => {
 }
 
 export const clearMyCart = async () => {
-    try {
+  try {
     const response = await httpClient.delete<ApiSuccess<Record<string, unknown>>>('/cart/items')
     return normalizeCart(extractApiData(response))
   } catch (error) {

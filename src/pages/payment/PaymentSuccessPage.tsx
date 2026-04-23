@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { Button, Card, message, Result, Space, Spin, Typography } from 'antd'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -8,36 +8,19 @@ import {
   verifyVnpayReturn,
   verifyZalopayRedirect,
 } from '@/features/account/api/account.api'
+import { queryKeys } from '@/shared/api/queryKeys'
 import { ROUTE_PATHS } from '@/shared/constants/routes'
 import { formatVndCurrency } from '@/shared/utils/currency'
 
 const ZALOPAY_POLLING_INTERVAL_MS = 5000
 const ZALOPAY_POLLING_TIMEOUT_MS = 60000
+
 export const PaymentSuccessPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const hasRequestedVerification = useRef(false)
+  const notifiedSuccessKeyRef = useRef<string | null>(null)
+  const notifiedErrorKeyRef = useRef<string | null>(null)
   const [slowVerificationKey, setSlowVerificationKey] = useState<string | null>(null)
-
-  const verifyMutation = useMutation({
-    mutationFn: verifyVnpayReturn,
-    onSuccess: (data) => {
-      void message.success(data.isSuccess ? 'Thanh toán thành công' : 'Thanh toán chưa thành công')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
-  const verifyZalopayMutation = useMutation({
-    mutationFn: verifyZalopayRedirect,
-    onSuccess: (data) => {
-      void message.success(data.isSuccess ? 'Thanh toán thành công' : 'Thanh toán chưa thành công')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
 
   const vnpPayload = useMemo(() => {
     const payload: Record<string, string> = {}
@@ -94,32 +77,33 @@ export const PaymentSuccessPage = () => {
   const hasPaymentReturnData = hasVnpReturnData || hasZalopayReturnData
   const paymentReturnKey = searchParams.toString()
 
-  useEffect(() => {
-    if ((hasVnpReturnData || hasZalopayReturnData) && hasRequestedVerification.current) {
-      return
-    }
+  const verifyVnpayQuery = useQuery({
+    queryKey: queryKeys.account.paymentVerification('vnpay', vnpPayload),
+    queryFn: () => verifyVnpayReturn(vnpPayload),
+    enabled: hasVnpReturnData,
+    retry: false,
+  })
 
-    if (!hasPaymentReturnData) {
-      return
-    }
+  const verifyZalopayQuery = useQuery({
+    queryKey: queryKeys.account.paymentVerification(
+      'zalopay',
+      (zalopayPayload ?? {}) as Record<string, unknown>
+    ),
+    queryFn: () => verifyZalopayRedirect(zalopayPayload!),
+    enabled: hasZalopayReturnData && Boolean(zalopayPayload),
+    retry: false,
+    refetchInterval: (query) => {
+      const data = query.state.data
 
-    hasRequestedVerification.current = true
-    if (hasVnpReturnData) {
-      verifyMutation.mutate(vnpPayload)
-      return
-    }
+      if (!data) {
+        return false
+      }
 
-    if (hasZalopayReturnData && zalopayPayload) {
-      verifyZalopayMutation.mutate(zalopayPayload)
-    }
-  }, [
-    hasVnpReturnData,
-    hasZalopayReturnData,
-    verifyMutation,
-    verifyZalopayMutation,
-    vnpPayload,
-    zalopayPayload,
-  ])
+      return data.order.status === 'awaiting_payment' && data.order.paymentStatus === 'pending'
+        ? ZALOPAY_POLLING_INTERVAL_MS
+        : false
+    },
+  })
 
   const retryPaymentMutation = useMutation({
     mutationFn: (orderId: string) => retryMyVnpayPayment(orderId),
@@ -137,12 +121,56 @@ export const PaymentSuccessPage = () => {
   })
 
   const activeGateway = hasVnpReturnData ? 'vnpay' : 'zalopay'
+  const activeQuery = activeGateway === 'vnpay' ? verifyVnpayQuery : verifyZalopayQuery
+  const verifyResult = activeQuery.data
+  const isVerifyingPayment =
+    hasPaymentReturnData && !verifyResult && (activeQuery.isPending || activeQuery.fetchStatus === 'fetching')
+  const activeVerificationKey = isVerifyingPayment
+    ? `${activeGateway}:${searchParams.toString()}`
+    : null
   const order = verifyResult?.order
   const isPaymentSuccess = verifyResult?.isSuccess ?? false
   const isAwaitingPayment = order?.status === 'awaiting_payment'
   const isWaitingForPaymentConfirmation = isAwaitingPayment && order?.paymentStatus === 'pending'
   const canRetryPayment =
     isAwaitingPayment && (order?.paymentStatus === 'pending' || order?.paymentStatus === 'failed')
+  const isVerificationSlow =
+    activeVerificationKey !== null && slowVerificationKey === activeVerificationKey
+  const isZalopayProcessingTimeout =
+    activeGateway === 'zalopay' &&
+    hasZalopayReturnData &&
+    verifyResult?.order.status === 'awaiting_payment' &&
+    verifyResult.order.paymentStatus === 'pending' &&
+    slowVerificationKey === `zalopay-processing:${paymentReturnKey}`
+
+  useEffect(() => {
+    if (!activeVerificationKey) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setSlowVerificationKey(activeVerificationKey)
+    }, 12000)
+
+    return () => window.clearTimeout(timer)
+  }, [activeVerificationKey])
+
+  useEffect(() => {
+    if (
+      activeGateway !== 'zalopay' ||
+      !hasZalopayReturnData ||
+      verifyResult?.order.status !== 'awaiting_payment' ||
+      verifyResult.order.paymentStatus !== 'pending'
+    ) {
+      return
+    }
+
+    const timer = window.setTimeout(() => {
+      setSlowVerificationKey(`zalopay-processing:${paymentReturnKey}`)
+    }, ZALOPAY_POLLING_TIMEOUT_MS)
+
+    return () => window.clearTimeout(timer)
+  }, [activeGateway, hasZalopayReturnData, paymentReturnKey, verifyResult])
 
   useEffect(() => {
     if (!verifyResult) {
@@ -154,12 +182,13 @@ export const PaymentSuccessPage = () => {
     if (notifiedSuccessKeyRef.current === notificationKey) {
       return
     }
+
     notifiedSuccessKeyRef.current = notificationKey
     void message.info(
       verifyResult.isSuccess
         ? 'Thanh toán thành công'
         : verifyResult.order.status === 'awaiting_payment' &&
-          verifyResult.order.paymentStatus === 'pending'
+            verifyResult.order.paymentStatus === 'pending'
           ? 'Đơn hàng đang chờ thanh toán'
           : 'Thanh toán chưa thành công'
     )
@@ -179,6 +208,7 @@ export const PaymentSuccessPage = () => {
     notifiedErrorKeyRef.current = errorKey
     void message.error(activeQuery.error.message)
   }, [activeGateway, activeQuery.error])
+
   useEffect(() => {
     if (!isPaymentSuccess || !order?.id) {
       return
@@ -191,7 +221,7 @@ export const PaymentSuccessPage = () => {
     return () => window.clearTimeout(timer)
   }, [isPaymentSuccess, navigate, order?.id])
 
-  if (!hasVnpReturnData && !hasZalopayReturnData) {
+  if (!hasPaymentReturnData) {
     return (
       <Card className="mx-auto mt-8 max-w-2xl">
         <Result
@@ -208,7 +238,70 @@ export const PaymentSuccessPage = () => {
     )
   }
 
-  if (activeQuery.isPending || activeQuery.fetchStatus === 'fetching') {
+  if (isVerificationSlow) {
+    return (
+      <Card className="mx-auto mt-8 max-w-2xl">
+        <Result
+          status="warning"
+          title="Giao dịch đang được xử lý"
+          subTitle="Cổng thanh toán đang phản hồi chậm. Bạn có thể tải lại trang hoặc vào đơn hàng của tôi để kiểm tra trạng thái mới nhất."
+          extra={[
+            <Button
+              key="reload"
+              type="primary"
+              onClick={() => {
+                window.location.reload()
+              }}
+            >
+              Tải lại trang
+            </Button>,
+            <Button
+              key="orders"
+              onClick={() => {
+                navigate(ROUTE_PATHS.ACCOUNT_ORDERS)
+              }}
+            >
+              Đơn hàng của tôi
+            </Button>,
+          ]}
+        />
+      </Card>
+    )
+  }
+
+  if (isZalopayProcessingTimeout) {
+    return (
+      <Card className="mx-auto mt-8 max-w-2xl">
+        <Result
+          status="warning"
+          title="ZaloPay vẫn đang xác nhận giao dịch"
+          subTitle="Đơn hàng đã quay về trạng thái chờ thanh toán quá lâu. Bạn có thể kiểm tra lại ngay hoặc vào đơn hàng của tôi để thanh toán lại nếu giao dịch đã hết hạn."
+          extra={[
+            <Button
+              key="recheck"
+              type="primary"
+              loading={verifyZalopayQuery.isRefetching}
+              onClick={() => {
+                void verifyZalopayQuery.refetch()
+              }}
+            >
+              Kiểm tra lại ngay
+            </Button>,
+            <Button
+              key="orders"
+              onClick={() => {
+                navigate(ROUTE_PATHS.ACCOUNT_ORDERS)
+              }}
+            >
+              Đơn hàng của tôi
+            </Button>,
+          ]}
+        />
+      </Card>
+    )
+  }
+
+  if (isVerifyingPayment) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
         <Space direction="vertical" align="center">
@@ -223,7 +316,7 @@ export const PaymentSuccessPage = () => {
     )
   }
 
-  if (isVerifyError) {
+  if (activeQuery.isError) {
     return (
       <Card className="mx-auto mt-8 max-w-2xl">
         <Result
@@ -244,10 +337,7 @@ export const PaymentSuccessPage = () => {
     )
   }
 
-  const verifyResult =
-    activeGateway === 'vnpay' ? verifyMutation.data : verifyZalopayMutation.data
-
-  if (!verifyResult) {
+  if (!verifyResult || !order) {
     return (
       <Card className="mx-auto mt-8 max-w-2xl">
         <Result
@@ -276,12 +366,18 @@ export const PaymentSuccessPage = () => {
               ? 'Thanh toán ZaloPay thành công'
               : 'Thanh toán VNPay thành công'
             : isWaitingForPaymentConfirmation
-              ? 'Đơn hàng đang chờ thanh toán'
+              ? activeGateway === 'zalopay'
+                ? 'ZaloPay đang xác nhận giao dịch'
+                : 'Đơn hàng đang chờ thanh toán'
               : activeGateway === 'zalopay'
                 ? 'Thanh toán ZaloPay thất bại'
                 : 'Thanh toán VNPay thất bại'
         }
-        subTitle={`Đơn hàng ${order.orderCode} - ${formatVndCurrency(order.totalAmount)}`}
+        subTitle={
+          isWaitingForPaymentConfirmation && activeGateway === 'zalopay'
+            ? `Đơn hàng ${order.orderCode} đang được đồng bộ trạng thái từ ZaloPay. Trang sẽ tự kiểm tra lại sau mỗi vài giây.`
+            : `Đơn hàng ${order.orderCode} - ${formatVndCurrency(order.totalAmount)}`
+        }
         extra={[
           canRetryPayment ? (
             <Button

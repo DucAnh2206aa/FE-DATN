@@ -3,8 +3,7 @@ import { Card, Typography } from 'antd'
 import { StaffSupportChatPanel } from '@/features/chat/components/StaffSupportChatPanel'
 
 export const SupportChatPage = () => {
-    return (
-   
+  return (
     <div className="space-y-4">
       <div>
         <Typography.Title level={3} className="!mb-1">

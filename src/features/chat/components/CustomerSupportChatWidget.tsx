@@ -1,6 +1,5 @@
 import { CloseOutlined, MessageOutlined, SendOutlined, UserOutlined } from '@ant-design/icons'
 import { Avatar, Badge, Button, Drawer, Input, message, Space, Spin, Typography } from 'antd'
-
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 
@@ -50,7 +49,7 @@ interface CustomerSupportChatWidgetProps {
 }
 
 export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportChatWidgetProps) => {
-    const navigate = useNavigate()
+  const navigate = useNavigate()
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [inputValue, setInputValue] = useState('')
@@ -62,16 +61,16 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
   const { messages, sendMessage, isReady, isLoading, currentUserId, lastIncomingMessage } =
     useCustomerSupportChat(open)
 
-    useEffect(() => {
+  useEffect(() => {
     if (typeof window === 'undefined') {
       return
     }
 
-        const updateWidth = () => {
+    const updateWidth = () => {
       setDrawerWidth(window.innerWidth < 640 ? window.innerWidth : 420)
     }
 
-        updateWidth()
+    updateWidth()
     window.addEventListener('resize', updateWidth)
     return () => window.removeEventListener('resize', updateWidth)
   }, [])
@@ -81,19 +80,18 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
       return
     }
 
-    
-
     messageContainerRef.current.scrollTo({
       top: messageContainerRef.current.scrollHeight,
       behavior: 'smooth',
     })
   }, [messages, open])
 
-    useEffect(() => {
+  useEffect(() => {
     if (open) {
       setUnreadCount(0)
     }
   }, [open])
+
   useEffect(() => {
     if (!lastIncomingMessage || lastNotifiedMessageIdRef.current === lastIncomingMessage.id) {
       return
@@ -114,30 +112,30 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
     })
   }, [lastIncomingMessage, open])
 
-    const groupedMessages = useMemo(() => groupMessages(messages), [messages])
+  const groupedMessages = useMemo(() => groupMessages(messages), [messages])
 
-    const handleSend = async () => {
+  const handleSend = async () => {
     if (!isAuthenticated) {
       void message.warning('Bạn cần đăng nhập để chat trực tiếp với nhân viên')
       return
     }
 
-        const content = inputValue.trim()
+    const content = inputValue.trim()
 
-        if (!content) {
-            return
-        }
+    if (!content) {
+      return
+    }
 
-        try {
+    try {
       await sendMessage(content)
       setInputValue('')
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Không thể gửi tin nhắn'
       void message.error(errorMessage)
     }
-    }
+  }
 
-    return (
+  return (
     <>
       <div className="fixed bottom-6 right-6 z-[90]">
         <Badge count={unreadCount} overflowCount={99} size="small">
@@ -161,7 +159,7 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
         </Badge>
       </div>
 
-            <Drawer
+      <Drawer
         title={
           <Space size={8}>
             <Avatar icon={<UserOutlined />} size={28} />
@@ -177,7 +175,6 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
         onClose={() => setOpen(false)}
         closeIcon={<CloseOutlined />}
         destroyOnClose={false}
-        
         styles={{
           body: { padding: 12 },
           footer: { padding: 12 },
@@ -239,7 +236,8 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
               <div key={group.date} className="flex flex-col gap-3">
                 <div className="text-center text-xs text-slate-400">{formatTime(group.date)}</div>
                 {group.items.map((item) => {
-                 const isMine = currentUserId ? item.senderId === currentUserId : false
+                  const isMine = currentUserId ? item.senderId === currentUserId : false
+
                   return (
                     <div
                       key={item.id}
@@ -265,6 +263,6 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
           )}
         </div>
       </Drawer>
-        </>
-    )
+    </>
+  )
 }

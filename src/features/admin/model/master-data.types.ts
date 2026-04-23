@@ -9,10 +9,7 @@ export interface PaginatedResponse<T> {
 export interface MasterCategoryItem {
   id: string
   name: string
-  slug: string
   description?: string
-  parentId?: string
-  image?: string
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -21,7 +18,6 @@ export interface MasterCategoryItem {
 export interface MasterBrandItem {
   id: string
   name: string
-  slug: string
   description?: string
   isActive: boolean
   createdAt: string
@@ -31,7 +27,6 @@ export interface MasterBrandItem {
 export interface MasterColorItem {
   id: string
   name: string
-  slug: string
   hexCode?: string
   isActive: boolean
   createdAt: string
@@ -41,7 +36,6 @@ export interface MasterColorItem {
 export interface MasterSizeItem {
   id: string
   name: string
-  slug: string
   isActive: boolean
   createdAt: string
   updatedAt: string
@@ -61,29 +55,23 @@ export interface MasterListParams {
 
 export interface UpsertCategoryPayload {
   name: string
-  slug: string
   description?: string
-  parentId?: string
-  image?: string
   isActive?: boolean
 }
 
 export interface UpsertBrandPayload {
   name: string
-  slug: string
   description?: string
   isActive?: boolean
 }
 
 export interface UpsertColorPayload {
   name: string
-  slug: string
   hexCode?: string
   isActive?: boolean
 }
 
 export interface UpsertSizePayload {
   name: string
-  slug: string
   isActive?: boolean
 }

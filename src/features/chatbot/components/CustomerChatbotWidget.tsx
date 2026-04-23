@@ -71,8 +71,6 @@ export const CustomerChatbotWidget = () => {
     setMessagesState([buildWelcomeMessage(presetOptions)])
   }
 
-
-
   useEffect(() => {
     if (!presetsQuery.isSuccess || initializedRef.current) {
       return
@@ -81,6 +79,7 @@ export const CustomerChatbotWidget = () => {
     initializedRef.current = true
     setMessagesState([buildWelcomeMessage(presetOptions)])
   }, [presetOptions, presetsQuery.isSuccess])
+
   useEffect(() => {
     if (typeof window === 'undefined') {
       return
@@ -220,9 +219,7 @@ export const CustomerChatbotWidget = () => {
           body: {
             padding: 12,
           },
-
         }}
-
       >
         <div
           ref={messageContainerRef}
@@ -234,9 +231,7 @@ export const CustomerChatbotWidget = () => {
               <Typography.Text type="secondary" className="text-xs">
                 Đang tải câu hỏi mẫu...
               </Typography.Text>
-
             </div>
-
           ) : messages.length === 0 ? (
             <Empty description="Chưa có nội dung chatbot" />
           ) : (
@@ -249,10 +244,11 @@ export const CustomerChatbotWidget = () => {
                   className={`flex ${isAssistant ? 'justify-start' : 'justify-end'}`}
                 >
                   <div
-                    className={`max-w-[92%] rounded-2xl px-3 py-2 ${isAssistant
+                    className={`max-w-[92%] rounded-2xl px-3 py-2 ${
+                      isAssistant
                         ? 'border border-slate-200 bg-slate-100 text-slate-900'
                         : 'bg-blue-600 text-white shadow-sm'
-                      }`}
+                    }`}
                   >
                     <Space align="start" size={8}>
                       <Avatar
@@ -299,6 +295,7 @@ export const CustomerChatbotWidget = () => {
                                   ) : (
                                     <div className="h-12 w-12 rounded-md bg-slate-200" />
                                   )}
+
                                   <div className="min-w-0">
                                     <Typography.Text strong className="block truncate">
                                       {product.name}

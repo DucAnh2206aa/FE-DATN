@@ -8,7 +8,7 @@ import {
 import { queryKeys } from '@/shared/api/queryKeys'
 
 interface UseHomeProductsOptions {
-    search?: string
+  search?: string
   categoryId?: string
   brand?: string
 }
@@ -16,7 +16,7 @@ interface UseHomeProductsOptions {
 const HOME_PAGE_SIZE = 12
 
 export const useHomeProducts = ({ search, categoryId, brand }: UseHomeProductsOptions) => {
-    const topSellingQuery = useQuery({
+  const topSellingQuery = useQuery({
     queryKey: queryKeys.products.topSelling,
     queryFn: () => getTopSellingProducts(8),
   })
