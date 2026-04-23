@@ -6,6 +6,7 @@ import type { ApiSuccess } from '@/shared/types/api.types'
 import type {
   AddressItem,
   AppliedOrderVoucher,
+  CancelMyOrderPayload,
   CancelRefundRequest,
   ChangePasswordPayload,
   CheckoutVoucherItem,
@@ -151,6 +152,7 @@ const normalizeOrderSnapshot = (value: Record<string, unknown>): OrderItemSnapsh
 const normalizeOrderStatusHistory = (value: Record<string, unknown>): OrderStatusHistoryItem => {
   return {
     status:
+      value.status === 'awaiting_payment' ||
       value.status === 'confirmed' ||
       value.status === 'shipping' ||
       value.status === 'delivered' ||
@@ -188,9 +190,7 @@ const normalizeReturnRequest = (value: Record<string, unknown>): ReturnRequest =
     id: toId(value.id ?? value._id),
     requestedBy: toId(value.requestedBy),
     status:
-      value.status === 'approved' ||
-      value.status === 'rejected' ||
-      value.status === 'refunded'
+      value.status === 'approved' || value.status === 'rejected' || value.status === 'refunded'
         ? value.status
         : 'pending',
     refundMethod: normalizeRefundMethod(value.refundMethod),
@@ -210,8 +210,7 @@ const normalizeReturnRequest = (value: Record<string, unknown>): ReturnRequest =
 const normalizeCancelRefundRequest = (value: Record<string, unknown>): CancelRefundRequest => {
   return {
     requestedBy: toId(value.requestedBy),
-    status:
-      value.status === 'rejected' || value.status === 'refunded' ? value.status : 'pending',
+    status: value.status === 'rejected' || value.status === 'refunded' ? value.status : 'pending',
     refundAmount: Number(value.refundAmount ?? 0),
     bankCode: String(value.bankCode ?? ''),
     bankName: String(value.bankName ?? ''),
@@ -278,6 +277,7 @@ const normalizeOrder = (value: Record<string, unknown>): MyOrderItem => {
     voucherId: value.voucherId ? toId(value.voucherId) : undefined,
     voucher: rawVoucher ? normalizeAppliedOrderVoucher(rawVoucher) : undefined,
     status:
+      value.status === 'awaiting_payment' ||
       value.status === 'confirmed' ||
       value.status === 'shipping' ||
       value.status === 'delivered' ||
@@ -325,7 +325,10 @@ export const updateMyProfile = async (
   payload: UpdateMyProfilePayload
 ): Promise<UpdateMyProfileResponse> => {
   try {
-    const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>('/auth/me', payload)
+     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
+      '/auth/me',
+      payload
+    )
     return normalizeAuthUser(extractApiData(response))
   } catch (error) {
     throw toApiClientError(error)
@@ -358,7 +361,10 @@ export const listMyAddresses = async () => {
 // worklog: 2026-03-04 16:20:08 | trantu | feature | createMyAddress
 export const createMyAddress = async (payload: UpsertAddressPayload) => {
   try {
-    const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>('/addresses', payload)
+    const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>(
+      '/addresses',
+      payload
+    )
     return normalizeAddress(extractApiData(response))
   } catch (error) {
     throw toApiClientError(error)
@@ -402,9 +408,7 @@ export const listMyOrders = async (params: MyOrdersQueryParams = {}) => {
 
 export const getMyOrderById = async (orderId: string) => {
   try {
-    const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>(
-      `/orders/${orderId}`
-    )
+    const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>(`/orders/${orderId}`)
 
     return normalizeOrder(extractApiData(response))
   } catch (error) {
@@ -412,11 +416,13 @@ export const getMyOrderById = async (orderId: string) => {
   }
 }
 
-export const cancelMyOrder = async (orderId: string, note?: string) => {
+export const cancelMyOrder = async (orderId: string, payload: CancelMyOrderPayload) => {
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>(
       `/orders/${orderId}/cancel`,
-      note?.trim() ? { note: note.trim() } : undefined
+       {
+        note: payload.note.trim(),
+      }
     )
 
     return normalizeOrder(extractApiData(response))
@@ -437,10 +443,7 @@ export const confirmOrderReceived = async (orderId: string) => {
   }
 }
 
-export const createReturnRequest = async (
-  orderId: string,
-  payload: CreateReturnRequestPayload
-) => {
+export const createReturnRequest = async (orderId: string, payload: CreateReturnRequestPayload) => {
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>(
       `/orders/${orderId}/return`,

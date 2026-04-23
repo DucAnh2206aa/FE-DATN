@@ -22,6 +22,7 @@ export const ROUTE_PATHS = {
   DASHBOARD_COMMENTS: '/dashboard/comments',
   DASHBOARD_PRODUCTS: '/dashboard/products',
   DASHBOARD_PRODUCTS_CREATE: '/dashboard/products/create',
+  DASHBOARD_PRODUCTS_DETAIL: '/dashboard/products/:productId',
   DASHBOARD_VOUCHERS: '/dashboard/vouchers',
   DASHBOARD_USERS: '/dashboard/users',
   DASHBOARD_ACCOUNTS: '/dashboard/accounts',
@@ -59,6 +60,10 @@ export const buildDashboardMasterDataPath = (tab?: MasterDataTabKey) => {
   if (!tab) {
     return ROUTE_PATHS.DASHBOARD_MASTER_DATA
   }
+
+  export const buildDashboardProductDetailPath = (productId: string) => {
+  return ROUTE_PATHS.DASHBOARD_PRODUCTS_DETAIL.replace(':productId', productId)
+}
 
   return `${ROUTE_PATHS.DASHBOARD_MASTER_DATA}?tab=${tab}`
 }

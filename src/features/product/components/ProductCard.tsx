@@ -9,27 +9,27 @@ import { formatVndCurrency } from '@/shared/utils/currency'
 const PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg'
 
 interface ProductCardProps {
-    product: ProductCardItem
+  product: ProductCardItem
   compact?: boolean
   highlightText?: string
 }
 
 const formatPriceLabel = (priceFrom: number | null, priceTo: number | null) => {
-    if (priceFrom === null || priceTo === null) {
+  if (priceFrom === null || priceTo === null) {
     return 'Liên hệ'
   }
-    if (priceFrom === priceTo) {
+  if (priceFrom === priceTo) {
     return formatVndCurrency(priceFrom)
   }
 
-    return `${formatVndCurrency(priceFrom)} - ${formatVndCurrency(priceTo)}`
+  return `${formatVndCurrency(priceFrom)} - ${formatVndCurrency(priceTo)}`
 }
 
 export const ProductCard = ({ product, compact = false, highlightText }: ProductCardProps) => {
-    const imageUrl = product.thumbnailUrl ?? product.images[0] ?? PRODUCT_PLACEHOLDER
+  const imageUrl = product.thumbnailUrl ?? product.images[0] ?? PRODUCT_PLACEHOLDER
   const searchWords = highlightText?.trim() ? [highlightText.trim()] : []
 
-    return (
+  return (
     <Link to={buildProductDetailPath(product.id)} className="block h-full">
       <Card
         hoverable
@@ -61,16 +61,16 @@ export const ProductCard = ({ product, compact = false, highlightText }: Product
             </Typography.Title>
           </Tooltip>
 
-                    <Typography.Text type="secondary" className="line-clamp-1 text-xs uppercase">
+          <Typography.Text type="secondary" className="line-clamp-1 text-xs uppercase">
             {product.brand}
           </Typography.Text>
 
-                    <Typography.Text strong className="!text-blue-700">
+          <Typography.Text strong className="!text-blue-700">
             {formatPriceLabel(product.priceFrom, product.priceTo)}
           </Typography.Text>
 
-                    <div className="flex items-center justify-between gap-2">
-            <Rate disabled allowHalf value={product.averageRating} className="!text-[14px]" />
+          <div className="flex items-center justify-between gap-2">
+            <Rate disabled allowHalf value={product.averageRating} className="!text-[10px]" />
             <Typography.Text type="secondary">Đã bán: {product.soldCount}</Typography.Text>
           </div>
         </div>

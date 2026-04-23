@@ -1,4 +1,11 @@
-import { DeleteOutlined, EditOutlined, PlusOutlined, TagsOutlined, UploadOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  EditOutlined,
+  EyeOutlined,
+  PlusOutlined,
+  TagsOutlined,
+  UploadOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { UploadProps } from 'antd'
 import {
@@ -34,27 +41,27 @@ import {
   listAdminProducts,
   listAdminProductVariants,
   listAdminSizes,
-  updateAdminProduct,
   updateAdminProductVariant,
 } from '@/features/admin/api/product-management.api'
 import type {
   AdminProductItem,
   AdminProductVariantItem,
-  UpdateAdminProductPayload,
   UpsertAdminProductVariantPayload,
-} from '@/features/admin/model/product-management.types'
+} from '@/features/admin/model/product-management.types'  
 import { queryKeys } from '@/shared/api/queryKeys'
 import { uploadImage } from '@/shared/api/upload.api'
-import { ROUTE_PATHS } from '@/shared/constants/routes'
-import { RichTextEditor } from '@/shared/ui/RichTextEditor'
+import {
+  buildDashboardProductDetailPath,
+  buildDashboardProductEditPath,
+  ROUTE_PATHS,
+} from '@/shared/constants/routes'
+
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
-import { normalizeRichTextValue } from '@/shared/utils/rich-text'
 
 const PAGE_SIZE = 10
 const VARIANT_PAGE_SIZE = 20
 const PRODUCT_PLACEHOLDER = '/images/product-placeholder.svg'
-
 
 const normalizeStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
@@ -74,6 +81,7 @@ const mergeUniqueStringArray = (current: string[], nextValue: string) => {
 
   return [...current, nextValue]
 }
+
 const formatPriceRange = (product: AdminProductItem) => {
   if (product.priceFrom === null || product.priceTo === null) {
     return 'Liên hệ'
@@ -88,17 +96,6 @@ const formatPriceRange = (product: AdminProductItem) => {
 
 type ProductAvailabilityFilter = 'all' | 'available' | 'unavailable'
 
-interface ProductFormValues {
-  name: string
-  categoryId: string
-  brandId?: string
-  description?: string
-  images?: string[]
-  isAvailable: boolean
-  metaTitle?: string
-  metaDescription?: string
-}
-
 interface VariantFormValues {
   colorId?: string
   sizeId?: string
@@ -112,7 +109,7 @@ interface VariantFormValues {
 export const ProductManagementPage = () => {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
-  const [productForm] = Form.useForm<ProductFormValues>()
+
   const [variantForm] = Form.useForm<VariantFormValues>()
 
   const [page, setPage] = useState(1)
@@ -122,8 +119,6 @@ export const ProductManagementPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<string>('all')
   const [brandFilter, setBrandFilter] = useState<string>('all')
 
-  const [productModalOpen, setProductModalOpen] = useState(false)
-  const [editingProduct, setEditingProduct] = useState<AdminProductItem | null>(null)
   const [variantDrawerOpen, setVariantDrawerOpen] = useState(false)
   const [activeProductForVariants, setActiveProductForVariants] = useState<AdminProductItem | null>(
     null
@@ -132,7 +127,7 @@ export const ProductManagementPage = () => {
   const [editingVariant, setEditingVariant] = useState<AdminProductVariantItem | null>(null)
   const [variantPage, setVariantPage] = useState(1)
   const [uploadingCount, setUploadingCount] = useState(0)
-  const productFormImages = normalizeStringArray(Form.useWatch('images', productForm))
+
   const variantFormImages = normalizeStringArray(Form.useWatch('images', variantForm))
 
   const validateImageFile = (file: File) => {
@@ -165,22 +160,6 @@ export const ProductManagementPage = () => {
     } finally {
       setUploadingCount((value) => Math.max(0, value - 1))
     }
-  }
-
-  const appendProductFormImage = (url: string) => {
-    productForm.setFieldValue('images', mergeUniqueStringArray(productFormImages, url))
-  }
-
-  const removeProductFormImage = (url: string) => {
-    productForm.setFieldValue(
-      'images',
-      productFormImages.filter((value) => value !== url)
-    )
-  }
-
-  const productFormImageBeforeUpload: UploadProps['beforeUpload'] = (file) => {
-    void uploadProductImageFile(file as File, appendProductFormImage)
-    return Upload.LIST_IGNORE
   }
 
   const appendVariantFormImage = (url: string) => {
@@ -268,26 +247,6 @@ export const ProductManagementPage = () => {
       queryClient.invalidateQueries({ queryKey: ['products'] }),
     ])
   }
-
-  const updateProductMutation = useMutation({
-    mutationFn: ({
-      productId,
-      payload,
-    }: {
-      productId: string
-      payload: UpdateAdminProductPayload
-    }) => updateAdminProduct(productId, payload),
-    onSuccess: async () => {
-      await invalidateProductData()
-      void message.success('Cập nhật sản phẩm thành công')
-      setProductModalOpen(false)
-      setEditingProduct(null)
-      productForm.resetFields()
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
 
   const deleteProductMutation = useMutation({
     mutationFn: deleteAdminProduct,
@@ -445,15 +404,13 @@ export const ProductManagementPage = () => {
         key: 'updatedAt',
         width: 180,
         render: (value: string) => (
-          <Typography.Text type="secondary" className="text-xs">
-            {formatDateTime(value)}
-          </Typography.Text>
+     
         ),
       },
       {
         title: 'Hành động',
         key: 'actions',
-        width: 320,
+       width: 360,
         render: (_, record) => (
           <Space wrap>
             <Button
@@ -464,22 +421,17 @@ export const ProductManagementPage = () => {
                 setVariantDrawerOpen(true)
               }}
             ></Button>
+              <Button
+              icon={<EyeOutlined />}
+              onClick={() => {
+                navigate(buildDashboardProductDetailPath(record.id))
+              }}
+            ></Button>
 
             <Button
               icon={<EditOutlined />}
               onClick={() => {
-                setEditingProduct(record)
-                productForm.setFieldsValue({
-                  name: record.name,
-                  categoryId: record.categoryId,
-                  brandId: record.brandId,
-                  description: record.description,
-                  images: record.images,
-                  isAvailable: record.isAvailable,
-                  metaTitle: record.metaTitle,
-                  metaDescription: record.metaDescription,
-                })
-                setProductModalOpen(true)
+                navigate(buildDashboardProductEditPath(record.id))
               }}
             ></Button>
 
@@ -502,7 +454,7 @@ export const ProductManagementPage = () => {
         ),
       },
     ],
-    [categoriesById, deleteProductMutation, productForm]
+    [categoriesById, deleteProductMutation, navigate]
   )
 
   const variantColumns: ColumnsType<AdminProductVariantItem> = useMemo(
@@ -513,6 +465,23 @@ export const ProductManagementPage = () => {
         key: 'sku',
         width: 180,
         render: (value: string) => <Typography.Text strong>{value}</Typography.Text>,
+      },
+      {
+        title: 'Ảnh',
+        key: 'image',
+        width: 96,
+        align: 'center',
+        render: (_, record) => (
+          <Image
+            src={record.images[0] ?? PRODUCT_PLACEHOLDER}
+            alt={`Ảnh biến thể ${record.sku}`}
+            width={48}
+            height={48}
+            className="rounded-md object-cover"
+            fallback={PRODUCT_PLACEHOLDER}
+            preview={false}
+          />
+        ),
       },
       {
         title: 'Màu',
@@ -610,30 +579,6 @@ export const ProductManagementPage = () => {
     ],
     [activeProductForVariants, deleteVariantMutation, variantForm]
   )
-
-  const submitProductForm = (values: ProductFormValues) => {
-    if (!editingProduct) {
-      void message.error('Không tìm thấy sản phẩm để cập nhật')
-      return
-    }
-
-    const normalizedBrandId = values.brandId?.trim()
-
-    const payload: UpdateAdminProductPayload = {
-      name: values.name.trim(),
-      categoryId: values.categoryId,
-      brandId: normalizedBrandId || undefined,
-      description: normalizeRichTextValue(values.description),
-      images: normalizeStringArray(values.images),
-      isAvailable: values.isAvailable,
-      metaTitle: values.metaTitle?.trim() || undefined,
-      metaDescription: values.metaDescription?.trim() || undefined,
-  }
-
-  updateProductMutation.mutate({
-      productId: editingProduct.id,
-      payload,
-    })
 
   const submitVariantForm = (values: VariantFormValues) => {
     if (!activeProductForVariants) {
@@ -784,165 +729,8 @@ export const ProductManagementPage = () => {
         />
       </Card>
 
-      <Modal
-        title="Cập nhật sản phẩm"
-        open={productModalOpen}
-        onCancel={() => {
-          setProductModalOpen(false)
-          setEditingProduct(null)
-          productForm.resetFields()
-          productForm.setFieldsValue({
-            isAvailable: true,
-          })
-        }}
-        width={840}
-        footer={null}
-        destroyOnHidden
-      >
-        <Form<ProductFormValues>
-          form={productForm}
-          layout="vertical"
-          initialValues={{
-            isAvailable: true,
-          }}
-          onFinish={submitProductForm}
-        >
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Form.Item
-              name="name"
-              label="Tên sản phẩm"
-              rules={[{ required: true, message: 'Vui lòng nhập tên sản phẩm' }]}
-            >
-              <Input placeholder="Ví dụ: Cơ Predator P3" />
-            </Form.Item>
-
-            <Form.Item
-              name="categoryId"
-              label="Danh mục"
-              rules={[{ required: true, message: 'Vui lòng chọn danh mục' }]}
-            >
-              <Select
-                showSearch
-                placeholder="Chọn danh mục"
-                optionFilterProp="label"
-                options={(categoriesQuery.data ?? []).map((item) => ({
-                  label: item.name,
-                  value: item.id,
-                }))}
-              />
-            </Form.Item>
-          </div>
-
-          <Form.Item
-            name="brandId"
-            label="Brand"
-            rules={[{ required: true, message: 'Vui lòng chọn thương hiệu' }]}
-          >
-            <Select
-              showSearch
-              optionFilterProp="label"
-              placeholder="Chọn brand đã có"
-              options={(brandsQuery.data ?? []).map((item) => ({
-                label: item.name,
-                value: item.id,
-              }))}
-            />
-          </Form.Item>
-
-          <Form.Item name="description" label="Mô tả">
-            <RichTextEditor placeholder="Nhập mô tả sản phẩm..." minHeight={240} />
-          </Form.Item>
-
-          <Form.Item label="Danh sách ảnh">
-            <Space direction="vertical" size={10} className="w-full">
-              <Upload
-                multiple
-                accept="image/*"
-                showUploadList={false}
-                beforeUpload={productFormImageBeforeUpload}
-              >
-                <Button icon={<UploadOutlined />} loading={uploadingCount > 0}>
-                  Tải ảnh sản phẩm
-                </Button>
-              </Upload>
-
-              <Typography.Text type="secondary" className="text-xs">
-                Hỗ trợ JPG/PNG/WebP, tối đa 5MB mỗi ảnh.
-              </Typography.Text>
-
-              {productFormImages.length > 0 ? (
-                <div className="flex flex-wrap gap-3">
-                  {productFormImages.map((imageUrl) => (
-                    <div
-                      key={imageUrl}
-                      className="w-[110px] rounded-md border border-slate-200 p-2"
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt="Ảnh sản phẩm"
-                        className="h-[70px] w-full rounded object-cover"
-                        fallback={PRODUCT_PLACEHOLDER}
-                      />
-                      <Button
-                        danger
-                        type="text"
-                        size="small"
-                        icon={<DeleteOutlined />}
-                        onClick={() => {
-                          removeProductFormImage(imageUrl)
-                        }}
-                      >
-                        Xóa
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <Typography.Text type="secondary">Chưa có ảnh sản phẩm.</Typography.Text>
-              )}
-            </Space>
-          </Form.Item>
-          <Form.Item name="images" hidden>
-            <Input placeholder="Danh sách URL ảnh sản phẩm" />
-          </Form.Item>
-
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-            <Form.Item name="metaTitle" label="Meta title">
-              <Input placeholder="Nhập tiêu đề SEO" />
-            </Form.Item>
-            <Form.Item name="metaDescription" label="Meta description">
-              <Input placeholder="Nhập mô tả SEO ngắn" />
-            </Form.Item>
-          </div>
-
-          
-
-          <Form.Item name="isAvailable" label="Trạng thái bán" valuePropName="checked">
-            <Switch checkedChildren="Đang bán" unCheckedChildren="Ngừng bán" />
-          </Form.Item>
-
-          <div className="flex justify-end gap-2">
-            <Button
-              onClick={() => {
-                setProductModalOpen(false)
-                setEditingProduct(null)
-                productForm.resetFields()
-                productForm.setFieldsValue({
-                  isAvailable: true,
-                })
-              }}
-            >
-              Hủy
-            </Button>
-            <Button type="primary" htmlType="submit" loading={updateProductMutation.isPending}>
-              Lưu thay đổi
-            </Button>
-          </div>
-        </Form>
-      </Modal>
-
       <Drawer
-        title={`Variants - ${activeProductForVariants?.name ?? ''}`}
+        title={`Biến thể - ${activeProductForVariants?.name ?? ''}`}
         open={variantDrawerOpen}
         width={980}
         onClose={() => {
