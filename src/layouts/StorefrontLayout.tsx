@@ -21,6 +21,8 @@ import { useAppDispatch, useAppSelector } from '@/app/store/hooks'
 import { logout } from '@/features/auth/api/auth.api'
 import { clearAuth } from '@/features/auth/store/auth.slice'
 import { getMyCart } from '@/features/cart/api/cart.api'
+import { CustomerChatbotWidget } from '@/features/chatbot/components/CustomerChatbotWidget'
+import { getProductFilters } from '@/features/product/api/product.api'
 import { CartDrawer } from '@/features/cart/components/CartDrawer'
 import { CustomerChatbotWidget } from '@/features/chatbot/components/CustomerChatbotWidget'
 import { CustomerSupportChatWidget } from '@/features/chat/components/CustomerSupportChatWidget'
@@ -41,7 +43,7 @@ export const StorefrontLayout = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const [searchModalOpen, setSearchModalOpen] = useState(false)
-  const [cartDrawerOpen, setCartDrawerOpen] = useState(false)
+  
 
   const accessToken = useAppSelector((state) => state.auth.accessToken)
   const user = useAppSelector((state) => state.auth.user)
@@ -398,7 +400,7 @@ export const StorefrontLayout = () => {
                 type="default"
                 icon={<ShoppingCartOutlined />}
                 onClick={() => {
-                  setCartDrawerOpen(true)
+                  navigate(ROUTE_PATHS.CART)
                 }}
               />
             </Badge>
@@ -416,12 +418,7 @@ export const StorefrontLayout = () => {
           setSearchModalOpen(false)
         }}
       />
-      <CartDrawer
-        open={cartDrawerOpen}
-        onClose={() => {
-          setCartDrawerOpen(false)
-        }}
-      />
+      
 
       {!isBackofficeRole(user?.role) && (
         <>
@@ -457,6 +454,7 @@ export const StorefrontLayout = () => {
             <Space direction="vertical" size={4}>
               <Link to={ROUTE_PATHS.ROOT}>Trang chủ</Link>
               <Link to={ROUTE_PATHS.PRODUCTS}>Sản phẩm</Link>
+              <Link to={ROUTE_PATHS.CART}>Giỏ hàng</Link>
               <Link to={ROUTE_PATHS.ABOUT}>Giới thiệu</Link>
               <Link to={ROUTE_PATHS.ACCOUNT_PROFILE}>Tài khoản</Link>
               <Link to={ROUTE_PATHS.ACCOUNT_ORDERS}>Đơn hàng của tôi</Link>

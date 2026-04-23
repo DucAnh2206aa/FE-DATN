@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { Button, Card, message, Result, Space, Spin, Typography } from 'antd'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 
 import {
@@ -17,6 +17,7 @@ export const PaymentSuccessPage = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const hasRequestedVerification = useRef(false)
+  const [slowVerificationKey, setSlowVerificationKey] = useState<string | null>(null)
 
   const verifyMutation = useMutation({
     mutationFn: verifyVnpayReturn,
@@ -90,6 +91,7 @@ export const PaymentSuccessPage = () => {
   }, [searchParams])
 
   const hasZalopayReturnData = Boolean(zalopayPayload)
+  const hasPaymentReturnData = hasVnpReturnData || hasZalopayReturnData
   const paymentReturnKey = searchParams.toString()
 
   useEffect(() => {
@@ -97,7 +99,7 @@ export const PaymentSuccessPage = () => {
       return
     }
 
-    if (!hasVnpReturnData && !hasZalopayReturnData) {
+    if (!hasPaymentReturnData) {
       return
     }
 

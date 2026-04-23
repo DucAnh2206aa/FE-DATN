@@ -96,6 +96,13 @@ const renderVariantPrice = (variant: ProductVariantItem) => {
   if (variant.originalPrice && variant.originalPrice > variant.price) {
     return (
       <Space direction="vertical" size={0}>
+        <Typography.Text
+          strong
+          className="!text-lg !leading-7 !text-blue-700 !whitespace-nowrap xl:!text-[30px]"
+        >
+          {formatVndCurrency(variant.price)}
+        </Typography.Text>
+        <Typography.Text type="secondary" delete className="text-xs leading-4 !whitespace-nowrap">
         <Typography.Text strong className="!text-base !leading-6 !text-blue-700 sm:!text-lg">
           {formatVndCurrency(variant.price)}
         </Typography.Text>
