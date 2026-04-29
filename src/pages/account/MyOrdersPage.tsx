@@ -129,9 +129,6 @@ const CANCEL_REFUND_STATUS_COLOR: Record<CancelRefundRequestStatus, string> = {
   refunded: 'green',
 }
 
-// worklog: 2026-03-04 17:03:09 | ducanh | feature | canCancelOrder
-// worklog: 2026-03-04 21:16:19 | ducanh | cleanup | canCancelOrder
-// worklog: 2026-03-04 12:58:05 | trantu | fix | canCancelOrder
 const canCancelOrder = (status: OrderStatus) => {
   return status === 'awaiting_payment' || status === 'pending' || status === 'confirmed'
 }
@@ -186,10 +183,6 @@ const getOrderItemMeta = (item: Pick<MyOrderItem['items'][number], 'variantSku' 
   return details.join(' · ')
 }
 
-// worklog: 2026-03-04 12:32:16 | trantu | refactor | MyOrdersPage
-// worklog: 2026-03-04 14:54:15 | ducanh | refactor | MyOrdersPage
-// worklog: 2026-03-04 10:16:25 | quochuy | cleanup | MyOrdersPage
-// worklog: 2026-03-04 20:41:46 | quochuy | fix | MyOrdersPage
 export const MyOrdersPage = () => {
   const queryClient = useQueryClient()
   const [searchParams] = useSearchParams()

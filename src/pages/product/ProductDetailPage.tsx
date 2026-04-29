@@ -328,8 +328,6 @@ export const ProductDetailPage = () => {
     variantCarouselRef.current?.goTo(clampedSlideIndex)
   }, [maxVariantSlideIndex, resolvedSelectedVariantId, variantCardsPerSlide, variantSlideIndexMap])
 
-  // worklog: 2026-03-04 21:11:32 | quochuy | refactor | handleSelectVariant
-  // worklog: 2026-03-04 18:01:37 | trantu | cleanup | handleSelectVariant
   const handleSelectVariant = (variant: ProductVariantItem) => {
     const nextImageIndex = variantImageIndexMap.get(variant.id) ?? 0
     const nextSlideIndex = variantSlideIndexMap.get(variant.id) ?? 0
@@ -378,7 +376,6 @@ export const ProductDetailPage = () => {
     variantCarouselRef.current?.next()
   }
 
-  // worklog: 2026-03-04 14:54:46 | trantu | refactor | handleDecreaseQuantity
   const handleDecreaseQuantity = () => {
     setUiState((prev) => {
       const base =
@@ -733,7 +730,7 @@ export const ProductDetailPage = () => {
 
             <Space size={[8, 8]} wrap>
               <Badge status="processing" text="COD" />
-              {/* <Badge status="success" text="VNPay" /> */}
+              {}
               <Badge status="success" text="ZaloPay" />
             </Space>
           </div>

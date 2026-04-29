@@ -32,7 +32,6 @@ import type {
   VerifyZalopayRedirectResponse,
 } from '../model/account.types'
 
-// worklog: 2026-03-04 22:03:47 | trantu | fix | toId
 const toId = (value: unknown) => {
   return typeof value === 'string' ? value : String(value ?? '')
 }
@@ -45,8 +44,6 @@ const toRecord = (value: unknown): Record<string, unknown> | undefined => {
   return value as Record<string, unknown>
 }
 
-// worklog: 2026-03-04 17:03:09 | ducanh | feature | toStringArray
-// worklog: 2026-03-04 17:55:11 | ducanh | cleanup | toStringArray
 const toStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
     return []
@@ -335,7 +332,6 @@ export const updateMyProfile = async (
   }
 }
 
-// worklog: 2026-03-04 20:41:46 | quochuy | fix | changeMyPassword
 export const changeMyPassword = async (payload: ChangePasswordPayload) => {
   try {
     await httpClient.post<ApiSuccess<null>>('/auth/change-password', payload)
@@ -358,7 +354,6 @@ export const listMyAddresses = async () => {
   }
 }
 
-// worklog: 2026-03-04 16:20:08 | trantu | feature | createMyAddress
 export const createMyAddress = async (payload: UpsertAddressPayload) => {
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>(
@@ -371,7 +366,6 @@ export const createMyAddress = async (payload: UpsertAddressPayload) => {
   }
 }
 
-// worklog: 2026-03-04 10:16:25 | quochuy | cleanup | updateMyAddress
 export const updateMyAddress = async (addressId: string, payload: UpdateAddressPayload) => {
   try {
     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
@@ -385,7 +379,6 @@ export const updateMyAddress = async (addressId: string, payload: UpdateAddressP
   }
 }
 
-// worklog: 2026-03-04 09:11:43 | ducanh | fix | deleteMyAddress
 export const deleteMyAddress = async (addressId: string) => {
   try {
     await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/addresses/${addressId}`)
@@ -490,9 +483,6 @@ export const createOrder = async (payload: CreateOrderPayload) => {
   }
 }
 
-// worklog: 2026-03-04 20:51:53 | ducanh | feature | listAvailableCheckoutVouchers
-// worklog: 2026-03-04 21:16:19 | ducanh | cleanup | listAvailableCheckoutVouchers
-// worklog: 2026-03-04 18:01:37 | trantu | cleanup | listAvailableCheckoutVouchers
 export const listAvailableCheckoutVouchers = async (subtotal?: number) => {
   try {
     const response = await httpClient.get<ApiSuccess<unknown[]>>('/vouchers/available', {
@@ -582,8 +572,6 @@ export const verifyZalopayRedirect = async (payload: VerifyZalopayRedirectPayloa
   }
 }
 
-// worklog: 2026-03-04 14:54:15 | ducanh | refactor | toImageList
-// worklog: 2026-03-04 12:58:05 | trantu | fix | toImageList
 export const toImageList = (value: unknown) => {
   return toStringArray(value)
 }

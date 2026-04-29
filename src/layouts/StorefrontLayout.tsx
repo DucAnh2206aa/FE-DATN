@@ -113,7 +113,7 @@ export const StorefrontLayout = () => {
     try {
       await logout(getRefreshTokenCookie())
     } catch {
-      // Ignore API errors and still clear local session.
+
     }
 
     clearRefreshTokenCookie()

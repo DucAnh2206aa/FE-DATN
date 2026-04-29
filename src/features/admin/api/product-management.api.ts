@@ -21,8 +21,6 @@ import type {
 const MAX_REFERENCE_LIMIT = 100
 const HIDDEN_BRAND_NAME = 'Không xác định'
 
-// worklog: 2026-03-04 17:03:09 | ducanh | feature | toId
-// worklog: 2026-03-04 20:51:53 | ducanh | feature | toId
 const toId = (value: unknown) => {
   return typeof value === 'string' ? value : String(value ?? '')
 }
@@ -35,7 +33,6 @@ const toRecord = (value: unknown): Record<string, unknown> | undefined => {
   return value as Record<string, unknown>
 }
 
-// worklog: 2026-03-04 08:41:57 | trantu | feature | toStringArray
 const toStringArray = (value: unknown) => {
   if (!Array.isArray(value)) {
     return []
@@ -85,7 +82,6 @@ const normalizeAdminProductList = (value: Record<string, unknown>): AdminProduct
   }
 }
 
-// worklog: 2026-03-04 11:29:00 | quochuy | feature | normalizeVariantColor
 const normalizeVariantColor = (value: unknown) => {
   if (value && typeof value === 'object' && '_id' in value) {
     const colorRecord = value as Record<string, unknown>
@@ -111,7 +107,6 @@ const normalizeVariantColor = (value: unknown) => {
   }
 }
 
-// worklog: 2026-03-04 11:09:10 | quochuy | refactor | normalizeVariantSize
 const normalizeVariantSize = (value: unknown, fallbackSize: string) => {
   if (value && typeof value === 'object' && '_id' in value) {
     const sizeRecord = value as Record<string, unknown>
@@ -226,7 +221,6 @@ export const listAdminProducts = async (params: ListAdminProductsParams = {}) =>
   }
 }
 
-// worklog: 2026-03-04 11:20:20 | ducanh | feature | createAdminProduct
 export const createAdminProduct = async (payload: CreateAdminProductPayload) => {
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>('/products', payload)
@@ -236,7 +230,6 @@ export const createAdminProduct = async (payload: CreateAdminProductPayload) => 
   }
 }
 
-// worklog: 2026-03-04 09:11:43 | ducanh | fix | updateAdminProduct
 export const updateAdminProduct = async (productId: string, payload: UpdateAdminProductPayload) => {
   try {
     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
@@ -250,7 +243,6 @@ export const updateAdminProduct = async (productId: string, payload: UpdateAdmin
   }
 }
 
-// worklog: 2026-03-04 21:35:47 | quochuy | fix | deleteAdminProduct
 export const deleteAdminProduct = async (productId: string) => {
   try {
     await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/products/${productId}`)
@@ -320,7 +312,6 @@ export const deleteAdminProductVariant = async (productId: string, variantId: st
   }
 }
 
-// worklog: 2026-03-04 09:04:01 | quochuy | refactor | listAdminCategories
 export const listAdminCategories = async () => {
   try {
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/categories', {
@@ -355,7 +346,6 @@ export const listAdminBrands = async () => {
   }
 }
 
-// worklog: 2026-03-04 22:03:47 | trantu | fix | listAdminColors
 export const listAdminColors = async () => {
   try {
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/colors', {
@@ -372,8 +362,6 @@ export const listAdminColors = async () => {
   }
 }
 
-// worklog: 2026-03-04 17:55:11 | ducanh | cleanup | listAdminSizes
-// worklog: 2026-03-04 14:54:46 | trantu | refactor | listAdminSizes
 export const listAdminSizes = async () => {
   try {
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/sizes', {

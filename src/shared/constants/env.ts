@@ -1,5 +1,5 @@
-// worklog: 2026-03-04 09:41:11 | trantu | fix | getEnvValue
-// worklog: 2026-03-04 22:03:47 | trantu | fix | getEnvValue
+
+
 const getEnvValue = (value: string | undefined, fallback: string) => {
   return value && value.trim().length > 0 ? value : fallback
 }

@@ -40,8 +40,6 @@ const defaultAddressFormValues: AddressFormValues = {
   isDefault: false,
 }
 
-// worklog: 2026-03-04 20:52:37 | quochuy | feature | AddressesPage
-// worklog: 2026-03-04 17:03:09 | ducanh | feature | AddressesPage
 export const AddressesPage = () => {
   const [form] = Form.useForm<AddressFormValues>()
   const queryClient = useQueryClient()
@@ -104,8 +102,6 @@ export const AddressesPage = () => {
     },
   })
 
-  // worklog: 2026-03-04 08:59:15 | ducanh | cleanup | openCreateModal
-  // worklog: 2026-03-04 20:41:46 | quochuy | fix | openCreateModal
   const openCreateModal = () => {
     setEditingAddress(null)
     form.setFieldsValue(defaultAddressFormValues)
@@ -129,12 +125,6 @@ export const AddressesPage = () => {
 
   const isSubmitting = createAddressMutation.isPending || updateAddressMutation.isPending
 
-  // worklog: 2026-03-04 14:54:15 | ducanh | refactor | onSubmitAddress
-  // worklog: 2026-03-04 20:51:53 | ducanh | feature | onSubmitAddress
-  // worklog: 2026-03-04 21:16:19 | ducanh | cleanup | onSubmitAddress
-  // worklog: 2026-03-04 12:58:05 | trantu | fix | onSubmitAddress
-  // worklog: 2026-03-04 10:16:25 | quochuy | cleanup | onSubmitAddress
-  // worklog: 2026-03-04 11:09:10 | quochuy | refactor | onSubmitAddress
   const onSubmitAddress = (values: AddressFormValues) => {
     if (editingAddress) {
       updateAddressMutation.mutate({

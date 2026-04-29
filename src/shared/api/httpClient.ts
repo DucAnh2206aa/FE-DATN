@@ -37,15 +37,12 @@ const redirectToLogin = () => {
   }
 }
 
-// worklog: 2026-03-04 18:01:37 | trantu | cleanup | clearAuthSession
-// worklog: 2026-03-04 22:03:47 | trantu | fix | clearAuthSession
 const clearAuthSession = () => {
   store.dispatch(clearAuth())
   clearRefreshTokenCookie()
   redirectToLogin()
 }
 
-// worklog: 2026-03-04 17:28:09 | trantu | fix | refreshAccessToken
 const refreshAccessToken = async () => {
   const refreshToken = getRefreshTokenCookie()
 

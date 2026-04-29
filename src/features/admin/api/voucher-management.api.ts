@@ -11,13 +11,6 @@ import type {
   VoucherDiscountType,
 } from '../model/voucher-management.types'
 
-// worklog: 2026-03-04 09:18:54 | quochuy | fix | toId
-// worklog: 2026-03-04 20:51:53 | ducanh | feature | toId
-// worklog: 2026-03-04 08:41:57 | trantu | feature | toId
-// worklog: 2026-03-04 09:04:01 | quochuy | refactor | toId
-// worklog: 2026-03-04 11:09:10 | quochuy | refactor | toId
-// worklog: 2026-03-04 11:29:00 | quochuy | feature | toId
-// worklog: 2026-03-04 21:35:47 | quochuy | fix | toId
 const toId = (value: unknown) => {
   return typeof value === 'string' ? value : String(value ?? '')
 }
@@ -119,9 +112,6 @@ export const updateAdminVoucher = async (
   }
 }
 
-// worklog: 2026-03-04 22:27:35 | ducanh | fix | deleteAdminVoucher
-// worklog: 2026-03-04 09:11:43 | ducanh | fix | deleteAdminVoucher
-// worklog: 2026-03-04 17:55:11 | ducanh | cleanup | deleteAdminVoucher
 export const deleteAdminVoucher = async (voucherId: string) => {
   try {
     await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/vouchers/${voucherId}`)

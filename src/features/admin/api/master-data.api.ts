@@ -21,7 +21,6 @@ import type {
 const REFERENCE_LIMIT = 100
 const HIDDEN_BRAND_NAME = 'Không xác định'
 
-// worklog: 2026-03-04 09:11:43 | ducanh | fix | toId
 const toId = (value: unknown) => {
   return typeof value === 'string' ? value : String(value ?? '')
 }
@@ -118,7 +117,6 @@ export const createMasterCategory = async (payload: UpsertCategoryPayload) => {
   }
 }
 
-// worklog: 2026-03-04 14:54:46 | trantu | refactor | updateMasterCategory
 export const updateMasterCategory = async (categoryId: string, payload: Partial<UpsertCategoryPayload>) => {
   try {
     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
@@ -132,7 +130,6 @@ export const updateMasterCategory = async (categoryId: string, payload: Partial<
   }
 }
 
-// worklog: 2026-03-04 18:01:37 | trantu | cleanup | deleteMasterCategory
 export const deleteMasterCategory = async (categoryId: string) => {
   try {
     await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/categories/${categoryId}`)
@@ -207,8 +204,6 @@ export const listMasterColors = async (params: MasterListParams = {}): Promise<M
   }
 }
 
-// worklog: 2026-03-04 20:51:53 | ducanh | feature | createMasterColor
-// worklog: 2026-03-04 12:58:05 | trantu | fix | createMasterColor
 export const createMasterColor = async (payload: UpsertColorPayload) => {
   try {
     const response = await httpClient.post<ApiSuccess<Record<string, unknown>>>('/colors', payload)
@@ -218,8 +213,6 @@ export const createMasterColor = async (payload: UpsertColorPayload) => {
   }
 }
 
-// worklog: 2026-03-04 22:03:47 | trantu | fix | updateMasterColor
-// worklog: 2026-03-04 11:09:10 | quochuy | refactor | updateMasterColor
 export const updateMasterColor = async (colorId: string, payload: Partial<UpsertColorPayload>) => {
   try {
     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
@@ -262,7 +255,6 @@ export const createMasterSize = async (payload: UpsertSizePayload) => {
   }
 }
 
-// worklog: 2026-03-04 08:41:57 | trantu | feature | updateMasterSize
 export const updateMasterSize = async (sizeId: string, payload: Partial<UpsertSizePayload>) => {
   try {
     const response = await httpClient.patch<ApiSuccess<Record<string, unknown>>>(
@@ -276,8 +268,6 @@ export const updateMasterSize = async (sizeId: string, payload: Partial<UpsertSi
   }
 }
 
-// worklog: 2026-03-04 17:03:09 | ducanh | feature | deleteMasterSize
-// worklog: 2026-03-04 21:35:47 | quochuy | fix | deleteMasterSize
 export const deleteMasterSize = async (sizeId: string) => {
   try {
     await httpClient.delete<ApiSuccess<Record<string, unknown>>>(`/sizes/${sizeId}`)
@@ -286,9 +276,6 @@ export const deleteMasterSize = async (sizeId: string) => {
   }
 }
 
-// worklog: 2026-03-04 17:55:11 | ducanh | cleanup | listActiveMasterCategories
-// worklog: 2026-03-04 10:16:25 | quochuy | cleanup | listActiveMasterCategories
-// worklog: 2026-03-04 11:29:00 | quochuy | feature | listActiveMasterCategories
 export const listActiveMasterCategories = async () => {
   const response = await listMasterCategories({
     page: 1,
@@ -299,7 +286,6 @@ export const listActiveMasterCategories = async () => {
   return response.items
 }
 
-// worklog: 2026-03-04 09:04:01 | quochuy | refactor | listActiveMasterBrands
 export const listActiveMasterBrands = async () => {
   const response = await listMasterBrands({
     page: 1,
@@ -320,7 +306,6 @@ export const listActiveMasterColors = async () => {
   return response.items
 }
 
-// worklog: 2026-03-04 10:11:29 | quochuy | feature | listActiveMasterSizes
 export const listActiveMasterSizes = async () => {
   const response = await listMasterSizes({
     page: 1,

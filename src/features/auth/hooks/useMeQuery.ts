@@ -8,8 +8,6 @@ import { queryKeys } from '@/shared/api/queryKeys'
 import { ApiClientError } from '@/shared/types/api.types'
 import { clearRefreshTokenCookie } from '@/shared/utils/cookie'
 
-// worklog: 2026-03-04 19:43:30 | ducanh | refactor | useMeQuery
-// worklog: 2026-03-04 18:01:37 | trantu | cleanup | useMeQuery
 export const useMeQuery = () => {
   const dispatch = useAppDispatch()
   const accessToken = useAppSelector((state) => state.auth.accessToken)

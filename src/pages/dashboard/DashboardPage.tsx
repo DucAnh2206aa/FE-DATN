@@ -321,8 +321,6 @@ const DashboardMetricGroup = ({
   )
 }
 
-// worklog: 2026-03-04 14:47:25 | ducanh | fix | DashboardPage
-// worklog: 2026-03-04 21:16:19 | ducanh | cleanup | DashboardPage
 export const DashboardPage = () => {
   const [filterMode, setFilterMode] = useState<StatisticsFilterMode>('month')
   const [customRange, setCustomRange] = useState<[Dayjs, Dayjs] | null>(null)
@@ -434,7 +432,7 @@ export const DashboardPage = () => {
               { label: 'Hoàn thành', value: summary?.deliveredOrders ?? 0 },
               { label: 'Đang xử lý', value: summary?.processingOrders ?? 0 },
               { label: 'Đã hủy/trả', value: summary?.cancelledOrders ?? 0 },
-              // { label: 'Kênh thanh toán đang dùng', value: paymentMethodUsedCount },
+
             ]}
           />
         </Col>
@@ -446,9 +444,7 @@ export const DashboardPage = () => {
             primaryLabel="Tổng khách hàng"
             primaryValue={summary?.customersCount ?? 0}
             secondaryItems={[
-              // { label: 'Khách hàng mới', value: summary?.newCustomersCount ?? 0 },
-              // { label: 'Đang hoạt động', value: summary?.activeUsers ?? 0 },
-              // { label: 'Ngưng hoạt động', value: summary?.inactiveUsers ?? 0 },
+
             ]}
           />
         </Col>

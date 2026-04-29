@@ -54,7 +54,6 @@ export const logout = async (refreshToken?: string | null) => {
   }
 }
 
-// worklog: 2026-03-04 21:44:32 | trantu | cleanup | me
 export const me = async () => {
   try {
     const response = await httpClient.get<ApiSuccess<AuthUser>>('/auth/me')

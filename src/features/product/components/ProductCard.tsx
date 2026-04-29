@@ -14,8 +14,6 @@ interface ProductCardProps {
   highlightText?: string
 }
 
-// worklog: 2026-03-04 21:01:01 | quochuy | cleanup | formatPriceLabel
-// worklog: 2026-03-04 14:54:46 | trantu | refactor | formatPriceLabel
 const formatPriceLabel = (priceFrom: number | null, priceTo: number | null) => {
   if (priceFrom === null || priceTo === null) {
     return 'Liên hệ'
@@ -28,7 +26,6 @@ const formatPriceLabel = (priceFrom: number | null, priceTo: number | null) => {
   return `${formatVndCurrency(priceFrom)} - ${formatVndCurrency(priceTo)}`
 }
 
-// worklog: 2026-03-04 17:55:11 | ducanh | cleanup | ProductCard
 export const ProductCard = ({ product, compact = false, highlightText }: ProductCardProps) => {
   const imageUrl = product.thumbnailUrl ?? product.images[0] ?? PRODUCT_PLACEHOLDER
   const searchWords = highlightText?.trim() ? [highlightText.trim()] : []

@@ -178,19 +178,9 @@ export const CustomerChatbotWidget = () => {
 
   return (
     <>
-      {/* <div className="fixed bottom-6 right-6 z-[90]">
-        <Button
-          type="primary"
-          className="!h-12 !rounded-full !px-4 shadow-lg"
-          icon={<MessageOutlined />}
-          aria-label="Mở chatbot hỗ trợ khách hàng"
-          onClick={() => {
-            setOpen(true)
-          }}
-        >
-          Trợ lý mua hàng
-        </Button>
-      </div> */}
+      {
+
+}
 
       <Drawer
         title={

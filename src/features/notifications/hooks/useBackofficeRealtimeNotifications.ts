@@ -59,7 +59,7 @@ const showServiceWorkerNotification = async (payload: StaffRealtimeNotificationP
       },
     })
   } catch {
-    // Notification fallback is best effort only.
+
   }
 }
 
