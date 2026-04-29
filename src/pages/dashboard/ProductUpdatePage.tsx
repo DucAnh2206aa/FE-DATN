@@ -150,7 +150,8 @@ export const ProductUpdatePage = () => {
     form.setFieldsValue({
       name: productQuery.data.name,
       categoryId: productQuery.data.categoryId,
-      brandId: productQuery.data.brandId || undefined,
+      brandId:
+        productQuery.data.brand === 'Không xác định' ? undefined : productQuery.data.brandId || undefined,
       description: productQuery.data.description,
       images: productQuery.data.images,
       isAvailable: productQuery.data.isAvailable,

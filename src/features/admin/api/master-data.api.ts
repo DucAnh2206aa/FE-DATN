@@ -19,6 +19,7 @@ import type {
 } from '../model/master-data.types'
 
 const REFERENCE_LIMIT = 100
+const HIDDEN_BRAND_NAME = 'Không xác định'
 
 // worklog: 2026-03-04 09:11:43 | ducanh | fix | toId
 const toId = (value: unknown) => {
@@ -146,7 +147,19 @@ export const listMasterBrands = async (params: MasterListParams = {}): Promise<M
       params,
     })
 
-    return normalizePaginated(extractApiData(response), normalizeBrand)
+    const normalized = normalizePaginated(extractApiData(response), normalizeBrand)
+    const visibleItems = normalized.items.filter((item) => item.name !== HIDDEN_BRAND_NAME)
+    const hiddenCount = normalized.items.length - visibleItems.length
+
+    return {
+      ...normalized,
+      items: visibleItems,
+      totalItems: Math.max(0, normalized.totalItems - hiddenCount),
+      totalPages: Math.max(
+        1,
+        Math.ceil(Math.max(0, normalized.totalItems - hiddenCount) / Math.max(1, normalized.limit))
+      ),
+    }
   } catch (error) {
     throw toApiClientError(error)
   }

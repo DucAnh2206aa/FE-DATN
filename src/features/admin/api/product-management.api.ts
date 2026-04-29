@@ -19,6 +19,7 @@ import type {
 } from '../model/product-management.types'
 
 const MAX_REFERENCE_LIMIT = 100
+const HIDDEN_BRAND_NAME = 'Không xác định'
 
 // worklog: 2026-03-04 17:03:09 | ducanh | feature | toId
 // worklog: 2026-03-04 20:51:53 | ducanh | feature | toId
@@ -346,7 +347,9 @@ export const listAdminBrands = async () => {
       },
     })
 
-    return extractPaginatedItems(extractApiData(response)).map((item) => normalizeBrand(item))
+    return extractPaginatedItems(extractApiData(response))
+      .map((item) => normalizeBrand(item))
+      .filter((item) => item.name !== HIDDEN_BRAND_NAME)
   } catch (error) {
     throw toApiClientError(error)
   }
