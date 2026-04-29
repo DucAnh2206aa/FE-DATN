@@ -49,7 +49,7 @@ const normalizeAdminProduct = (value: Record<string, unknown>): AdminProductItem
     name: String(value.name ?? ''),
     categoryId: toId(value.categoryId),
     brandId: value.brandId ? toId(value.brandId) : undefined,
-    brand: typeof value.brand === 'string' ? value.brand : 'Generic',
+    brand: typeof value.brand === 'string' ? value.brand : 'Không xác định',
     description: typeof value.description === 'string' ? value.description : undefined,
     attributes:
       value.attributes && typeof value.attributes === 'object'

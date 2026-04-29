@@ -53,7 +53,7 @@ const normalizeProductCardItem = (item: Record<string, unknown>): ProductCardIte
     _id: typeof item._id === 'string' ? item._id : undefined,
     name: String(item.name ?? ''),
     categoryId: toId(item.categoryId),
-    brand: typeof item.brand === 'string' ? item.brand : 'Generic',
+    brand: typeof item.brand === 'string' ? item.brand : 'Không xác định',
     description: typeof item.description === 'string' ? item.description : undefined,
     images: toStringArray(item.images),
     isAvailable: Boolean(item.isAvailable),
@@ -297,7 +297,7 @@ export const getProductDetail = async (productId: string): Promise<ProductDetail
       name: String(data.name ?? ''),
       categoryId: toId(data.categoryId),
       brandId: data.brandId ? toId(data.brandId) : undefined,
-      brand: typeof data.brand === 'string' ? data.brand : 'Generic',
+      brand: typeof data.brand === 'string' ? data.brand : 'Không xác định',
       description: typeof data.description === 'string' ? data.description : undefined,
       attributes:
         data.attributes && typeof data.attributes === 'object'

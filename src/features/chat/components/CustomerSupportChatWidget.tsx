@@ -58,7 +58,7 @@ export const CustomerSupportChatWidget = ({ isAuthenticated }: CustomerSupportCh
   const messageContainerRef = useRef<HTMLDivElement | null>(null)
   const lastNotifiedMessageIdRef = useRef<string | null>(null)
 
-  const { messages, sendMessage, isReady, isLoading, currentUserId, lastIncomingMessage } =
+  const { messages, sendMessage, isLoading, currentUserId, lastIncomingMessage } =
     useCustomerSupportChat(open)
 
   useEffect(() => {

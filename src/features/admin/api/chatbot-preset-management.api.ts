@@ -24,7 +24,7 @@ const normalizeProduct = (value: Record<string, unknown>): AdminChatbotPresetPro
   return {
     id: toId(value.id ?? value._id),
     name: String(value.name ?? ''),
-    brand: typeof value.brand === 'string' ? value.brand : 'Generic',
+    brand: typeof value.brand === 'string' ? value.brand : 'Không xác định',
     imageUrl: typeof value.imageUrl === 'string' ? value.imageUrl : null,
     isAvailable: value.isAvailable !== false,
   }

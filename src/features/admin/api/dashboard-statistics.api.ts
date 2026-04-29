@@ -146,7 +146,7 @@ const normalizeTopProduct = (value: Record<string, unknown>): DashboardTopProduc
   return {
     productId: toId(value.productId ?? value.id ?? value._id),
     name: String(value.name ?? ''),
-    brand: String(value.brand ?? 'Generic'),
+    brand: String(value.brand ?? 'Không xác định'),
     soldCount: Number(value.soldCount ?? 0),
     reviewCount: Number(value.reviewCount ?? 0),
     averageRating: Number(value.averageRating ?? 0),

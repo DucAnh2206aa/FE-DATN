@@ -10,7 +10,7 @@ import type {
   UpsertCartItemPayload,
 } from '../model/cart.types'
 
-const PRODUCT_PLACEHOLDER_BRAND = 'Generic'
+const PRODUCT_PLACEHOLDER_BRAND = 'Không xác định'
 
 const toId = (value: unknown) => {
   return typeof value === 'string' ? value : String(value ?? '')
