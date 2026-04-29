@@ -10,7 +10,6 @@ import {
   InputNumber,
   message,
   Modal,
-  Popconfirm,
   Select,
   Space,
   Switch,
@@ -25,7 +24,6 @@ import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   createAdminProductVariant,
-  deleteAdminProductVariant,
   listAdminBrands,
   listAdminCategories,
   listAdminColors,
@@ -283,22 +281,6 @@ export const ProductUpdatePage = () => {
     },
   })
 
-  const deleteVariantMutation = useMutation({
-    mutationFn: (variantId: string) => deleteAdminProductVariant(String(productId), variantId),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ['admin', 'product-variants', String(productId)],
-        }),
-        queryClient.invalidateQueries({ queryKey: ['admin', 'products'] }),
-      ])
-      void message.success('Đã xóa biến thể')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
   const variantColumns: ColumnsType<AdminProductVariantItem> = useMemo(
     () => [
       {
@@ -374,7 +356,7 @@ export const ProductUpdatePage = () => {
       {
         title: 'Hành động',
         key: 'actions',
-        width: 200,
+        width: 96,
         render: (_, record) => (
           <Space>
             <Button
@@ -394,21 +376,11 @@ export const ProductUpdatePage = () => {
             >
               Sửa
             </Button>
-            <Popconfirm
-              title={`Xóa biến thể "${record.sku}"?`}
-              okText="Xóa"
-              cancelText="Hủy"
-              onConfirm={() => deleteVariantMutation.mutate(record.id)}
-            >
-              <Button danger loading={deleteVariantMutation.isPending}>
-                Xóa
-              </Button>
-            </Popconfirm>
           </Space>
         ),
       },
     ],
-    [deleteVariantMutation, variantForm]
+    [variantForm]
   )
 
   const submitProductForm = (values: ProductUpdateFormValues) => {

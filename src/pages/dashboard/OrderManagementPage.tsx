@@ -23,6 +23,7 @@ import {
 import type { ColumnsType } from 'antd/es/table'
 import { sumBy } from 'lodash'
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 import {
   listAdminOrders,
@@ -40,6 +41,7 @@ import type {
   AdminReturnRequestStatus,
 } from '@/features/admin/model/order-management.types'
 import { queryKeys } from '@/shared/api/queryKeys'
+import { buildDashboardProductDetailPath } from '@/shared/constants/routes'
 import { uploadImage } from '@/shared/api/upload.api'
 import { buildVietQrImageUrl } from '@/shared/constants/vietqr'
 import { formatVndCurrency } from '@/shared/utils/currency'
@@ -106,7 +108,7 @@ const getPaymentMethodLabel = (order: AdminOrderItem) => {
     return 'ZaloPay - Ví'
   }
 
-  return 'ZaloPay '
+  return 'ZaloPay - Cổng chung'
 }
 
 const PAYMENT_STATUS_LABEL: Record<AdminOrderItem['paymentStatus'], string> = {
@@ -160,6 +162,22 @@ const CANCEL_REFUND_STATUS_COLOR: Record<AdminCancelRefundRequestStatus, string>
   pending: 'gold',
   rejected: 'red',
   refunded: 'green',
+}
+
+const getOrderItemMeta = (
+  item: Pick<AdminOrderItem['items'][number], 'variantSku' | 'variantColor'>
+) => {
+  const details: string[] = []
+
+  if (item.variantSku?.trim()) {
+    details.push(`SKU: ${item.variantSku.trim()}`)
+  }
+
+  if (item.variantColor?.trim() && item.variantColor.trim().toLowerCase() !== 'n/a') {
+    details.push(`Màu: ${item.variantColor.trim()}`)
+  }
+
+  return details.join(' · ')
 }
 
 interface UpdateStatusFormValues {
@@ -216,6 +234,14 @@ export const OrderManagementPage = () => {
   const [statusModalOpen, setStatusModalOpen] = useState(false)
   const [updatingOrder, setUpdatingOrder] = useState<AdminOrderItem | null>(null)
 
+  const refreshOrderQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+    await queryClient.refetchQueries({
+      queryKey: ['admin', 'orders'],
+      type: 'active',
+    })
+  }
+
   const ordersQuery = useQuery({
     queryKey: queryKeys.admin.orders({
       page,
@@ -236,7 +262,7 @@ export const OrderManagementPage = () => {
     mutationFn: ({ orderId, payload }: { orderId: string; payload: UpdateStatusFormValues }) =>
       updateAdminOrderStatus(orderId, payload),
     onSuccess: async (updatedOrder) => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+      await refreshOrderQueries()
       void message.success('Đã cập nhật trạng thái đơn hàng')
       setStatusModalOpen(false)
       setUpdatingOrder(null)
@@ -266,7 +292,7 @@ export const OrderManagementPage = () => {
       }
     }) => updateAdminReturnRequest(payload.orderId, payload.returnRequestId, payload.payload),
     onSuccess: async (updatedOrder) => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+      await refreshOrderQueries()
       void message.success('Đã cập nhật hoàn hàng')
       setReturnModalOpen(false)
       setReturnContext(null)
@@ -294,7 +320,7 @@ export const OrderManagementPage = () => {
       }
     }) => updateAdminCancelRefundRequest(payload.orderId, payload.payload),
     onSuccess: async (updatedOrder) => {
-      await queryClient.invalidateQueries({ queryKey: ['admin', 'orders'] })
+      await refreshOrderQueries()
       void message.success('Đã cập nhật yêu cầu hoàn tiền')
       setCancelRefundModalOpen(false)
       setCancelRefundContext(null)
@@ -902,21 +928,6 @@ export const OrderManagementPage = () => {
                   children: formatDateTime(detailOrder.updatedAt),
                 },
                 {
-                  key: 'paymentTxnRef',
-                  label: 'Mã giao dịch hệ thống',
-                  children: detailOrder.paymentTxnRef ?? '—',
-                },
-                {
-                  key: 'paymentTransactionNo',
-                  label: 'Mã giao dịch cổng thanh toán',
-                  children: detailOrder.paymentTransactionNo ?? '—',
-                },
-                {
-                  key: 'paymentGatewayResponseCode',
-                  label: 'Mã phản hồi cổng thanh toán',
-                  children: detailOrder.paymentGatewayResponseCode ?? '—',
-                },
-                {
                   key: 'paidAt',
                   label: 'Thời gian thanh toán',
                   children: detailOrder.paidAt
@@ -965,11 +976,18 @@ export const OrderManagementPage = () => {
 
                       <div className="min-w-0 flex-1">
                         <Typography.Text strong className="block">
-                          {item.productName}
+                          <Link
+                            to={buildDashboardProductDetailPath(item.productId)}
+                            className="hover:underline"
+                          >
+                            {item.productName}
+                          </Link>
                         </Typography.Text>
-                        <Typography.Text type="secondary" className="text-xs">
-                          SKU: {item.variantSku} · Màu: {item.variantColor}
-                        </Typography.Text>
+                        {getOrderItemMeta(item) ? (
+                          <Typography.Text type="secondary" className="text-xs">
+                            {getOrderItemMeta(item)}
+                          </Typography.Text>
+                        ) : null}
                       </div>
 
                       <Space direction="vertical" size={0} align="end">

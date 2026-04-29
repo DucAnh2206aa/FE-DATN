@@ -1,4 +1,4 @@
-import { DeleteOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons'
+import { EditOutlined, EyeOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Avatar,
@@ -11,7 +11,6 @@ import {
   Input,
   message,
   Modal,
-  Popconfirm,
   Rate,
   Select,
   Space,
@@ -25,8 +24,8 @@ import type { ColumnsType } from 'antd/es/table'
 import { meanBy } from 'lodash'
 import { useState } from 'react'
 
+import { listAdminProducts } from '@/features/admin/api/product-management.api'
 import {
-  deleteAdminReview,
   listAdminReviews,
   moderateAdminReview,
   replyAdminReview,
@@ -52,8 +51,8 @@ export const ReviewManagementPage = () => {
   const [page, setPage] = useState(1)
   const [searchInput, setSearchInput] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
-  const [productIdInput, setProductIdInput] = useState('')
   const [productIdFilter, setProductIdFilter] = useState('')
+  const [productSearchTerm, setProductSearchTerm] = useState('')
   const [userIdInput, setUserIdInput] = useState('')
   const [userIdFilter, setUserIdFilter] = useState('')
   const [publishFilter, setPublishFilter] = useState<PublishFilterValue>('all')
@@ -87,6 +86,20 @@ export const ReviewManagementPage = () => {
       }),
   })
 
+  const productOptionsQuery = useQuery({
+    queryKey: queryKeys.admin.products({
+      page: 1,
+      limit: 100,
+      search: productSearchTerm || undefined,
+    }),
+    queryFn: () =>
+      listAdminProducts({
+        page: 1,
+        limit: 100,
+        search: productSearchTerm || undefined,
+      }),
+  })
+
   const invalidateReviewData = async () => {
     await Promise.all([
       queryClient.invalidateQueries({ queryKey: ['admin', 'reviews'] }),
@@ -106,18 +119,6 @@ export const ReviewManagementPage = () => {
       if (detailReview?.id === updatedReview.id) {
         setDetailReview(updatedReview)
       }
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
-  const deleteReviewMutation = useMutation({
-    mutationFn: deleteAdminReview,
-    onSuccess: async () => {
-      await invalidateReviewData()
-      void message.success('Đã xóa đánh giá')
-      setDetailReview(null)
     },
     onError: (error) => {
       void message.error(error.message)
@@ -276,17 +277,6 @@ export const ReviewManagementPage = () => {
             }}
           ></Button>
 
-          <Popconfirm
-            title="Xóa đánh giá này?"
-            description="Hành động này không thể hoàn tác."
-            okText="Xóa"
-            cancelText="Hủy"
-            onConfirm={() => {
-              deleteReviewMutation.mutate(record.id)
-            }}
-          >
-            <Button danger icon={<DeleteOutlined />} loading={deleteReviewMutation.isPending} />
-          </Popconfirm>
         </Space>
       ),
     },
@@ -342,21 +332,24 @@ export const ReviewManagementPage = () => {
             }}
           />
 
-          <Input.Search
+          <Select
             allowClear
-            className="w-full md:max-w-xs"
-            placeholder="Lọc theo productId"
-            value={productIdInput}
-            onChange={(event) => {
-              setProductIdInput(event.target.value)
-              if (!event.target.value.trim()) {
-                setPage(1)
-                setProductIdFilter('')
-              }
-            }}
+            showSearch
+            filterOption={false}
+            className="w-full md:w-72"
+            placeholder="Lọc theo sản phẩm"
+            value={productIdFilter || undefined}
+            loading={productOptionsQuery.isLoading || productOptionsQuery.isFetching}
+            options={(productOptionsQuery.data?.items ?? []).map((product) => ({
+              label: product.name,
+              value: product.id,
+            }))}
             onSearch={(value) => {
+              setProductSearchTerm(value.trim())
+            }}
+            onChange={(value) => {
               setPage(1)
-              setProductIdFilter(value.trim())
+              setProductIdFilter(String(value ?? ''))
             }}
           />
 

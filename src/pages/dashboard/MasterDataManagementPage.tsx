@@ -28,8 +28,6 @@ import {
   createMasterSize,
   deleteMasterBrand,
   deleteMasterCategory,
-  deleteMasterColor,
-  deleteMasterSize,
   listMasterBrands,
   listMasterCategories,
   listMasterColors,
@@ -332,17 +330,6 @@ export const MasterDataManagementPage = () => {
     },
   })
 
-  const deleteColorMutation = useMutation({
-    mutationFn: deleteMasterColor,
-    onSuccess: async () => {
-      await invalidateMasterData()
-      void message.success('Đã xóa màu sắc')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
   const createSizeMutation = useMutation({
     mutationFn: createMasterSize,
     onSuccess: async () => {
@@ -366,17 +353,6 @@ export const MasterDataManagementPage = () => {
       setSizeModalOpen(false)
       setEditingSize(null)
       sizeForm.resetFields()
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
-  const deleteSizeMutation = useMutation({
-    mutationFn: deleteMasterSize,
-    onSuccess: async () => {
-      await invalidateMasterData()
-      void message.success('Đã xóa size')
     },
     onError: (error) => {
       void message.error(error.message)
@@ -492,6 +468,7 @@ export const MasterDataManagementPage = () => {
             ></Button>
             <Popconfirm
               title={`Xóa thương hiệu "${record.name}"?`}
+              description='Các sản phẩm đang dùng thương hiệu này sẽ được chuyển sang "Không xác định".'
               okText="Xóa"
               cancelText="Hủy"
               onConfirm={() => {
@@ -556,7 +533,7 @@ export const MasterDataManagementPage = () => {
       {
         title: 'Hành động',
         key: 'actions',
-        width: 210,
+        width: 110,
         render: (_, record) => (
           <Space>
             <Button
@@ -571,25 +548,11 @@ export const MasterDataManagementPage = () => {
                 setColorModalOpen(true)
               }}
             ></Button>
-            <Popconfirm
-              title={`Xóa màu "${record.name}"?`}
-              okText="Xóa"
-              cancelText="Hủy"
-              onConfirm={() => {
-                deleteColorMutation.mutate(record.id)
-              }}
-            >
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deleteColorMutation.isPending}
-              ></Button>
-            </Popconfirm>
           </Space>
         ),
       },
     ],
-    [colorForm, deleteColorMutation]
+    [colorForm]
   )
 
   const sizeColumns: ColumnsType<MasterSizeItem> = useMemo(
@@ -620,7 +583,7 @@ export const MasterDataManagementPage = () => {
       {
         title: 'Hành động',
         key: 'actions',
-        width: 210,
+        width: 110,
         render: (_, record) => (
           <Space>
             <Button
@@ -634,25 +597,11 @@ export const MasterDataManagementPage = () => {
                 setSizeModalOpen(true)
               }}
             ></Button>
-            <Popconfirm
-              title={`Xóa size "${record.name}"?`}
-              okText="Xóa"
-              cancelText="Hủy"
-              onConfirm={() => {
-                deleteSizeMutation.mutate(record.id)
-              }}
-            >
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deleteSizeMutation.isPending}
-              ></Button>
-            </Popconfirm>
           </Space>
         ),
       },
     ],
-    [deleteSizeMutation, sizeForm]
+    [sizeForm]
   )
 
   const activeFilterOptions = [

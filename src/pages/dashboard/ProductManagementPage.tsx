@@ -34,7 +34,6 @@ import { useNavigate } from 'react-router-dom'
 import {
   createAdminProductVariant,
   deleteAdminProduct,
-  deleteAdminProductVariant,
   listAdminBrands,
   listAdminCategories,
   listAdminColors,
@@ -308,23 +307,6 @@ export const ProductManagementPage = () => {
     },
   })
 
-  const deleteVariantMutation = useMutation({
-    mutationFn: ({ productId, variantId }: { productId: string; variantId: string }) =>
-      deleteAdminProductVariant(productId, variantId),
-    onSuccess: async () => {
-      await Promise.all([
-        queryClient.invalidateQueries({
-          queryKey: ['admin', 'product-variants', activeProductForVariants?.id],
-        }),
-        invalidateProductData(),
-      ])
-      void message.success('Đã xóa variant')
-    },
-    onError: (error) => {
-      void message.error(error.message)
-    },
-  })
-
   const categoriesById = useMemo(() => {
     const map = new Map<string, string>()
     for (const category of categoriesQuery.data ?? []) {
@@ -529,7 +511,7 @@ export const ProductManagementPage = () => {
       {
         title: 'Hành động',
         key: 'actions',
-        width: 220,
+        width: 110,
         render: (_, record) => (
           <Space>
             <Button
@@ -548,33 +530,11 @@ export const ProductManagementPage = () => {
                 setVariantModalOpen(true)
               }}
             ></Button>
-
-            <Popconfirm
-              title={`Xóa variant "${record.sku}"?`}
-              okText="Xóa"
-              cancelText="Hủy"
-              onConfirm={() => {
-                if (!activeProductForVariants) {
-                  return
-                }
-
-                deleteVariantMutation.mutate({
-                  productId: activeProductForVariants.id,
-                  variantId: record.id,
-                })
-              }}
-            >
-              <Button
-                danger
-                icon={<DeleteOutlined />}
-                loading={deleteVariantMutation.isPending}
-              ></Button>
-            </Popconfirm>
           </Space>
         ),
       },
     ],
-    [activeProductForVariants, deleteVariantMutation, variantForm]
+    [variantForm]
   )
 
   const submitVariantForm = (values: VariantFormValues) => {

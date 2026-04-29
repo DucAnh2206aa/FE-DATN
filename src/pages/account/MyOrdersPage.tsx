@@ -19,7 +19,7 @@ import {
 } from 'antd'
 import type { ColumnsType } from 'antd/es/table'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 
 import {
   cancelMyOrder,
@@ -37,6 +37,7 @@ import type {
   OrderStatus,
 } from '@/features/account/model/account.types'
 import { queryKeys } from '@/shared/api/queryKeys'
+import { buildProductDetailPath } from '@/shared/constants/routes'
 import { getVietQrBankByCode, VIET_QR_BANK_OPTIONS } from '@/shared/constants/vietqr'
 import { formatVndCurrency } from '@/shared/utils/currency'
 import { formatDateTime } from '@/shared/utils/date'
@@ -171,6 +172,20 @@ const getCancelOrderNote = (order: MyOrderItem) => {
   return cancelledHistory?.note?.trim() || undefined
 }
 
+const getOrderItemMeta = (item: Pick<MyOrderItem['items'][number], 'variantSku' | 'variantColor'>) => {
+  const details: string[] = []
+
+  if (item.variantSku?.trim()) {
+    details.push(`SKU: ${item.variantSku.trim()}`)
+  }
+
+  if (item.variantColor?.trim() && item.variantColor.trim().toLowerCase() !== 'n/a') {
+    details.push(`Màu: ${item.variantColor.trim()}`)
+  }
+
+  return details.join(' · ')
+}
+
 // worklog: 2026-03-04 12:32:16 | trantu | refactor | MyOrdersPage
 // worklog: 2026-03-04 14:54:15 | ducanh | refactor | MyOrdersPage
 // worklog: 2026-03-04 10:16:25 | quochuy | cleanup | MyOrdersPage
@@ -198,6 +213,16 @@ export const MyOrdersPage = () => {
   const [hasHandledFocusOrder, setHasHandledFocusOrder] = useState(false)
   const selectedCancelRefundBankCode = Form.useWatch('bankCode', cancelRefundForm)
 
+  const refreshOrderQueries = useCallback(async () => {
+    await queryClient.invalidateQueries({
+      queryKey: ['account', 'orders'],
+    })
+    await queryClient.refetchQueries({
+      queryKey: ['account', 'orders'],
+      type: 'active',
+    })
+  }, [queryClient])
+
   const ordersQuery = useQuery({
     queryKey: queryKeys.account.orders({
       page,
@@ -215,11 +240,12 @@ export const MyOrdersPage = () => {
   const cancelOrderMutation = useMutation({
     mutationFn: (payload: { orderId: string; body: CancelMyOrderPayload }) =>
       cancelMyOrder(payload.orderId, payload.body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.account.orders(),
-      })
+    onSuccess: async (updatedOrder) => {
+      await refreshOrderQueries()
       void message.success('Đã hủy đơn hàng')
+      if (detailOrder?.id === updatedOrder.id) {
+        setDetailOrder(updatedOrder)
+      }
       setCancelOrderModalOpen(false)
       setCancelOrderTarget(null)
       cancelOrderForm.resetFields()
@@ -232,9 +258,7 @@ export const MyOrdersPage = () => {
   const repayOrderMutation = useMutation({
     mutationFn: (orderId: string) => retryMyVnpayPayment(orderId),
     onSuccess: async (order) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.account.orders(),
-      })
+      await refreshOrderQueries()
 
       if (order.paymentUrl) {
         window.location.assign(order.paymentUrl)
@@ -250,11 +274,12 @@ export const MyOrdersPage = () => {
 
   const confirmReceivedMutation = useMutation({
     mutationFn: (orderId: string) => confirmOrderReceived(orderId),
-    onSuccess: async (order) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.account.orders(),
-      })
-      void message.success(`Đã xác nhận nhận hàng ${order.orderCode}`)
+    onSuccess: async (updatedOrder) => {
+      await refreshOrderQueries()
+      if (detailOrder?.id === updatedOrder.id) {
+        setDetailOrder(updatedOrder)
+      }
+      void message.success(`Đã xác nhận nhận hàng ${updatedOrder.orderCode}`)
     },
     onError: (error) => {
       void message.error(error.message)
@@ -264,9 +289,7 @@ export const MyOrdersPage = () => {
   const createReviewMutation = useMutation({
     mutationFn: createMyReview,
     onSuccess: async (_, payload) => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.account.orders(),
-      })
+      await refreshOrderQueries()
       await queryClient.invalidateQueries({
         queryKey: queryKeys.products.reviews(payload.productId),
       })
@@ -285,11 +308,12 @@ export const MyOrdersPage = () => {
   const cancelRefundRequestMutation = useMutation({
     mutationFn: (payload: { orderId: string; body: CreateCancelRefundRequestPayload }) =>
       createCancelRefundRequest(payload.orderId, payload.body),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.account.orders(),
-      })
+    onSuccess: async (updatedOrder) => {
+      await refreshOrderQueries()
       void message.success('Đã gửi yêu cầu hoàn tiền')
+      if (detailOrder?.id === updatedOrder.id) {
+        setDetailOrder(updatedOrder)
+      }
       setCancelRefundModalOpen(false)
       setCancelRefundOrder(null)
       cancelRefundForm.resetFields()
@@ -385,7 +409,9 @@ export const MyOrdersPage = () => {
             <div className="min-w-0 flex-1">
               <Space size={8} wrap className="mb-1">
                 <Typography.Text strong className="block line-clamp-1">
-                  {item.productName}
+                  <Link to={buildProductDetailPath(item.productId)} className="hover:underline">
+                    {item.productName}
+                  </Link>
                 </Typography.Text>
                 {item.isReviewed ? (
                   <Tag color="green" className="!m-0">
@@ -393,9 +419,11 @@ export const MyOrdersPage = () => {
                   </Tag>
                 ) : null}
               </Space>
-              <Typography.Text type="secondary" className="text-xs">
-                SKU: {item.variantSku} · Màu: {item.variantColor}
-              </Typography.Text>
+              {getOrderItemMeta(item) ? (
+                <Typography.Text type="secondary" className="text-xs">
+                  {getOrderItemMeta(item)}
+                </Typography.Text>
+              ) : null}
             </div>
             <Space direction="vertical" size={0} align="end">
               <Typography.Text>Số lượng: {item.quantity}</Typography.Text>
@@ -620,21 +648,6 @@ export const MyOrdersPage = () => {
               children: formatVndCurrency(record.totalAmount),
             },
             {
-              key: 'paymentTxnRef',
-              label: 'Mã giao dịch hệ thống',
-              children: record.paymentTxnRef ?? '—',
-            },
-            {
-              key: 'paymentTransactionNo',
-              label: 'Mã giao dịch cổng thanh toán',
-              children: record.paymentTransactionNo ?? '—',
-            },
-            {
-              key: 'paymentGatewayResponseCode',
-              label: 'Mã phản hồi cổng thanh toán',
-              children: record.paymentGatewayResponseCode ?? '—',
-            },
-            {
               key: 'paidAt',
               label: 'Thời gian thanh toán',
               children: record.paidAt ? formatDateTime(record.paidAt) : 'Chưa thanh toán',
@@ -801,10 +814,12 @@ export const MyOrdersPage = () => {
     [
       cancelOrderMutation,
       cancelOrderTarget?.id,
+      detailOrder?.id,
       confirmReceivedMutation,
       openCancelOrderModal,
       openCancelRefundModal,
       openReviewModal,
+      refreshOrderQueries,
       repayOrderMutation,
     ]
   )
