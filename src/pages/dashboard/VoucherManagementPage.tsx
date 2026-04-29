@@ -342,11 +342,9 @@ export const VoucherManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
-        Admin - Quản lý voucher
+        Quản lý voucher
       </Typography.Title>
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        Tạo và quản lý voucher giảm giá để áp dụng cho đơn hàng.
-      </Typography.Paragraph>
+    
 
       <Card>
         <div className="mb-4 flex flex-wrap gap-3">

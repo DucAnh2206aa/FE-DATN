@@ -585,11 +585,8 @@ export const ProductManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
-        Admin - Quản lý sản phẩm
+      Quản lý sản phẩm
       </Typography.Title>
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        CRUD sản phẩm và variants. Ở form variant, `color` và `size` là tùy chọn.
-      </Typography.Paragraph>
 
       <Card>
         <div className="mb-4 flex flex-wrap items-center gap-3">

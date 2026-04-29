@@ -295,7 +295,7 @@ export const ChatbotPresetManagementPage = () => {
   return (
     <div className="space-y-6">
       <div>
-        <Typography.Title level={2}>Admin - Kịch bản chatbot</Typography.Title>
+        <Typography.Title level={2}>Kịch bản chatbot</Typography.Title>
         <Typography.Paragraph type="secondary" className="!mb-0">
           Quản lý câu hỏi mẫu cho chatbot. Mỗi câu hỏi sẽ gắn với danh sách sản phẩm do admin chọn.
         </Typography.Paragraph>

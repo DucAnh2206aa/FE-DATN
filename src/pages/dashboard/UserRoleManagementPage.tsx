@@ -230,12 +230,9 @@ export const UserRoleManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
-        Admin - Quản lý phân role
+        Quản lý phân role
       </Typography.Title>
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        Tạo tài khoản nhân sự và phân quyền giữa `customer` / `staff`. Role `admin` không tạo bằng
-        UI.
-      </Typography.Paragraph>
+  
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>

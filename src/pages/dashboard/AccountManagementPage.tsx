@@ -325,12 +325,9 @@ export const AccountManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
-        Admin - Quản lý tài khoản
+        Quản lý tài khoản
       </Typography.Title>
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        Quản lý thông tin người dùng, khóa/mở khóa tài khoản và reset mật khẩu nhanh cho
-        customer/staff.
-      </Typography.Paragraph>
+     
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>

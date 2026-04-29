@@ -260,10 +260,6 @@ export const ProductCreatePage = () => {
         </Typography.Title>
       </Space>
 
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        Form tạo sản phẩm theo page riêng. Mô tả dùng editor và biến thể dùng form động.
-      </Typography.Paragraph>
-
       <Card>
         <Form<ProductCreateFormValues>
           form={form}

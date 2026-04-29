@@ -1,10 +1,4 @@
-import {
-  LeftOutlined,
-  MinusOutlined,
-  PlusOutlined,
-  RightOutlined,
-  ShoppingCartOutlined,
-} from '@ant-design/icons'
+import { MinusOutlined, PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   Avatar,
@@ -532,13 +526,13 @@ export const ProductDetailPage = () => {
   }
 
   return (
-    <div className="mx-auto max-w-[1240px] space-y-6 px-4 py-5 lg:px-6">
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)]">
-        <Card className="!overflow-hidden !rounded-[24px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)]">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <Typography.Title level={4} className="!mb-0 !text-xl md:!text-[28px]">
-                Ảnh sản phẩm
+    <div className="mx-auto max-w-[1240px] space-y-3 px-2 py-2 lg:px-3">
+      <div className="grid gap-2 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <Card className="!overflow-hidden !rounded-[12px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)] !p-2">
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <Typography.Title level={5} className="!mb-0 !text-sm md:!text-base">
+                Ảnh
               </Typography.Title>
               <Typography.Text type="secondary" className="text-xs">
                 {resolvedActiveImageIndex + 1}/{gallery.length}
@@ -554,7 +548,7 @@ export const ProductDetailPage = () => {
             >
               {gallery.map((image, index) => (
                 <div key={`${image}-${index}`}>
-                  <div className="aspect-[4/3] overflow-hidden rounded-[24px] bg-slate-100">
+                  <div className="aspect-square overflow-hidden rounded-[12px] bg-slate-100">
                     <img
                       src={image}
                       alt={`${product.name}-${index + 1}`}
@@ -565,7 +559,7 @@ export const ProductDetailPage = () => {
               ))}
             </Carousel>
 
-            <div className="product-detail-gallery-thumbnails flex gap-3 overflow-x-auto pb-1">
+            <div className="product-detail-gallery-thumbnails flex gap-1 overflow-x-auto pb-0.5">
               {gallery.map((image, index) => {
                 const isActive = index === resolvedActiveImageIndex
 
@@ -574,7 +568,7 @@ export const ProductDetailPage = () => {
                     key={`${image}-thumb-${index}`}
                     type="button"
                     onClick={() => handleSelectGalleryImage(index)}
-                    className={`group relative h-20 w-20 shrink-0 overflow-hidden rounded-2xl border transition-all duration-200 ${
+                    className={`group relative h-14 w-14 shrink-0 overflow-hidden rounded-lg border transition-all duration-200 ${
                       isActive
                         ? 'border-blue-500 shadow-[0_18px_36px_-28px_rgba(37,99,235,0.7)]'
                         : 'border-slate-200 hover:border-blue-300'
@@ -595,93 +589,121 @@ export const ProductDetailPage = () => {
                 )
               })}
             </div>
-
-            <Typography.Paragraph className="!mb-0 text-sm text-slate-500">
-              {selectedVariant
-                ? `Đang xem: ${getVariantLabel(selectedVariant)}`
-                : 'Chọn biến thể để đồng bộ ảnh theo đúng phiên bản.'}
-            </Typography.Paragraph>
           </div>
         </Card>
 
-        <Card className="!rounded-[24px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)]">
-          <div className="space-y-5">
-            <div className="space-y-3">
-              <Space size={[8, 8]} wrap>
-                <Tag color="blue">{product.brand}</Tag>
+        <Card className="!rounded-[12px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)] !p-2">
+          <div className="space-y-2">
+            <div className="space-y-1">
+              <Space size={[4, 4]} wrap>
+                <Tag color="blue" className="!text-xs">
+                  {product.brand}
+                </Tag>
                 {displayedVariant ? (
-                  <Tag color={displayedVariant.isAvailable ? 'green' : 'default'}>
+                  <Tag
+                    color={displayedVariant.isAvailable ? 'green' : 'default'}
+                    className="!text-xs"
+                  >
                     {getVariantAvailabilityLabel(displayedVariant)}
                   </Tag>
                 ) : null}
               </Space>
 
-              <Typography.Title
-                level={2}
-                className="!mb-0 !text-[30px] !leading-tight md:!text-[36px]"
-              >
+              <Typography.Title level={4} className="!mb-0 !text-lg !leading-tight md:!text-xl">
                 {product.name}
               </Typography.Title>
 
-              <Typography.Paragraph className="!mb-0 text-sm text-slate-500">
+              <Typography.Paragraph className="!mb-0 !text-xs text-slate-500">
                 {selectedVariant
-                  ? `Biến thể đang chọn: ${getVariantLabel(selectedVariant)} • SKU ${selectedVariant.sku}`
-                  : 'Chọn biến thể phù hợp bên dưới trước khi thêm vào giỏ hàng.'}
+                  ? `${getVariantLabel(selectedVariant)} • SKU ${selectedVariant.sku}`
+                  : 'Chọn biến thể bên trái'}
               </Typography.Paragraph>
             </div>
 
-            <div className="space-y-2 rounded-[20px] border border-blue-100 bg-[radial-gradient(circle_at_top_left,_rgba(219,234,254,0.75),_rgba(255,255,255,0.96)_60%)] p-4">
-              <Typography.Title level={2} className="!mb-0 !text-blue-700">
+            <div className="space-y-0.5 rounded-lg border border-blue-100 bg-[radial-gradient(circle_at_top_left,_rgba(219,234,254,0.75),_rgba(255,255,255,0.96)_60%)] p-2">
+              <Typography.Title level={4} className="!mb-0 !text-base !text-blue-700">
                 {displayedVariant
                   ? formatVndCurrency(displayedVariant.price)
                   : formatPriceRange(product.variants)}
               </Typography.Title>
               {displayedVariant?.originalPrice &&
               displayedVariant.originalPrice > displayedVariant.price ? (
-                <Space size={10} wrap>
-                  <Typography.Text type="secondary" delete>
+                <Space size={3} wrap>
+                  <Typography.Text type="secondary" delete className="!text-xs">
                     {formatVndCurrency(displayedVariant.originalPrice)}
                   </Typography.Text>
-                  <Tag color="red" className="!m-0">
+                  <Tag color="red" className="!m-0 !text-xs">
                     Tiết kiệm {formatVndCurrency(displayedVariantSavings)}
                   </Tag>
                 </Space>
               ) : null}
-              <Space size={[12, 8]} wrap>
-                <Rate disabled allowHalf value={product.averageRating} className="!text-sm" />
-                <Typography.Text type="secondary" className="text-sm">
+              <Space size={[4, 2]} wrap>
+                <Rate disabled allowHalf value={product.averageRating} className="!text-[10px]" />
+                <Typography.Text type="secondary" className="!text-xs">
                   {product.reviewCount} đánh giá
                 </Typography.Text>
-                <Typography.Text type="secondary" className="text-sm">
+                <Typography.Text type="secondary" className="!text-xs">
                   Đã bán {product.soldCount}
                 </Typography.Text>
               </Space>
-              <Typography.Paragraph className="!mb-0 text-sm text-slate-500">
-                {displayedVariant
-                  ? `SKU: ${displayedVariant.sku} • Tồn kho: ${displayedVariant.stockQuantity}`
-                  : `Cập nhật: ${formatDateTime(product.updatedAt)}`}
-              </Typography.Paragraph>
             </div>
 
-            <div className="rounded-[20px] border border-slate-200 bg-white p-4">
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="space-y-1">
-                    <Typography.Text strong>Số lượng mua</Typography.Text>
-                    <Typography.Paragraph className="!mb-0 text-xs text-slate-500">
-                      {selectedVariant
-                        ? `Bạn có thể mua tối đa ${selectedVariant.stockQuantity} sản phẩm ở biến thể này.`
-                        : 'Vui lòng chọn biến thể trước khi điều chỉnh số lượng và thêm vào giỏ.'}
-                    </Typography.Paragraph>
-                  </div>
+            <div className="space-y-1 max-h-full overflow-y-auto">
+              <Typography.Text className="!text-xs text-slate-600">
+                Phiên bản sẵn có
+              </Typography.Text>
+              <div className="grid grid-cols-4 gap-1">
+                {product.variants.length === 0 ? (
+                  <Typography.Text type="secondary" className="!text-xs col-span-4">
+                    Chưa có phiên bản
+                  </Typography.Text>
+                ) : (
+                  product.variants.map((variant) => {
+                    const image = variant.images[0] ?? product.images[0] ?? PRODUCT_PLACEHOLDER
+                    const isSelected = variant.id === resolvedSelectedVariantId
+                    const availabilityLabel = getVariantAvailabilityLabel(variant)
 
-                  <Space size={6} align="center">
+                    return (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => handleSelectVariant(variant)}
+                        className={`flex flex-col items-center gap-0.5 rounded-lg border p-0.5 text-center transition-all duration-200 ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50/70'
+                            : 'border-slate-200 hover:border-blue-300'
+                        }`}
+                      >
+                        <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+                          <img
+                            src={image}
+                            alt={`${getVariantLabel(variant)}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <Typography.Text className="!text-[10px] leading-3 line-clamp-1">
+                          {getVariantLabel(variant)}
+                        </Typography.Text>
+                      </button>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="rounded-lg border border-slate-200 bg-white p-2">
+              <div className="flex flex-col gap-2">
+                <div className="space-y-0.5">
+                  <Typography.Text className="!text-xs">Số lượng mua</Typography.Text>
+                  <div className="flex items-center gap-1">
                     <Button
+                      size="small"
                       icon={<MinusOutlined />}
                       onClick={handleDecreaseQuantity}
                       disabled={
                         !selectedVariant || purchaseQuantity <= 1 || addToCartMutation.isPending
                       }
+                      className="!h-8 !w-8"
                     />
                     <InputNumber
                       min={1}
@@ -695,9 +717,10 @@ export const ProductDetailPage = () => {
                         addToCartMutation.isPending
                       }
                       onChange={handlePurchaseQuantityChange}
-                      className="w-24"
+                      className="w-16"
                     />
                     <Button
+                      size="small"
                       icon={<PlusOutlined />}
                       onClick={handleIncreaseQuantity}
                       disabled={
@@ -705,15 +728,17 @@ export const ProductDetailPage = () => {
                         addToCartMutation.isPending ||
                         purchaseQuantity >= selectedVariant.stockQuantity
                       }
+                      className="!h-8 !w-8"
                     />
-                  </Space>
+                  </div>
                 </div>
 
                 <Button
                   type="primary"
                   block
+                  size="small"
                   icon={<ShoppingCartOutlined />}
-                  className="!h-12 !rounded-2xl"
+                  className="!h-9 !rounded-lg !text-xs"
                   loading={addToCartMutation.isPending}
                   onClick={handleAddToCart}
                 >
@@ -721,153 +746,20 @@ export const ProductDetailPage = () => {
                 </Button>
 
                 {!accessToken ? (
-                  <Typography.Paragraph className="!mb-0 text-xs" type="secondary">
-                    Bạn cần đăng nhập trước khi thêm sản phẩm vào giỏ hàng.
+                  <Typography.Paragraph className="!mb-0 !text-xs" type="secondary">
+                    Vui lòng <Link to={ROUTE_PATHS.LOGIN}>đăng nhập</Link> để thêm vào giỏ
                   </Typography.Paragraph>
                 ) : null}
               </div>
             </div>
 
-            <Space size={[8, 8]} wrap>
+            <Space size={[6, 6]} wrap>
               <Badge status="processing" text="COD" />
-              {}
               <Badge status="success" text="ZaloPay" />
             </Space>
           </div>
         </Card>
       </div>
-
-      <Card className="!rounded-[24px] !border-slate-200/80 !shadow-[0_24px_60px_-48px_rgba(15,23,42,0.55)]">
-        <div className="space-y-5">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="space-y-1">
-              <Typography.Title level={3} className="!mb-0 !text-[30px]">
-                Chọn phiên bản
-              </Typography.Title>
-              <Typography.Text type="secondary">
-                {product.variants.length > 0
-                  ? `${product.variants.length} biến thể có sẵn, chọn trực tiếp trước khi thêm vào giỏ.`
-                  : 'Hiện chưa có biến thể để lựa chọn.'}
-              </Typography.Text>
-            </div>
-
-            {hasMultipleVariantSlides ? (
-              <Space size={8}>
-                <Button
-                  shape="circle"
-                  icon={<LeftOutlined />}
-                  aria-label="Xem biến thể trước"
-                  disabled={resolvedActiveVariantSlide <= 0}
-                  onClick={handleVariantSlidePrev}
-                />
-                <Button
-                  shape="circle"
-                  type="primary"
-                  ghost
-                  icon={<RightOutlined />}
-                  aria-label="Xem biến thể tiếp theo"
-                  disabled={resolvedActiveVariantSlide >= maxVariantSlideIndex}
-                  onClick={handleVariantSlideNext}
-                />
-              </Space>
-            ) : null}
-          </div>
-
-          {product.variants.length === 0 ? (
-            <Empty
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="Hiện chưa có phiên bản sản phẩm"
-            />
-          ) : (
-            <Carousel
-              ref={variantCarouselRef}
-              draggable
-              dots={hasMultipleVariantSlides}
-              infinite={false}
-              afterChange={handleVariantCarouselAfterChange}
-              className="product-variant-carousel"
-            >
-              {variantSlides.map((slideVariants, slideIndex) => (
-                <div key={`variant-slide-${slideIndex}`}>
-                  <div className={`grid gap-4 pb-2 ${variantGridClassName}`}>
-                    {slideVariants.map((variant) => {
-                      const image = variant.images[0] ?? product.images[0] ?? PRODUCT_PLACEHOLDER
-                      const isSelected = variant.id === resolvedSelectedVariantId
-                      const availabilityLabel = getVariantAvailabilityLabel(variant)
-
-                      return (
-                        <button
-                          key={variant.id}
-                          type="button"
-                          onClick={() => handleSelectVariant(variant)}
-                          className={`flex h-full w-full rounded-[20px] border bg-white p-3 text-left transition-all duration-200 md:p-4 ${
-                            isSelected
-                              ? 'border-blue-500 bg-blue-50/70 shadow-[0_22px_44px_-34px_rgba(37,99,235,0.75)]'
-                              : 'border-slate-200 hover:border-blue-300 hover:shadow-[0_18px_36px_-30px_rgba(15,23,42,0.45)]'
-                          }`}
-                        >
-                          <div className="flex h-full w-full flex-col gap-4">
-                            <div className="flex items-start gap-3">
-                              <div className="h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 md:h-20 md:w-20">
-                                <img
-                                  src={image}
-                                  alt={`${product.name}-${getVariantLabel(variant)}`}
-                                  className="h-full w-full object-cover"
-                                />
-                              </div>
-
-                              <div className="min-w-0 flex-1 space-y-2">
-                                <div className="space-y-1">
-                                  <Typography.Text strong className="block !text-base !leading-6 md:!text-lg">
-                                    {getVariantLabel(variant)}
-                                  </Typography.Text>
-                                  <Typography.Text
-                                    type="secondary"
-                                    className="block truncate text-sm"
-                                  >
-                                    SKU: {variant.sku}
-                                  </Typography.Text>
-                                </div>
-
-                                <div className="flex flex-wrap items-center gap-2">
-                                  <Tag className="!m-0 !rounded-full !border-0 !bg-slate-100 !px-3 !py-1 !text-xs !text-slate-600">
-                                    {variant.color?.trim() || 'Mặc định'}
-                                  </Tag>
-                                  <Tag className="!m-0 !rounded-full !border-0 !bg-slate-100 !px-3 !py-1 !text-xs !text-slate-600">
-                                    {variant.size?.trim() || 'Tiêu chuẩn'}
-                                  </Tag>
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="mt-auto flex items-end justify-between gap-3 border-t border-slate-100 pt-4">
-                              <div className="min-w-0 flex-1">{renderVariantPrice(variant)}</div>
-
-                              <div className="shrink-0 rounded-full bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">
-                                Kho: {variant.stockQuantity}
-                              </div>
-                            </div>
-
-                            <Typography.Text
-                              className={`block text-sm font-medium ${
-                                availabilityLabel === 'Còn hàng'
-                                  ? 'text-lime-700'
-                                  : 'text-slate-500'
-                              }`}
-                            >
-                              {availabilityLabel}
-                            </Typography.Text>
-                          </div>
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              ))}
-            </Carousel>
-          )}
-        </div>
-      </Card>
 
       <Card title="Mô tả sản phẩm">
         {normalizedDescription ? (

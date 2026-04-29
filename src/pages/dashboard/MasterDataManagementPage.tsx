@@ -613,12 +613,9 @@ export const MasterDataManagementPage = () => {
   return (
     <div className="space-y-5">
       <Typography.Title level={3} className="!mb-0">
-        Admin - Quản lý danh mục, thương hiệu, màu sắc, size
+        Quản lý danh mục, thương hiệu, màu sắc, size
       </Typography.Title>
-      <Typography.Paragraph className="!mb-0" type="secondary">
-        Quản lý dữ liệu nền cho catalog sản phẩm. Dữ liệu này dùng cho form tạo sản phẩm và
-        variants.
-      </Typography.Paragraph>
+     
 
       <Card>
         <Tabs
@@ -1066,36 +1063,36 @@ export const MasterDataManagementPage = () => {
           >
             <Input placeholder="Ví dụ: Đỏ ruby" />
           </Form.Item>
-    <Form.Item label="Màu sắc">
-      <ColorPicker
-        value={colorHexValue}
-        format="hex"
-        allowClear
-        disabledAlpha
-        showText={(color) => color.toHexString().toUpperCase()}
-        onChange={(value) => {
-          colorForm.setFieldValue('hexCode', value.toHexString().toUpperCase())
-        }}
-        onClear={() => {
-          colorForm.setFieldValue('hexCode', undefined)
-        }}
-      >
-        <Button className="!h-14 !w-full !justify-between !px-4 text-left">
-          <Space size={12}>
-            <span
-              className="inline-block h-5 w-5 rounded-full border border-slate-300"
-              style={{ backgroundColor: colorHexValue || 'transparent' }}
-            />
-            <span className={colorHexValue ? 'text-slate-900' : 'text-slate-400'}>
-              {colorHexValue ? colorHexValue.toUpperCase() : 'Chọn màu bằng ColorPicker'}
-            </span>
-          </Space>
-        </Button>
-      </ColorPicker>
-    </Form.Item>
-    <Form.Item name="hexCode" hidden>
-      <Input />
-    </Form.Item>
+          <Form.Item label="Màu sắc">
+            <ColorPicker
+              value={colorHexValue}
+              format="hex"
+              allowClear
+              disabledAlpha
+              showText={(color) => color.toHexString().toUpperCase()}
+              onChange={(value) => {
+                colorForm.setFieldValue('hexCode', value.toHexString().toUpperCase())
+              }}
+              onClear={() => {
+                colorForm.setFieldValue('hexCode', undefined)
+              }}
+            >
+              <Button className="!h-14 !w-full !justify-between !px-4 text-left">
+                <Space size={12}>
+                  <span
+                    className="inline-block h-5 w-5 rounded-full border border-slate-300"
+                    style={{ backgroundColor: colorHexValue || 'transparent' }}
+                  />
+                  <span className={colorHexValue ? 'text-slate-900' : 'text-slate-400'}>
+                    {colorHexValue ? colorHexValue.toUpperCase() : 'Chọn màu bằng ColorPicker'}
+                  </span>
+                </Space>
+              </Button>
+            </ColorPicker>
+          </Form.Item>
+          <Form.Item name="hexCode" hidden>
+            <Input />
+          </Form.Item>
           <Form.Item name="isActive" label="Trạng thái" valuePropName="checked">
             <Switch checkedChildren="Đang dùng" unCheckedChildren="Ngừng dùng" />
           </Form.Item>

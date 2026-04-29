@@ -11,6 +11,7 @@ import {
   Row,
   Space,
   Spin,
+  Tag,
   Typography,
 } from 'antd'
 import { useNavigate, useSearchParams } from 'react-router-dom'
@@ -27,6 +28,13 @@ const PRICE_RANGES = [
   { value: '5000000-10000000', label: '5.000.000đ - 10.000.000đ' },
   { value: '10000000-20000000', label: '10.000.000đ - 20.000.000đ' },
   { value: '20000000-', label: 'Trên 20.000.000đ' },
+]
+
+const RATING_FILTERS = [
+  { value: '4.5', label: '4.5 sao trở lên' },
+  { value: '4', label: '4 sao trở lên' },
+  { value: '3', label: '3 sao trở lên' },
+  { value: '2', label: '2 sao trở lên' },
 ]
 
 export const ProductsPage = () => {
@@ -53,9 +61,12 @@ export const ProductsPage = () => {
     .split(',')
     .map((item) => item.trim())
     .filter(Boolean)
+  const minRating = searchParams.get('minRating')?.trim() ?? ''
   const search = searchParams.get('search')?.trim() ?? ''
   const page = Number(searchParams.get('page') ?? '1')
   const currentPage = Number.isFinite(page) && page > 0 ? page : 1
+  const selectedMinRating = Number(minRating)
+  const hasSelectedMinRating = Number.isFinite(selectedMinRating) && selectedMinRating > 0
 
   const filtersQuery = useQuery({
     queryKey: queryKeys.products.filters,
@@ -71,6 +82,7 @@ export const ProductsPage = () => {
       colorIds: selectedColorIds,
       sizeIds: selectedSizeIds,
       priceRanges: selectedPriceRanges,
+      minRating: hasSelectedMinRating ? selectedMinRating : undefined,
       search,
       isAvailable: true,
     }),
@@ -83,6 +95,7 @@ export const ProductsPage = () => {
         colorIds: selectedColorIds,
         sizeIds: selectedSizeIds,
         priceRanges: selectedPriceRanges,
+        minRating: hasSelectedMinRating ? selectedMinRating : undefined,
         search: search || undefined,
         isAvailable: true,
       }),
@@ -100,6 +113,7 @@ export const ProductsPage = () => {
     colorIds?: string[]
     sizeIds?: string[]
     priceRanges?: string[]
+    minRating?: string
     page?: string
   }) => {
     const params = new URLSearchParams(searchParams)
@@ -109,6 +123,7 @@ export const ProductsPage = () => {
     const nextColorIds = next.colorIds ?? selectedColorIds
     const nextSizeIds = next.sizeIds ?? selectedSizeIds
     const nextPriceRanges = next.priceRanges ?? selectedPriceRanges
+    const nextMinRating = next.minRating ?? minRating
     const nextPage = next.page ?? '1'
 
     if (nextCategoryId) {
@@ -141,6 +156,12 @@ export const ProductsPage = () => {
       params.delete('priceRanges')
     }
 
+    if (nextMinRating) {
+      params.set('minRating', nextMinRating)
+    } else {
+      params.delete('minRating')
+    }
+
     if (search) {
       params.set('search', search)
     } else {
@@ -161,7 +182,10 @@ export const ProductsPage = () => {
     selectedSizeIds.length > 0 ? `${selectedSizeIds.length} kích thước` : 'Tất cả kích thước'
   const selectedPriceName =
     selectedPriceRanges.length > 0 ? `${selectedPriceRanges.length} mức giá` : 'Tất cả giá'
-  const summaryText = `${selectedCategoryName} • ${selectedBrandName} • ${selectedColorName} • ${selectedSizeName} • ${selectedPriceName}`
+  const selectedRatingName = hasSelectedMinRating
+    ? `${selectedMinRating.toFixed(selectedMinRating % 1 === 0 ? 0 : 1)} sao trở lên`
+    : 'Tất cả đánh giá'
+  const summaryText = `${selectedCategoryName} • ${selectedBrandName} • ${selectedColorName} • ${selectedSizeName} • ${selectedPriceName} • ${selectedRatingName}`
 
   return (
     <div className="space-y-6 py-6">
@@ -275,6 +299,28 @@ export const ProductsPage = () => {
                 </Checkbox.Group>
               </div>
 
+              <div>
+                <Typography.Text strong>Đánh giá</Typography.Text>
+                <Radio.Group
+                  className="mt-3 flex w-full flex-col gap-2"
+                  value={hasSelectedMinRating ? String(selectedMinRating) : 'all'}
+                  onChange={(event) => {
+                    handleFilterChange({
+                      minRating: event.target.value === 'all' ? '' : String(event.target.value),
+                    })
+                  }}
+                >
+                  <Radio value="all">Tất cả đánh giá</Radio>
+                  {RATING_FILTERS.map((item) => (
+                    <Radio key={item.value} value={item.value}>
+                      <span className="flex items-center gap-2">
+                        <Tag color="gold">{item.label}</Tag>
+                      </span>
+                    </Radio>
+                  ))}
+                </Radio.Group>
+              </div>
+
               <Button
                 onClick={() => {
                   const params = new URLSearchParams(searchParams)
@@ -283,6 +329,7 @@ export const ProductsPage = () => {
                   params.delete('colorIds')
                   params.delete('sizeIds')
                   params.delete('priceRanges')
+                  params.delete('minRating')
                   params.delete('page')
                   setSearchParams(params)
                 }}

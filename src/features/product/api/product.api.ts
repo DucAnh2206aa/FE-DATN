@@ -25,6 +25,7 @@ interface ProductListQuery {
   colorIds?: string[]
   sizeIds?: string[]
   priceRanges?: string[]
+  minRating?: number
   search?: string
   isAvailable?: boolean
 }
@@ -267,6 +268,7 @@ export const getProducts = async (params: ProductListQuery = {}): Promise<Produc
         colorIds,
         sizeIds,
         priceRanges,
+        minRating: typeof params.minRating === 'number' ? params.minRating : undefined,
       },
     })
 
