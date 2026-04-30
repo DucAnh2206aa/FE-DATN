@@ -1,6 +1,7 @@
 import {
   DeleteOutlined,
   EditOutlined,
+  EyeInvisibleOutlined,
   EyeOutlined,
   PlusOutlined,
   TagsOutlined,
@@ -248,7 +249,7 @@ export const ProductManagementPage = () => {
     mutationFn: deleteAdminProduct,
     onSuccess: async () => {
       await invalidateProductData()
-      void message.success('Đã xóa sản phẩm')
+      void message.success('Đã cập nhật trạng thái sản phẩm')
     },
     onError: (error) => {
       void message.error(error.message)
@@ -320,6 +321,7 @@ export const ProductManagementPage = () => {
       {
         title: 'Sản phẩm',
         key: 'product',
+        width: 300,
         render: (_, record) => (
           <div className="flex min-w-[260px] items-start gap-3">
             <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md border border-slate-200 bg-slate-100">
@@ -347,7 +349,7 @@ export const ProductManagementPage = () => {
         dataIndex: 'categoryId',
         key: 'categoryId',
         width: 170,
-        render: (value: string) => categoriesById.get(value) ?? value,
+        render: (value: string) => categoriesById.get(value) ?? "Không xác định",
       },
       {
         title: 'Brand',
@@ -388,7 +390,7 @@ export const ProductManagementPage = () => {
       {
         title: 'Hành động',
         key: 'actions',
-        width: 360,
+        fixed: 'right',
         render: (_, record) => (
           <Space wrap>
             <Button
@@ -401,11 +403,10 @@ export const ProductManagementPage = () => {
             ></Button>
 
             <Button
-              icon={<EyeOutlined />}
               onClick={() => {
                 navigate(buildDashboardProductDetailPath(record.id))
               }}
-            ></Button>
+            >Chi tiết</Button>
 
             <Button
               icon={<EditOutlined />}
@@ -415,17 +416,16 @@ export const ProductManagementPage = () => {
             ></Button>
 
             <Popconfirm
-              title={`Xóa sản phẩm "${record.name}"?`}
-              description="Sản phẩm và toàn bộ variants sẽ bị xóa."
-              okText="Xóa"
+              title={`${record.isAvailable ? 'Ẩn' : 'Hiển thị'} sản phẩm "${record.name}"?`}
+              description={`Hành động này sẽ ${record.isAvailable ? 'ẩn' : 'hiển thị'} sản phẩm trên cửa hàng.`}
+              okText={`${record.isAvailable ? 'Ẩn' : 'Hiển thị'}`}
               cancelText="Hủy"
               onConfirm={() => {
                 deleteProductMutation.mutate(record.id)
               }}
             >
               <Button
-                danger
-                icon={<DeleteOutlined />}
+                icon={record.isAvailable ? <EyeInvisibleOutlined /> : <EyeOutlined />}
                 loading={deleteProductMutation.isPending}
               ></Button>
             </Popconfirm>
@@ -848,7 +848,7 @@ export const ProductManagementPage = () => {
                           removeVariantFormImage(imageUrl)
                         }}
                       >
-                        Xóa
+                        Ẩn
                       </Button>
                     </div>
                   ))}

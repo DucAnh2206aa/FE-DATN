@@ -1,12 +1,35 @@
-import { DeleteOutlined, MinusOutlined, PlusOutlined, ShoppingCartOutlined } from '@ant-design/icons'
+import {
+  DeleteOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  ShoppingCartOutlined,
+} from '@ant-design/icons'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Button, Card, Checkbox, Empty, List, message,Result, Space, Spin, Tag, Typography } from 'antd'
+import {
+  Button,
+  Card,
+  Checkbox,
+  Empty,
+  List,
+  message,
+  Popconfirm,
+  Result,
+  Space,
+  Spin,
+  Tag,
+  Typography,
+} from 'antd'
 import { sumBy } from 'lodash'
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
 import { useAppSelector } from '@/app/store/hooks'
-import { clearMyCart, getMyCart, removeCartItem, upsertCartItem } from '@/features/cart/api/cart.api'
+import {
+  clearMyCart,
+  getMyCart,
+  removeCartItem,
+  upsertCartItem,
+} from '@/features/cart/api/cart.api'
 import type { CartItem } from '@/features/cart/model/cart.types'
 import { queryKeys } from '@/shared/api/queryKeys'
 import { buildCheckoutPath, buildProductDetailPath, ROUTE_PATHS } from '@/shared/constants/routes'
@@ -227,10 +250,7 @@ export const CartPage = () => {
 
       {accessToken && !cartQuery.isLoading && cartItems.length === 0 ? (
         <Card className="!rounded-[28px] !border-slate-200/80">
-          <Empty
-            description="Giỏ hàng của bạn đang trống"
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-          >
+          <Empty description="Giỏ hàng của bạn đang trống" image={Empty.PRESENTED_IMAGE_SIMPLE}>
             <Button type="primary" onClick={() => navigate(ROUTE_PATHS.PRODUCTS)}>
               Mua sắm ngay
             </Button>
@@ -348,18 +368,17 @@ export const CartPage = () => {
                               <Typography.Text strong>
                                 Thành tiền: {formatVndCurrency(displayPrice * item.quantity)}
                               </Typography.Text>
-                              <Button
-                                size="small"
-                                type="text"
-                                danger
-                                icon={<DeleteOutlined />}
-                                loading={removeMutation.isPending}
-                                onClick={() => {
-                                  removeMutation.mutate(item.variantId)
-                                }}
+                              <Popconfirm
+                                title="Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?"
+                                okText="Xóa"
+                                cancelText="Đóng"
+                                onConfirm={() => removeMutation.mutate(item.variantId)}
+                                okButtonProps={{ loading: removeMutation.isPending, danger: true }}
                               >
-                                Xóa
-                              </Button>
+                                <Button size="small" type="text" danger icon={<DeleteOutlined />}>
+                                  Xóa
+                                </Button>
+                              </Popconfirm>
                             </Space>
                           </div>
                         </div>

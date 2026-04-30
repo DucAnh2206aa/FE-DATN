@@ -184,6 +184,7 @@ const normalizeFilterSize = (item: Record<string, unknown>): ProductFilterSize =
 export const getProductFilters = async (): Promise<ProductFiltersResponse> => {
   try {
     const response = await httpClient.get<ApiSuccess<Record<string, unknown>>>('/products/filters')
+    
     const data = extractApiData(response)
     const rawCategories = Array.isArray(data.categories) ? data.categories : []
     const rawBrands = Array.isArray(data.brands) ? data.brands : []

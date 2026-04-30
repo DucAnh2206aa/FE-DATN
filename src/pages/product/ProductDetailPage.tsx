@@ -683,7 +683,15 @@ export const ProductDetailPage = () => {
                         </div>
                         <Typography.Text className="!text-[10px] leading-3 line-clamp-1">
                           {getVariantLabel(variant)}
+
                         </Typography.Text>
+                         <span className={`text-xs ${
+                            variant.isAvailable && variant.stockQuantity > 0
+                              ? 'text-green-600'
+                              : 'text-slate-500'
+                          }`}>
+                            {availabilityLabel} ({variant.stockQuantity})
+                          </span>
                       </button>
                     )
                   })

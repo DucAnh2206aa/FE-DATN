@@ -9,7 +9,6 @@ import {
   Segmented,
   Space,
   Statistic,
-  Table,
   Tag,
   Typography,
 } from 'antd'
@@ -306,16 +305,18 @@ const DashboardMetricGroup = ({
 
         <Statistic title={primaryLabel} value={primaryValue} formatter={primaryFormatter} />
 
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          {secondaryItems.map((item) => (
-            <Statistic
-              key={item.label}
-              title={item.label}
-              value={item.value}
-              formatter={item.formatter}
-            />
-          ))}
-        </div>
+        {secondaryItems.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {secondaryItems.map((item) => (
+              <Statistic
+                key={item.label}
+                title={item.label}
+                value={item.value}
+                formatter={item.formatter}
+              />
+            ))}
+          </div>
+        )}
       </Space>
     </Card>
   )
@@ -432,7 +433,6 @@ export const DashboardPage = () => {
               { label: 'Hoàn thành', value: summary?.deliveredOrders ?? 0 },
               { label: 'Đang xử lý', value: summary?.processingOrders ?? 0 },
               { label: 'Đã hủy/trả', value: summary?.cancelledOrders ?? 0 },
-
             ]}
           />
         </Col>
@@ -443,9 +443,7 @@ export const DashboardPage = () => {
             loading={isLoading}
             primaryLabel="Tổng khách hàng"
             primaryValue={summary?.customersCount ?? 0}
-            secondaryItems={[
-
-            ]}
+            secondaryItems={[]}
           />
         </Col>
 
@@ -513,78 +511,6 @@ export const DashboardPage = () => {
             ) : (
               <Empty description="Chưa có dữ liệu đơn hàng theo danh mục" />
             )}
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]}>
-        <Col xs={24} xl={12}>
-          <Card
-            title={`Top sản phẩm bán chạy trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
-            loading={isLoading}
-          >
-            <Table
-              rowKey="productId"
-              columns={topProductColumns}
-              dataSource={stats?.topProducts ?? []}
-              pagination={false}
-              locale={{
-                emptyText: <Empty description="Chưa có dữ liệu sản phẩm bán chạy" />,
-              }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} xl={12}>
-          <Card
-            title={`Top sản phẩm bán chậm trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
-            loading={isLoading}
-          >
-            <Table
-              rowKey="productId"
-              columns={topProductColumns}
-              dataSource={stats?.bottomProducts ?? []}
-              pagination={false}
-              locale={{
-                emptyText: <Empty description="Chưa có dữ liệu sản phẩm bán chậm" />,
-              }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={[16, 16]}>
-        <Col xs={24} xl={12}>
-          <Card
-            title={`Top biến thể bán chạy trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
-            loading={isLoading}
-          >
-            <Table
-              rowKey="variantId"
-              columns={topVariantColumns}
-              dataSource={stats?.topVariants ?? []}
-              pagination={false}
-              locale={{
-                emptyText: <Empty description="Chưa có dữ liệu biến thể bán chạy" />,
-              }}
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} xl={12}>
-          <Card
-            title={`Top biến thể bán chậm trong ${stats?.trends.label ?? 'phạm vi đã chọn'}`}
-            loading={isLoading}
-          >
-            <Table
-              rowKey="variantId"
-              columns={topVariantColumns}
-              dataSource={stats?.bottomVariants ?? []}
-              pagination={false}
-              locale={{
-                emptyText: <Empty description="Chưa có dữ liệu biến thể bán chậm" />,
-              }}
-            />
           </Card>
         </Col>
       </Row>

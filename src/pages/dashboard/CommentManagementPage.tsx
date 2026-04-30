@@ -273,41 +273,9 @@ export const CommentManagementPage = () => {
             }}
           />
 
-          <Input.Search
-            allowClear
-            className="w-full md:max-w-xs"
-            placeholder="Lọc theo targetId"
-            value={targetIdInput}
-            onChange={(event) => {
-              setTargetIdInput(event.target.value)
-              if (!event.target.value.trim()) {
-                setPage(1)
-                setTargetIdFilter('')
-              }
-            }}
-            onSearch={(value) => {
-              setPage(1)
-              setTargetIdFilter(value.trim())
-            }}
-          />
+          
 
-          <Input.Search
-            allowClear
-            className="w-full md:max-w-xs"
-            placeholder="Lọc theo userId"
-            value={userIdInput}
-            onChange={(event) => {
-              setUserIdInput(event.target.value)
-              if (!event.target.value.trim()) {
-                setPage(1)
-                setUserIdFilter('')
-              }
-            }}
-            onSearch={(value) => {
-              setPage(1)
-              setUserIdFilter(value.trim())
-            }}
-          />
+
 
           <Select
             value={targetModelFilter}

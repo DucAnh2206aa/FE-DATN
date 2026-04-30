@@ -353,23 +353,7 @@ export const ReviewManagementPage = () => {
             }}
           />
 
-          <Input.Search
-            allowClear
-            className="w-full md:max-w-xs"
-            placeholder="Lọc theo userId"
-            value={userIdInput}
-            onChange={(event) => {
-              setUserIdInput(event.target.value)
-              if (!event.target.value.trim()) {
-                setPage(1)
-                setUserIdFilter('')
-              }
-            }}
-            onSearch={(value) => {
-              setPage(1)
-              setUserIdFilter(value.trim())
-            }}
-          />
+         
 
           <Select
             value={ratingFilter}
